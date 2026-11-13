@@ -5184,7 +5184,13 @@
       base = (window.location.protocol === 'file:') ? 'http://127.0.0.1:5000/' : `${window.location.origin}/`;
       if (!base.includes('5000')) base = 'http://127.0.0.1:5000/';
     } else {
-      base = 'https://auto-skor.vercel.app/';
+      // Tautan Web HTTPS resmi untuk TikTok LIVE Studio & OBS
+      if (window.location.hostname.includes('github.io')) {
+        base = `${window.location.origin}${window.location.pathname}`;
+      } else {
+        base = 'https://ftwa.github.io/auto-skor/';
+      }
+      if (!base.endsWith('/')) base += '/';
     }
 
     const urlTabel = `${base}?view=tabel`;
