@@ -292,12 +292,23 @@
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       z-index: 99999;
       opacity: 0; pointer-events: none;
-      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
       cursor: pointer;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
     }
     .esports-toast-hud.show {
       transform: translateX(-50%) translateY(0) scale(1);
       opacity: 1; pointer-events: auto;
+    }
+    .esports-toast-hud.pulse-pop {
+      animation: hudPulsePop 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes hudPulsePop {
+      0% { transform: translateX(-50%) translateY(0) scale(0.94); }
+      50% { transform: translateX(-50%) translateY(0) scale(1.04); }
+      100% { transform: translateX(-50%) translateY(0) scale(1.0); }
     }
 
     /* Tier Glow Variants */
@@ -2763,7 +2774,7 @@
         }
       } else if (msg.type === 'SYNC_NOTIF') {
         if (typeof tampilkanDynamicPill === 'function') {
-          tampilkanDynamicPill(msg.player, msg.rincian, msg.delta, msg.tier, msg.avatar, msg.fishName, false);
+          tampilkanDynamicPill(msg.player, msg.rincian, msg.delta, msg.tier, msg.avatar, msg.fishName, false, msg.duration || 2000);
         }
       } else if (msg.type === 'SYNC_CATCH') {
         if (typeof processedCatchIds !== 'undefined') {
@@ -6848,7 +6859,7 @@
       isNotifShowing = false;
       updateIndikatorAntrean();
 
-      if (!testBannerTimer) {
+      if (!testBannerTimer && banner) {
         banner.classList.remove('show', 'pulse-update');
       }
 
@@ -6866,24 +6877,36 @@
     const item = notifQueue.shift();
     updateIndikatorAntrean();
 
+    // Durasi Notifikasi Adaptif (Anti-Delay Murni):
+    // Jika antrean kosong/1: tampil 2.0s
+    // Jika ada 2: tampil 1.2s
+    // Jika lebih dari 3: persingkat jadi 0.8s agar tidak menumpuk
+    let displayDuration = 2000;
+    const qCount = notifQueue.length;
+    if (qCount >= 4) {
+      displayDuration = 800;
+    } else if (qCount >= 2) {
+      displayDuration = 1200;
+    } else if (qCount === 1) {
+      displayDuration = 1600;
+    }
+
     putarSuaraNotif(item.tierKey);
 
-    document.getElementById('notifTag').innerText = item.tierKey === 'secret' ? "🟢 SECRET CATCH" : (item.tierKey === 'mitos' ? "🔴 MYTHIC CATCH" : "🟡 LEGEND CATCH");
-    document.getElementById('notifPlayer').innerText = item.displayName;
-    document.getElementById('notifDetail').innerText = `${item.namaIkan} (${item.rincianKategori})`;
-    document.getElementById('notifPts').innerHTML = `+${item.delta} Poin<br><span style="font-size:10px; font-weight:800; color:#a7f3d0;" id="notifTotalLabel">Total: ${item.poinAkhir}</span>`;
-
-    banner.classList.add('show', 'pulse-update');
-
-    // Jika ikan secret atau tier tinggi, munculkan Big Screen Alert dengan nama ikan
-    tampilkanBigScreenAlert(item.displayName, item.rincianKategori, item.delta, item.tierKey, item.avatarUrl || '', item.namaIkan);
-
-    let displayDuration = 1050;
-    if (notifQueue.length > 4) {
-      displayDuration = 500;
-    } else if (notifQueue.length > 1) {
-      displayDuration = 750;
+    if (banner) {
+      const tagEl = document.getElementById('notifTag');
+      if (tagEl) tagEl.innerText = item.tierKey === 'secret' ? "🟢 SECRET CATCH" : (item.tierKey === 'mitos' ? "🔴 MYTHIC CATCH" : "🟡 LEGEND CATCH");
+      const playerEl = document.getElementById('notifPlayer');
+      if (playerEl) playerEl.innerText = item.displayName;
+      const detailEl = document.getElementById('notifDetail');
+      if (detailEl) detailEl.innerText = `${item.namaIkan} (${item.rincianKategori})`;
+      const ptsEl = document.getElementById('notifPts');
+      if (ptsEl) ptsEl.innerHTML = `+${item.delta} Poin<br><span style="font-size:10px; font-weight:800; color:#a7f3d0;" id="notifTotalLabel">Total: ${item.poinAkhir}</span>`;
+      banner.classList.add('show', 'pulse-update');
     }
+
+    // Tampilkan Dynamic Island Pill di atas dengan durasi tersinkronisasi
+    tampilkanDynamicPill(item.displayName, item.rincianKategori, item.delta, item.tierKey, item.avatarUrl || '', item.namaIkan, true, displayDuration);
 
     setTimeout(() => {
       prosesAntreanNotif();
@@ -6900,6 +6923,9 @@
   }
 
   function syncKePython() {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocalhost) return; // Mencegah network polling & lag saat berjalan di Vercel Cloud
+
     const s = getSesi();
     const daftarUser = [];
     s.players.forEach(p => {
@@ -6934,7 +6960,9 @@
 
   function setStatusSystem(online) {
     const el = document.getElementById('systemStatus');
-    if (online) { 
+    if (!el) return;
+    const isCloudActive = typeof cloudEventSource !== 'undefined' && cloudEventSource && cloudEventSource.readyState === EventSource.OPEN;
+    if (online || isCloudActive) { 
       el.className = 'status-badge status-online'; 
       el.innerText = 'ON'; 
     } else { 
@@ -7327,8 +7355,9 @@
     tampilkanDynamicPill(displayName, rincian, poinDelta, tierKey, avatarUrl, namaIkan);
   }
 
+  const audioCachePool = {};
   let dynamicPillTimer = null;
-  function tampilkanDynamicPill(displayName, rincian, poinDelta, tierKey = 'secret', avatarUrl = '', namaIkan = '', siar = true) {
+  function tampilkanDynamicPill(displayName, rincian, poinDelta, tierKey = 'secret', avatarUrl = '', namaIkan = '', siar = true, duration = 2000) {
     const pill = document.getElementById('dynamicPillBanner');
     if (!pill) return;
 
@@ -7340,32 +7369,42 @@
         delta: poinDelta,
         tier: tierKey,
         avatar: avatarUrl,
-        fishName: namaIkan
+        fishName: namaIkan,
+        duration: duration
       });
     }
 
     const infoIkan = namaIkan ? namaIkan : 'Ikan Tangkapan';
-    document.getElementById('dynamicPillName').innerText = displayName || 'Player';
+    const nameEl = document.getElementById('dynamicPillName');
+    if (nameEl) nameEl.innerText = displayName || 'Player';
     const fishEl = document.getElementById('dynamicPillFish');
     if (fishEl) fishEl.innerText = infoIkan;
-    document.getElementById('dynamicPillDesc').innerText = `${rincian || 'Tangkapan Langka'}`;
-    document.getElementById('dynamicPillPts').innerText = `+${poinDelta} PTS`;
+    const descEl = document.getElementById('dynamicPillDesc');
+    if (descEl) descEl.innerText = `${rincian || 'Tangkapan Langka'}`;
+    const ptsEl = document.getElementById('dynamicPillPts');
+    if (ptsEl) ptsEl.innerText = `+${poinDelta} PTS`;
 
     const tierBadge = document.getElementById('hudTierBadge');
     const crownIcon = document.getElementById('hudCrownIcon');
+    let tierClass = 'tier-legend';
     if (tierKey === 'secret') {
-      pill.className = 'esports-toast-hud show tier-secret';
+      tierClass = 'tier-secret';
       if (tierBadge) tierBadge.innerText = '🟢 SECRET CATCH';
       if (crownIcon) crownIcon.innerText = '👑';
     } else if (tierKey === 'mitos') {
-      pill.className = 'esports-toast-hud show tier-mythic';
+      tierClass = 'tier-mythic';
       if (tierBadge) tierBadge.innerText = '🔴 MYTHIC CATCH';
       if (crownIcon) crownIcon.innerText = '⚡';
     } else {
-      pill.className = 'esports-toast-hud show tier-legend';
+      tierClass = 'tier-legend';
       if (tierBadge) tierBadge.innerText = '🟡 LEGEND CATCH';
       if (crownIcon) crownIcon.innerText = '🌟';
     }
+
+    // Instan Pop Pulse Reset (Tanpa Delay Transisi)
+    pill.className = `esports-toast-hud ${tierClass}`;
+    void pill.offsetWidth;
+    pill.classList.add('show', 'pulse-pop');
 
     const img = document.getElementById('dynamicPillImg');
     const init = document.getElementById('dynamicPillInitial');
@@ -7381,22 +7420,24 @@
       }
     }
 
-    // Audio Playback
+    // Audio Playback dari Audio Pool (Zero Latency)
     const customAudioData = customAudioTierData[tierKey] || customAudioTierData['default'];
     if (customAudioData) {
       try {
-        const audio = new Audio(customAudioData);
-        audio.volume = volumeNotifAudio;
-        audio.play().catch(e => console.warn("Audio play prevented:", e));
-      } catch(err) {
-        console.warn("Audio error:", err);
-      }
+        if (!audioCachePool[tierKey]) {
+          audioCachePool[tierKey] = new Audio(customAudioData);
+        }
+        const snd = audioCachePool[tierKey];
+        snd.currentTime = 0;
+        snd.volume = volumeNotifAudio;
+        snd.play().catch(() => {});
+      } catch (_) {}
     }
 
     if (dynamicPillTimer) clearTimeout(dynamicPillTimer);
     dynamicPillTimer = setTimeout(() => {
-      pill.classList.remove('show');
-    }, 4500);
+      pill.classList.remove('show', 'pulse-pop');
+    }, Math.max(duration - 100, 600));
   }
 
   function klikDynamicPill() {
