@@ -2436,6 +2436,34 @@
       pointer-events: none !important;
     }
 
+    
+    /* Mode Overlay Match Enforcements */
+    html.mode-overlay body #podiumHeroStage {
+      display: grid !important;
+    }
+    html.mode-overlay body col.col-point,
+    html.mode-overlay body th.col-point,
+    html.mode-overlay body td.col-point {
+      display: table-cell !important;
+    }
+    html.mode-overlay body col.col-ready,
+    html.mode-overlay body th.col-ready,
+    html.mode-overlay body td.col-ready {
+      display: none !important;
+    }
+    html.mode-overlay .btn-pt-ctrl {
+      display: none !important;
+    }
+    html.mode-overlay .pt-ctrl-group {
+      justify-content: center !important;
+    }
+    html.mode-overlay .score-val {
+      min-width: 44px !important;
+      text-align: center !important;
+      font-size: 14px !important;
+      pointer-events: none !important;
+    }
+
     /* 2. Mode Podium Winner Saja (?view=podium) */
     html.mode-podium, html.mode-podium body {
       background: transparent !important;
@@ -2762,6 +2790,13 @@
     }
     window.addEventListener('resize', periksaDanAutoFitOverlay);
     window.addEventListener('DOMContentLoaded', () => {
+      if (document.documentElement.classList.contains('mode-overlay')) {
+        document.body.classList.remove('view-setup', 'view-member');
+        document.body.classList.add('view-match');
+        if (typeof setModeTampilanDirect === 'function') {
+          setModeTampilanDirect('MATCH', false);
+        }
+      }
       inisialisasiMQTT();
       setTimeout(periksaDanAutoFitOverlay, 300);
     });
