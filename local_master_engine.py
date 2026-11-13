@@ -521,41 +521,65 @@ def is_port_in_use(port):
     except Exception:
         return False
 
+def check_auto_skor_responsive(port=5000):
+    try:
+        req = urllib.request.Request(f'http://127.0.0.1:{port}/', headers={'User-Agent': 'LocalCheck'})
+        with urllib.request.urlopen(req, timeout=0.6) as r:
+            if r.status == 200:
+                body = r.read().decode('utf-8', errors='ignore')
+                return ('FISH IT' in body or 'Auto Skor' in body)
+    except Exception:
+        pass
+    return False
+
+def kill_stale_port_5000():
+    try:
+        import subprocess
+        out = subprocess.check_output('netstat -ano -p tcp', shell=True, text=True, errors='ignore')
+        current_pid = os.getpid()
+        for line in out.splitlines():
+            if ':5000' in line and 'LISTENING' in line:
+                parts = line.strip().split()
+                if len(parts) >= 5:
+                    pid = int(parts[-1])
+                    if pid != current_pid and pid > 0:
+                        subprocess.run(f'taskkill /F /PID {pid}', shell=True, capture_output=True)
+                        time.sleep(0.3)
+    except Exception:
+        pass
+
 def start_flask_server():
-    if is_port_in_use(5000):
-        print("[INFO] Server port 5000 sudah berjalan.")
-        return
     try:
         app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False, threaded=True)
     except Exception as e:
-        print(f"[WARN] Flask runner: {e}")
+        log_local_error(f"Flask runner error: {e}")
 
 def log_local_error(msg):
     try:
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "master_lokal_debug.log")
+        appdata = os.environ.get('LOCALAPPDATA', os.path.dirname(os.path.abspath(__file__)))
+        log_file = os.path.join(appdata, "master_lokal_debug.log")
         with open(log_file, "a", encoding="utf-8") as f:
             f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}\n")
     except Exception:
         pass
 
 def main():
-    # 1. Jalankan server Python Flask di background thread
-    try:
+    target_url = "http://127.0.0.1:5000/"
+
+    # 1. Pastikan server Flask berjalan di port 5000
+    if not check_auto_skor_responsive(5000):
+        if is_port_in_use(5000):
+            kill_stale_port_5000()
+
         flask_thread = threading.Thread(target=start_flask_server, daemon=True)
         flask_thread.start()
-    except Exception as e:
-        log_local_error(f"Gagal memulai Flask server thread: {e}")
 
-    # Tunggu sebentar sampai port 5000 siap
-    time.sleep(0.6)
+        for _ in range(30):
+            if check_auto_skor_responsive(5000):
+                break
+            time.sleep(0.2)
 
-    target_url = "http://127.0.0.1:5000/"
-    profile_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'AutoSkor_Lokal_Profile')
-    try:
-        os.makedirs(profile_dir, exist_ok=True)
-    except Exception:
-        pass
-
+    # 2. Inisialisasi UI WebView2
     gui_success = False
     try:
         window = webview.create_window(
@@ -568,19 +592,17 @@ def main():
             text_select=True,
             confirm_close=False
         )
-        webview.start(private_mode=False, storage_path=profile_dir)
+        window.events.closed += lambda: os._exit(0)
+        webview.start(private_mode=False)
         gui_success = True
     except Exception as e:
         log_local_error(f"WebView2 GUI init failed ({e}). Mengaktifkan fallback browser...")
 
-    # Fallback Otomatis: Jika WebView2 belum terpasang atau gagal dibuka di PC user,
-    # buka otomatis di browser default (Chrome / Edge / dll) sehingga TIDAK PERNAH MACET!
+    # 3. Fallback Otomatis: Buka di browser jika WebView2 mengalami kendala
     if not gui_success:
         try:
             import webbrowser
-            print(f"[INFO] Membuka Auto Skor di browser default: {target_url}")
             webbrowser.open(target_url)
-            # Jaga proses agar server Flask tetap berjalan
             while True:
                 time.sleep(1)
         except Exception as e2:
@@ -593,7 +615,7 @@ def main():
             except Exception:
                 pass
 
-    sys.exit(0)
+    os._exit(0)
 
 if __name__ == '__main__':
     main()
