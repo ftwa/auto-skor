@@ -20,9 +20,9 @@ end
 -- KONFIGURASI TARGET SERVER & ANTI-LAG (PENTING)
 -- ============================================================
 -- Pilihan TARGET_MODE:
--- "AUTO"     : Otomatis! Jika MasterAutoSkor.exe aktif di PC, pakai Localhost (0ms). Jika tidak, pakai Cloud Vercel.
--- "LOCAL"    : 100% Offline di PC Anda (http://127.0.0.1:5000) - Tercepat, super enteng
--- "CLOUD"    : Online via Vercel (https://auto-skor.vercel.app)
+-- "AUTO"     : Otomatis! Jika MasterAutoSkor_Lokal.exe aktif di PC, pakai Localhost (0ms). Jika tidak, pakai Cloud Vercel.
+-- "LOCAL"    : 100% Offline di PC Anda (http://127.0.0.1:5000) via MasterAutoSkor_Lokal.exe - Tercepat, super enteng
+-- "CLOUD"    : Online via Vercel (https://auto-skor.vercel.app) via MasterAutoSkor_Online.exe
 local TARGET_MODE = "AUTO"
 
 local ENABLE_ANTI_LAG_BOOST  = true   -- TRUE: Mengoptimalkan FPS Roblox (Shadows & effects off)
