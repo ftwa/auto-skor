@@ -272,18 +272,22 @@ def route_catch():
 @app.route('/stream-poin')
 def route_stream_poin():
     def event_generator():
-        q = queue.Queue()
+        q = queue.Queue(maxsize=50)
         with data_lock:
+            if len(sse_listeners) >= 10:
+                del sse_listeners[:len(sse_listeners)-9]
             sse_listeners.append(q)
         try:
             # Kirim initial ping
             yield "event: connected\ndata: {\"status\":\"ok\"}\n\n"
-            while True:
+            for _ in range(40):
                 try:
-                    item = q.get(timeout=25)
+                    item = q.get(timeout=0.5)
                     yield f"data: {json.dumps(item)}\n\n"
                 except queue.Empty:
                     yield ": ping\n\n"
+        except GeneratorExit:
+            pass
         finally:
             with data_lock:
                 if q in sse_listeners:
@@ -373,7 +377,9 @@ def route_cari_roblox():
 
     cache_key = username.lower()
     if cache_key in roblox_cache:
-        return jsonify(roblox_cache[cache_key])
+        cached = roblox_cache[cache_key]
+        status_code = 200 if cached.get("sukses", False) else 404
+        return jsonify(cached), status_code
 
     try:
         uid = None
@@ -424,6 +430,7 @@ def route_cari_roblox():
 
         if not uid:
             res_obj = {"sukses": False, "pesan": "User Roblox tidak ditemukan"}
+            roblox_cache[cache_key] = res_obj
             return jsonify(res_obj), 404
 
         # 3. Avatar Headshot (150x150)
@@ -524,7 +531,7 @@ def is_port_in_use(port):
 def check_auto_skor_responsive(port=5000):
     try:
         req = urllib.request.Request(f'http://127.0.0.1:{port}/', headers={'User-Agent': 'LocalCheck'})
-        with urllib.request.urlopen(req, timeout=0.6) as r:
+        with urllib.request.urlopen(req, timeout=1.5) as r:
             if r.status == 200:
                 body = r.read().decode('utf-8', errors='ignore')
                 return ('FISH IT' in body or 'Auto Skor' in body)
@@ -579,8 +586,9 @@ def main():
                 break
             time.sleep(0.2)
 
-    # 2. Inisialisasi UI WebView2
-    gui_success = False
+    # 2. Inisialisasi UI WebView2 dengan auto-fallback anti-exit
+    t_start = time.time()
+    gui_ran_long = False
     try:
         window = webview.create_window(
             title='[LOKAL / OFFLINE] Auto Skor Galatama - Anti-Lag Localhost 5000',
@@ -592,30 +600,26 @@ def main():
             text_select=True,
             confirm_close=False
         )
-        window.events.closed += lambda: os._exit(0)
         webview.start(private_mode=False)
-        gui_success = True
+        if time.time() - t_start > 3.0:
+            gui_ran_long = True
     except Exception as e:
-        log_local_error(f"WebView2 GUI init failed ({e}). Mengaktifkan fallback browser...")
+        log_local_error(f"WebView2 GUI init failed ({e}). Mengaktifkan browser fallback...")
 
-    # 3. Fallback Otomatis: Buka di browser jika WebView2 mengalami kendala
-    if not gui_success:
-        try:
-            import webbrowser
-            webbrowser.open(target_url)
-            while True:
-                time.sleep(1)
-        except Exception as e2:
-            log_local_error(f"Browser fallback failed: {e2}")
-            try:
-                import ctypes
-                ctypes.windll.user32.MessageBoxW(0, f"Auto Skor Localhost aktif di:\n{target_url}\n\nSilakan buka link tersebut di Chrome atau Edge.", "Auto Skor Ready", 0x40)
-                while True:
-                    time.sleep(1)
-            except Exception:
-                pass
+    # Jika WebView2 ditutup setelah digunakan lama (>3 detik), keluar secara normal
+    if gui_ran_long:
+        os._exit(0)
 
-    os._exit(0)
+    # 3. Fallback Otomatis: Buka di browser Chrome/Edge dan jaga Flask tetap hidup
+    try:
+        import webbrowser
+        webbrowser.open(target_url)
+    except Exception as e2:
+        log_local_error(f"Browser fallback failed: {e2}")
+
+    # Jaga Flask tetap berjalan tanpa pernah mati
+    while True:
+        time.sleep(1)
 
 if __name__ == '__main__':
     main()
