@@ -1,0 +1,18 @@
+{
+  "name": "auto-skor",
+  "version": "1.0.0",
+  "description": "Auto Skor Roblox Esports Overlay & Winner Stage for TikTok LIVE Studio and Vercel",
+  "main": "public/index.html",
+  "scripts": {
+    "start": "python local_dev_server.py"
+  },
+  "keywords": [
+    "scoreboard",
+    "roblox",
+    "tiktok-studio",
+    "overlay",
+    "winner-stage"
+  ],
+  "author": "ftwa",
+  "license": "MIT"
+}
