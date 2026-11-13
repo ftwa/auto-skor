@@ -2765,6 +2765,16 @@
         if (typeof tampilkanDynamicPill === 'function') {
           tampilkanDynamicPill(msg.player, msg.rincian, msg.delta, msg.tier, msg.avatar, msg.fishName, false);
         }
+      } else if (msg.type === 'SYNC_CATCH') {
+        if (typeof processedCatchIds !== 'undefined') {
+          const eventId = msg.id || `${msg.user}_${msg.ikan || msg.fish}_${msg.poin}`;
+          if (!processedCatchIds.has(eventId)) {
+            processedCatchIds.add(eventId);
+            if (typeof tambahPoinOtomatis === 'function') {
+              tambahPoinOtomatis(msg.user, msg.poin, msg.rincian, msg.ikan || msg.fish, msg.kategori || msg.tier);
+            }
+          }
+        }
       }
     }
 
@@ -3983,7 +3993,7 @@
   };
 
   let customNotifBgData = localStorage.getItem(NOTIF_BG_KEY) || null;
-  let isBetaAutoRegisterAktif = JSON.parse(localStorage.getItem(BETA_AUTO_REG_KEY)) || false;
+  let isBetaAutoRegisterAktif = localStorage.getItem(BETA_AUTO_REG_KEY) !== null ? JSON.parse(localStorage.getItem(BETA_AUTO_REG_KEY)) : true;
   let isLogFolded = JSON.parse(localStorage.getItem(LOG_FOLD_KEY)) || false;
 
   let tempPreviewBgData = null;
@@ -7038,7 +7048,78 @@
   }
 
   let pollIntervalId = null;
+  let cloudEventSource = null;
+  const processedCatchIds = new Set();
+
+  function inisialisasiCloudSSE() {
+    try {
+      if (cloudEventSource) {
+        try { cloudEventSource.close(); } catch(_) {}
+      }
+      cloudEventSource = new EventSource('https://ntfy.sh/galatama_auto_skor_live_bus_v1/sse');
+      
+      cloudEventSource.onopen = () => {
+        console.log('⚡ [Cloud Bus] Terhubung ke Vercel Live Catch Bus (ntfy.sh)');
+        setStatusSystem(true);
+      };
+
+      cloudEventSource.onmessage = (event) => {
+        try {
+          const raw = JSON.parse(event.data);
+          if (!raw) return;
+          let item = raw;
+          if (raw.message) {
+            try { item = JSON.parse(raw.message); } catch (_) { item = raw; }
+          }
+          if (!item) return;
+
+          // Deduplikasi tangkapan
+          const eventId = item.id || `${item.user}_${item.ikan || item.fish}_${item.poin}_${item.timestamp || ''}`;
+          if (processedCatchIds.has(eventId)) return;
+          processedCatchIds.add(eventId);
+          if (processedCatchIds.size > 200) {
+            const first = processedCatchIds.values().next().value;
+            processedCatchIds.delete(first);
+          }
+
+          if (item.type === 'SYNC_CATCH' || (item.user && item.poin !== undefined)) {
+            setStatusSystem(true);
+            if (!isMatchSedangJalan) {
+              isMatchSedangJalan = true;
+              isMatchDijeda = false;
+              setModeTampilan('MATCH');
+              perbaruiStatusMatchUI();
+              mulaiIntervalTimer();
+              siarkanSync({
+                type: 'SYNC_MODE',
+                mode: 'MATCH'
+              });
+            }
+            const poinMasuk = item.poin !== undefined ? item.poin : 1;
+            const rincianStr = item.rincian || 'Tangkapan Ikan';
+            const kategoriStr = item.kategori || item.tier || 'legend';
+            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan || item.fish, kategoriStr);
+          } else if (item.type === 'WEATHER_EVENT') {
+            tambahLogAktivitas(item.player || 'Server', `Mengaktifkan ${item.weather || 'Event Cuaca'}`, 'system');
+          }
+        } catch (err) {
+          console.warn('[Cloud Bus] Parse error:', err);
+        }
+      };
+
+      cloudEventSource.onerror = () => {
+        // SSE otomatis reconnect
+      };
+    } catch (err) {
+      console.warn('[Cloud Bus] Init error:', err);
+    }
+  }
+
   function inisialisasiSSE() {
+    // 1. Hubungkan ke Cloud Bus Vercel (Sinkronisasi Web Otomatis tanpa Python)
+    inisialisasiCloudSSE();
+
+    // 2. Hubungkan ke Python localhost bila tersedia
     try {
       if (sseEventSource) {
         try { sseEventSource.close(); } catch(_) {}
@@ -7079,6 +7160,10 @@
           }
 
           if (item.user && item.poin !== undefined) {
+            const eventId = `${item.user}_${item.ikan}_${item.poin}`;
+            if (processedCatchIds.has(eventId)) return;
+            processedCatchIds.add(eventId);
+
             if (!isMatchSedangJalan) {
               isMatchSedangJalan = true;
               isMatchDijeda = false;
@@ -7094,16 +7179,9 @@
         } catch (_) {}
       };
       sseEventSource.onerror = () => {
-        setStatusSystem(false);
-        if (!pollIntervalId) {
-          pollIntervalId = setInterval(pollPoinFallback, 1500);
-        }
+        // Jika Python localhost tidak berjalan, biarkan Cloud Bus yang menangani
       };
-    } catch (_) {
-      if (!pollIntervalId) {
-        pollIntervalId = setInterval(pollPoinFallback, 1000);
-      }
-    }
+    } catch (_) {}
   }
 
   let isPolling = false;
@@ -7124,17 +7202,18 @@
             mulaiIntervalTimer();
           }
           list.forEach(item => {
+            const eventId = `${item.user}_${item.ikan}_${item.poin}`;
+            if (processedCatchIds.has(eventId)) return;
+            processedCatchIds.add(eventId);
+
             const poinMasuk = item.poin !== undefined ? item.poin : 1;
             const rincianStr = item.rincian || 'Tangkapan Ikan';
             const kategoriStr = item.kategori || 'legend';
             tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan, kategoriStr);
           });
         }
-      } else {
-        setStatusSystem(false);
       }
     } catch (_) {
-      setStatusSystem(false);
     } finally {
       isPolling = false;
     }
@@ -7249,9 +7328,21 @@
   }
 
   let dynamicPillTimer = null;
-  function tampilkanDynamicPill(displayName, rincian, poinDelta, tierKey = 'secret', avatarUrl = '', namaIkan = '') {
+  function tampilkanDynamicPill(displayName, rincian, poinDelta, tierKey = 'secret', avatarUrl = '', namaIkan = '', siar = true) {
     const pill = document.getElementById('dynamicPillBanner');
     if (!pill) return;
+
+    if (siar && typeof siarkanSync === 'function') {
+      siarkanSync({
+        type: 'SYNC_NOTIF',
+        player: displayName,
+        rincian: rincian,
+        delta: poinDelta,
+        tier: tierKey,
+        avatar: avatarUrl,
+        fishName: namaIkan
+      });
+    }
 
     const infoIkan = namaIkan ? namaIkan : 'Ikan Tangkapan';
     document.getElementById('dynamicPillName').innerText = displayName || 'Player';
