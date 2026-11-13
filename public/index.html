@@ -312,6 +312,17 @@
     }
 
     /* Tier Glow Variants */
+    .esports-toast-hud.tier-khusus {
+      border-color: #d946ef;
+      box-shadow: 0 16px 50px rgba(217, 70, 239, 0.6), 0 0 35px rgba(168, 85, 247, 0.5);
+    }
+    .esports-toast-hud.tier-khusus .hud-avatar-circle { border-color: #d946ef; box-shadow: 0 0 18px rgba(217, 70, 239, 0.8); }
+    .esports-toast-hud.tier-khusus .hud-tier-badge {
+      background: rgba(217, 70, 239, 0.25); border: 1px solid #d946ef; color: #f5d0fe;
+    }
+    .log-item.tier-khusus { border-left-color: #a855f7 !important; background: rgba(168, 85, 247, 0.08) !important; }
+    .badge-khusus { background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%) !important; color: #fff !important; }
+
     .esports-toast-hud.tier-secret {
       border-color: #facc15;
       box-shadow: 0 16px 50px rgba(250, 204, 21, 0.5), 0 0 30px rgba(34, 197, 94, 0.4);
@@ -3058,6 +3069,12 @@
       </table>
     </div>
 
+    <!-- HINT BANNER IKAN KHUSUS -->
+    <div style="font-size: 11px; font-weight: 700; color: #7c3aed; margin-top: -6px; margin-bottom: 14px; padding: 7px 12px; background: #faf5ff; border-radius: 10px; border-left: 3.5px solid #a855f7; display: flex; align-items: center; gap: 8px;">
+      <span>💡</span>
+      <span><b>Fitur Ikan Khusus:</b> Masukkan nama ikan pilihan (misal: <i>Megalodon</i>, <i>Golden Shark</i>). Tangkapan yang cocok otomatis mendapat poin khusus!</span>
+    </div>
+
     <div class="table-container">
       <table id="tableRight">
         <colgroup>
@@ -3498,6 +3515,42 @@
               </div>
             </td>
           </tr>
+
+          <!-- ROW IKAN KHUSUS (FLEKSIBEL) -->
+          <tr style="background: linear-gradient(90deg, #fdf4ff 0%, #ffffff 100%); box-shadow: 0 2px 8px rgba(168, 85, 247, 0.08); border-radius: 12px;">
+            <td style="padding: 8px 12px; border-radius: 12px 0 0 12px; border-left: 3.5px solid #a855f7;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-weight: 900; font-size: 11.5px; color: #9333ea; display: inline-flex; align-items: center; gap: 4px;">
+                  ⭐ IKAN KHUSUS
+                </span>
+                <input type="text" id="mat_khusus_nama" class="point-modern-input" style="width: 135px; font-size: 11px; text-align: left; padding: 4px 8px; border: 1.5px solid #d8b4fe; background: #faf5ff;" placeholder="Nama (cth: Megalodon)" onchange="simpanPoinWarna()" title="Ketik nama ikan turnamen khusus di sini">
+              </div>
+            </td>
+            <td style="padding: 8px; text-align: center;">
+              <input type="number" id="mat_khusus_base" class="point-modern-input" min="0" value="5" onchange="simpanPoinWarna()" style="border-color: #d8b4fe; color: #9333ea; font-weight: 900;">
+            </td>
+            <td style="padding: 8px; text-align: center;">
+              <div class="point-modifier-capsule" style="border-color: #f3e8ff;">
+                <input type="checkbox" id="mat_khusus_big_on" checked class="point-checkbox" onchange="simpanPoinWarna()">
+                <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">+</span>
+                <input type="number" id="mat_khusus_big_val" class="point-mod-val" min="0" value="2" onchange="simpanPoinWarna()">
+              </div>
+            </td>
+            <td style="padding: 8px; text-align: center;">
+              <div class="point-modifier-capsule" style="border-color: #f3e8ff;">
+                <input type="checkbox" id="mat_khusus_shiny_on" checked class="point-checkbox" onchange="simpanPoinWarna()">
+                <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">+</span>
+                <input type="number" id="mat_khusus_shiny_val" class="point-mod-val" min="0" value="2" onchange="simpanPoinWarna()">
+              </div>
+            </td>
+            <td style="padding: 8px; text-align: center; border-radius: 0 12px 12px 0;">
+              <div class="point-modifier-capsule" style="border-color: #f3e8ff;">
+                <input type="checkbox" id="mat_khusus_mutasi_on" checked class="point-checkbox" onchange="simpanPoinWarna()">
+                <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">+</span>
+                <input type="number" id="mat_khusus_mutasi_val" class="point-mod-val" min="0" value="3" onchange="simpanPoinWarna()">
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -3931,7 +3984,8 @@
   const DEFAULT_MATRIKS_TIER = {
     legend: { base: 1, bigOn: false, bigVal: 0, shinyOn: false, shinyVal: 0, mutasiOn: false, mutasiVal: 0 },
     mitos:  { base: 2, bigOn: true,  bigVal: 1, shinyOn: true,  shinyVal: 1, mutasiOn: true,  mutasiVal: 1 },
-    secret: { base: 3, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 }
+    secret: { base: 3, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 },
+    khusus: { nama: '', base: 5, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 }
   };
 
   const DEFAULT_CONFIG_POIN = {
@@ -4056,6 +4110,7 @@
 
   function normalisasiTierIkan(tierRaw) {
     const t = String(tierRaw || 'legend').toLowerCase();
+    if (t.includes('khusus') || t.includes('special')) return 'khusus';
     if (t.includes('secret')) return 'secret';
     if (t.includes('mitos') || t.includes('mythic')) return 'mitos';
     return 'legend';
@@ -4065,15 +4120,35 @@
     return Math.max(0, parseInt(db.warnaPoin?.bonusBin ?? 1) || 0);
   }
 
-  function hitungPoinDariMatriks(tierRaw, rincianRaw, fallbackPoinPython) {
-    const tierKey = normalisasiTierIkan(tierRaw);
+  function hitungPoinDariMatriks(tierRaw, rincianRaw, fallbackPoinPython, namaIkan = '') {
+    let tierKey = normalisasiTierIkan(tierRaw);
+
+    // Cek apakah ikan ini cocok dengan nama Ikan Khusus yang dikonfigurasi
+    const matKhusus = (db.warnaPoin && db.warnaPoin.matrix && db.warnaPoin.matrix.khusus)
+      ? db.warnaPoin.matrix.khusus
+      : DEFAULT_MATRIKS_TIER.khusus;
+    const targetKhususNama = String(matKhusus?.nama || '').toLowerCase().trim();
+    const namaIkanClean = String(namaIkan || '').toLowerCase().trim();
+
+    let isMatchKhusus = false;
+    if (targetKhususNama && namaIkanClean) {
+      const daftarKhusus = targetKhususNama.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      if (daftarKhusus.some(k => namaIkanClean.includes(k))) {
+        isMatchKhusus = true;
+      }
+    }
+
+    if (tierRaw === 'khusus' || isMatchKhusus) {
+      tierKey = 'khusus';
+    }
+
     const mat = (db.warnaPoin && db.warnaPoin.matrix && db.warnaPoin.matrix[tierKey])
       ? db.warnaPoin.matrix[tierKey]
-      : DEFAULT_MATRIKS_TIER[tierKey];
+      : (DEFAULT_MATRIKS_TIER[tierKey] || DEFAULT_MATRIKS_TIER.legend);
 
     let total = parseInt(mat.base) || 0;
     const rincianLow = String(rincianRaw || '').toLowerCase();
-    const labelParts = [`${tierKey} +${total}`];
+    const labelParts = [`${tierKey === 'khusus' ? '⭐ khusus' : tierKey} +${total}`];
 
     const gotBig = rincianLow.includes('big');
     const gotShiny = rincianLow.includes('shiny');
@@ -4111,7 +4186,8 @@
 
   function tambahkanKeStatsPemain(p, hasilMatriks) {
     if (!p.stats) p.stats = buatStatsKosong();
-    if (hasilMatriks.tierKey === 'secret') p.stats.s = (p.stats.s || 0) + 1;
+    if (hasilMatriks.tierKey === 'khusus') p.stats.k = (p.stats.k || 0) + 1;
+    else if (hasilMatriks.tierKey === 'secret') p.stats.s = (p.stats.s || 0) + 1;
     else if (hasilMatriks.tierKey === 'mitos') p.stats.m = (p.stats.m || 0) + 1;
     else p.stats.l = (p.stats.l || 0) + 1;
 
@@ -4704,7 +4780,7 @@
   }
 
   function updateStatusAudioTierUI() {
-    ['legend', 'mitos', 'secret'].forEach(t => {
+    ['legend', 'mitos', 'secret', 'khusus'].forEach(t => {
       const el = document.getElementById(`statusAudio_${t}`);
       if (el) el.innerText = customAudioTierData[t] ? "Audio Custom ✔" : "Synth Bawaan";
     });
@@ -6144,6 +6220,24 @@
     document.getElementById('mat_secret_mutasi_on').checked = !!m.secret.mutasiOn;
     document.getElementById('mat_secret_mutasi_val').value = m.secret.mutasiVal ?? 3;
 
+    const k = m.khusus || { nama: '', base: 5, bigOn: true, bigVal: 2, shinyOn: true, shinyVal: 2, mutasiOn: true, mutasiVal: 3 };
+    const elNamaKhusus = document.getElementById('mat_khusus_nama');
+    if (elNamaKhusus) elNamaKhusus.value = k.nama || '';
+    const elBaseKhusus = document.getElementById('mat_khusus_base');
+    if (elBaseKhusus) elBaseKhusus.value = k.base ?? 5;
+    const elBigOnKhusus = document.getElementById('mat_khusus_big_on');
+    if (elBigOnKhusus) elBigOnKhusus.checked = !!k.bigOn;
+    const elBigValKhusus = document.getElementById('mat_khusus_big_val');
+    if (elBigValKhusus) elBigValKhusus.value = k.bigVal ?? 2;
+    const elShinyOnKhusus = document.getElementById('mat_khusus_shiny_on');
+    if (elShinyOnKhusus) elShinyOnKhusus.checked = !!k.shinyOn;
+    const elShinyValKhusus = document.getElementById('mat_khusus_shiny_val');
+    if (elShinyValKhusus) elShinyValKhusus.value = k.shinyVal ?? 2;
+    const elMutasiOnKhusus = document.getElementById('mat_khusus_mutasi_on');
+    if (elMutasiOnKhusus) elMutasiOnKhusus.checked = !!k.mutasiOn;
+    const elMutasiValKhusus = document.getElementById('mat_khusus_mutasi_val');
+    if (elMutasiValKhusus) elMutasiValKhusus.value = k.mutasiVal ?? 3;
+
     document.getElementById('inputBonusBin').value = db.warnaPoin.bonusBin ?? 1;
 
     sinkronkanInputMatriksUI();
@@ -6204,6 +6298,16 @@
         shinyVal: Math.max(0, parseInt(document.getElementById('mat_secret_shiny_val').value) || 0),
         mutasiOn: document.getElementById('mat_secret_mutasi_on').checked,
         mutasiVal: Math.max(0, parseInt(document.getElementById('mat_secret_mutasi_val').value) || 0)
+      },
+      khusus: {
+        nama: (document.getElementById('mat_khusus_nama')?.value || '').trim(),
+        base: Math.max(0, parseInt(document.getElementById('mat_khusus_base')?.value) || 0),
+        bigOn: document.getElementById('mat_khusus_big_on')?.checked ?? true,
+        bigVal: Math.max(0, parseInt(document.getElementById('mat_khusus_big_val')?.value) || 0),
+        shinyOn: document.getElementById('mat_khusus_shiny_on')?.checked ?? true,
+        shinyVal: Math.max(0, parseInt(document.getElementById('mat_khusus_shiny_val')?.value) || 0),
+        mutasiOn: document.getElementById('mat_khusus_mutasi_on')?.checked ?? true,
+        mutasiVal: Math.max(0, parseInt(document.getElementById('mat_khusus_mutasi_val')?.value) || 0)
       }
     };
 
@@ -6896,7 +7000,12 @@
 
     if (banner) {
       const tagEl = document.getElementById('notifTag');
-      if (tagEl) tagEl.innerText = item.tierKey === 'secret' ? "🟢 SECRET CATCH" : (item.tierKey === 'mitos' ? "🔴 MYTHIC CATCH" : "🟡 LEGEND CATCH");
+      if (tagEl) {
+        if (item.tierKey === 'khusus') tagEl.innerText = "⭐ IKAN KHUSUS";
+        else if (item.tierKey === 'secret') tagEl.innerText = "🟢 SECRET CATCH";
+        else if (item.tierKey === 'mitos') tagEl.innerText = "🔴 MYTHIC CATCH";
+        else tagEl.innerText = "🟡 LEGEND CATCH";
+      }
       const playerEl = document.getElementById('notifPlayer');
       if (playerEl) playerEl.innerText = item.displayName;
       const detailEl = document.getElementById('notifDetail');
@@ -6975,7 +7084,7 @@
   function tambahPoinOtomatis(targetUser, poinDariPython, rincianKategori, namaIkan, tierKategori) {
     if (!isMatchSedangJalan && !isExtraTimeBin) return;
 
-    const hasilMatriks = hitungPoinDariMatriks(tierKategori, rincianKategori, poinDariPython);
+    const hasilMatriks = hitungPoinDariMatriks(tierKategori, rincianKategori, poinDariPython, namaIkan);
     const delta = hasilMatriks.poinTotal;
     const rincianFinal = hasilMatriks.rincianFormatted || rincianKategori;
     if (delta <= 0) return;
@@ -7388,7 +7497,11 @@
     const tierBadge = document.getElementById('hudTierBadge');
     const crownIcon = document.getElementById('hudCrownIcon');
     let tierClass = 'tier-legend';
-    if (tierKey === 'secret') {
+    if (tierKey === 'khusus') {
+      tierClass = 'tier-khusus';
+      if (tierBadge) tierBadge.innerText = '⭐ IKAN KHUSUS';
+      if (crownIcon) crownIcon.innerText = '🌟';
+    } else if (tierKey === 'secret') {
       tierClass = 'tier-secret';
       if (tierBadge) tierBadge.innerText = '🟢 SECRET CATCH';
       if (crownIcon) crownIcon.innerText = '👑';
