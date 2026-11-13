@@ -3,6 +3,12 @@
   "name": "auto-skor",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/catch", "destination": "/api/catch.js" },
+    { "source": "/api/catch", "destination": "/api/catch.js" },
+    { "source": "/weather", "destination": "/api/weather.js" },
+    { "source": "/api/weather", "destination": "/api/weather.js" },
+    { "source": "/player-event", "destination": "/api/player-event.js" },
+    { "source": "/api/player-event", "destination": "/api/player-event.js" },
     { "source": "/api/cari-roblox", "destination": "/api/cari-roblox.js" },
     { "source": "/api/roblox-3d-model", "destination": "/api/roblox-3d-model.js" }
   ]
