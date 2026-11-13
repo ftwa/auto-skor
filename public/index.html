@@ -3324,7 +3324,7 @@
       <!-- SISI KIRI: 3D AVATAR SHOWCASE STAGE -->
       <div class="edit-kursi-avatar-stage">
         <div class="edit-avatar-glow-ring">
-          <img id="modalAvatarPreview" src="" alt="Avatar Roblox" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
+          <img id="modalAvatarPreview" src="" alt="Avatar Roblox" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Roblox&background=0284c7&color=fff&rounded=true';" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
           <div id="modalAvatarEmpty" class="edit-avatar-placeholder">
             <span>👤</span>
           </div>
@@ -5796,8 +5796,7 @@
       if (pData.robloxUser && (!pData.avatar3d || pData.avatar3d.includes('AvatarHeadshot') || pData.avatar3d.includes('ui-avatars'))) {
         const u = pData.robloxUser.replace(/^@+/, '').trim();
         if (u && !u.toLowerCase().startsWith('host') && !u.includes('...')) {
-          fetch(`http://127.0.0.1:5000/cari-roblox?username=${encodeURIComponent(u)}`)
-            .then(res => res.json())
+          fetchCariRoblox(u)
             .then(data => {
               if (data && data.sukses && data.avatar3dUrl) {
                 pData.avatar3d = data.avatar3dUrl;
@@ -6044,22 +6043,169 @@
     document.getElementById('inputUserRoblox').focus();
   }
 
+  
+  // ============================================================================
+  // PENCARIAN AKUN ROBLOX RESMI (MULTI-TIER BULLETPROOF SEARCH)
+  // Mendukung: Username, Display Name, User ID numerik, pembersihan prefix '@'
+  // Jalur koneksi: 1) Same-Origin API (/api/cari-roblox) -> 2) Local Python (5000) -> 3) CDN Proxy Roproxy
+  // ============================================================================
+  async function fetchCariRoblox(rawInput) {
+    const cleanUser = String(rawInput || '').trim().replace(/^@+/, '').trim();
+    if (!cleanUser) return null;
+
+    // 1. Coba endpoint internal / same-origin (/api/cari-roblox & /cari-roblox)
+    const sameOriginEndpoints = ['/api/cari-roblox', '/cari-roblox'];
+    for (const ep of sameOriginEndpoints) {
+      try {
+        const r = await fetch(`${ep}?username=${encodeURIComponent(cleanUser)}`, {
+          signal: AbortSignal.timeout(3500)
+        });
+        if (r.ok) {
+          const d = await r.json();
+          if (d && (d.sukses || d.success) && (d.userName || d.username || d.displayName)) {
+            const finalUname = d.userName || d.username || cleanUser;
+            const finalDname = d.displayName || finalUname;
+            return {
+              sukses: true,
+              userId: d.userId || 0,
+              userName: finalUname,
+              username: finalUname,
+              displayName: finalDname,
+              avatarUrl: d.avatarUrl || '',
+              avatar3dUrl: d.avatar3dUrl || d.avatarUrl || ''
+            };
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 2. Jika bukan protokol HTTPS dan port bukan 5000, coba http://127.0.0.1:5000
+    if (window.location.protocol !== 'https:' && window.location.port !== '5000') {
+      try {
+        const rLocal = await fetch(`http://127.0.0.1:5000/cari-roblox?username=${encodeURIComponent(cleanUser)}`, {
+          signal: AbortSignal.timeout(2500)
+        });
+        if (rLocal.ok) {
+          const d = await rLocal.json();
+          if (d && (d.sukses || d.success) && (d.userName || d.username || d.displayName)) {
+            const finalUname = d.userName || d.username || cleanUser;
+            const finalDname = d.displayName || finalUname;
+            return {
+              sukses: true,
+              userId: d.userId || 0,
+              userName: finalUname,
+              username: finalUname,
+              displayName: finalDname,
+              avatarUrl: d.avatarUrl || '',
+              avatar3dUrl: d.avatar3dUrl || d.avatarUrl || ''
+            };
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 3. Fallback langsung dari browser via Roproxy (CORS Header didukung penuh)
+    try {
+      let uid = null;
+      let uName = cleanUser;
+      let dName = cleanUser;
+
+      // Cek apakah input berupa User ID numerik
+      if (/^\d+$/.test(cleanUser)) {
+        try {
+          const idRes = await fetch(`https://users.roproxy.com/v1/users/${cleanUser}`, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            signal: AbortSignal.timeout(3000)
+          });
+          if (idRes.ok) {
+            const idData = await idRes.json();
+            if (idData && idData.id) {
+              uid = idData.id;
+              uName = idData.name || cleanUser;
+              dName = idData.displayName || uName;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Jika bukan ID atau belum ketemu, cari via usernames/users
+      if (!uid) {
+        const postRes = await fetch('https://users.roproxy.com/v1/usernames/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usernames: [cleanUser], excludeBannedUsers: false }),
+          signal: AbortSignal.timeout(3500)
+        });
+        if (postRes.ok) {
+          const pData = await postRes.json();
+          const item = (pData.data || [])[0];
+          if (item && item.id) {
+            uid = item.id;
+            uName = item.name || cleanUser;
+            dName = item.displayName || item.name || cleanUser;
+          }
+        }
+      }
+
+      if (uid) {
+        let avUrl = '';
+        let av3dUrl = '';
+        try {
+          const tRes = await fetch(`https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${uid}&size=150x150&format=Png&isCircular=true`, {
+            signal: AbortSignal.timeout(2500)
+          });
+          if (tRes.ok) {
+            const tData = await tRes.json();
+            if (tData.data && tData.data[0]) avUrl = tData.data[0].imageUrl;
+          }
+        } catch (_) {}
+
+        try {
+          const t3dRes = await fetch(`https://thumbnails.roproxy.com/v1/users/avatar?userIds=${uid}&size=720x720&format=Png&isCircular=false`, {
+            signal: AbortSignal.timeout(2500)
+          });
+          if (t3dRes.ok) {
+            const t3dData = await t3dRes.json();
+            if (t3dData.data && t3dData.data[0]) av3dUrl = t3dData.data[0].imageUrl;
+          }
+        } catch (_) {}
+
+        return {
+          sukses: true,
+          userId: uid,
+          userName: uName,
+          username: uName,
+          displayName: dName,
+          avatarUrl: avUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(dName)}&background=0284c7&color=fff&rounded=true&bold=true`,
+          avatar3dUrl: av3dUrl || avUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(dName)}&background=0284c7&color=fff&rounded=true&bold=true`
+        };
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+
   function pakaiUsernameIniLangsung() {
-    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '');
+    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '').trim();
     if (!rawInput) return;
     const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(rawInput)}&background=0284c7&color=fff&rounded=true&bold=true`;
-    
+
     document.getElementById('inputDisplayName').value = rawInput;
+    const inTik = document.getElementById('inputNamaTikTok');
+    if (inTik && !inTik.value.trim()) inTik.value = rawInput;
     document.getElementById('inputAvatarUrl').value = fallbackAvatar;
+    const in3d = document.getElementById('inputAvatar3dUrl');
+    if (in3d) in3d.value = fallbackAvatar;
     updateModalPreviewUI(rawInput, rawInput, fallbackAvatar);
     const statusEl = document.getElementById('modalSearchStatus');
     statusEl.style.color = '#f59e0b';
-    statusEl.innerText = 'Menggunakan akun ini langsung ✔';
+    statusEl.innerText = `Menggunakan akun "@${rawInput}" langsung ✔`;
     document.getElementById('btnPakaiManual').style.display = 'none';
   }
 
   async function mulaiCariAkunRobloxAuto() {
-    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '');
+    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '').trim();
     const statusEl = document.getElementById('modalSearchStatus');
     const btnCari = document.getElementById('btnCariRoblox');
     const btnPakai = document.getElementById('btnPakaiManual');
@@ -6072,73 +6218,42 @@
     }
 
     btnCari.disabled = true;
-    btnCari.innerText = 'Mencari...';
+    btnCari.innerText = '🔍 Mencari...';
     if (btnPakai) btnPakai.style.display = 'none';
     statusEl.style.color = 'var(--primary)';
-    statusEl.innerText = 'Menghubungkan ke server & mengecek status...';
+    statusEl.innerText = 'Menghubungkan ke server Roblox...';
 
-    let hasil = null;
-
-    try {
-      const localRes = await fetch(`http://127.0.0.1:5000/cari-roblox?username=${encodeURIComponent(rawInput)}`, {
-        signal: AbortSignal.timeout(4000)
-      });
-      if (localRes.ok) {
-        const d = await localRes.json();
-        if (d && d.sukses) hasil = d;
-      }
-    } catch (_) {}
-
-    if (!hasil) {
-      try {
-        const postRes = await fetch('https://users.roproxy.com/v1/usernames/users', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usernames: [rawInput], excludeBannedUsers: false }),
-          signal: AbortSignal.timeout(3000)
-        });
-        if (postRes.ok) {
-          const pData = await postRes.json();
-          const item = (pData.data || [])[0];
-          if (item && item.id) {
-            let avUrl = '';
-            try {
-              const tRes = await fetch(`https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${item.id}&size=150x150&format=Png&isCircular=true`, {
-                signal: AbortSignal.timeout(2500)
-              });
-              if (tRes.ok) {
-                const tData = await tRes.json();
-                if (tData.data && tData.data[0]) avUrl = tData.data[0].imageUrl;
-              }
-            } catch (_) {}
-
-            hasil = {
-              sukses: true,
-              userId: item.id,
-              userName: item.name || rawInput,
-              displayName: item.displayName || item.name || rawInput,
-              avatarUrl: avUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.displayName || rawInput)}&background=0284c7&color=fff&rounded=true&bold=true`
-            };
-          }
-        }
-      } catch (_) {}
-    }
+    const hasil = await fetchCariRoblox(rawInput);
 
     btnCari.disabled = false;
-    btnCari.innerText = 'Cari';
+    btnCari.innerText = '🔍 Cari';
 
-    if (hasil && hasil.userName) {
-      document.getElementById('inputUserRoblox').value = hasil.userName;
-      document.getElementById('inputDisplayName').value = hasil.displayName;
-      document.getElementById('inputAvatarUrl').value = hasil.avatarUrl;
+    const uname = hasil ? (hasil.userName || hasil.username) : null;
+    if (hasil && uname) {
+      const dname = hasil.displayName || uname;
+      const avUrl = hasil.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(dname)}&background=0284c7&color=fff&rounded=true&bold=true`;
+      const av3d = hasil.avatar3dUrl || avUrl;
+      const uid = hasil.userId || '';
+
+      document.getElementById('inputUserRoblox').value = uname;
+      document.getElementById('inputDisplayName').value = dname;
+
+      // Otomatis isi Nama TikTok jika masih kosong
+      const inTik = document.getElementById('inputNamaTikTok');
+      if (inTik && !inTik.value.trim()) {
+        inTik.value = dname;
+      }
+
+      document.getElementById('inputAvatarUrl').value = avUrl;
       const elUid = document.getElementById('inputUserId');
-      if (elUid) elUid.value = hasil.userId || '';
+      if (elUid) elUid.value = uid;
       const el3d = document.getElementById('inputAvatar3dUrl');
-      if (el3d) el3d.value = hasil.avatar3dUrl || hasil.avatarUrl || '';
-      updateModalPreviewUI(hasil.userName, hasil.displayName, hasil.avatar3dUrl || hasil.avatarUrl);
+      if (el3d) el3d.value = av3d;
+
+      updateModalPreviewUI(uname, dname, av3d || avUrl);
 
       statusEl.style.color = '#4ade80';
-      statusEl.innerText = 'Akun Roblox ditemukan! ✔';
+      statusEl.innerText = `Akun ditemukan: @${uname} (${dname}) ✔`;
       if (btnPakai) btnPakai.style.display = 'none';
 
       const btnAdd = document.getElementById('btnAutoAddFriend');
@@ -6151,7 +6266,7 @@
       }
     } else {
       statusEl.style.color = '#ef4444';
-      statusEl.innerText = 'Akun tidak ditemukan. Gunakan nama ini langsung.';
+      statusEl.innerText = 'Akun tidak ditemukan di Roblox. Ingin pakai nama ini?';
       if (btnPakai) {
         btnPakai.style.display = 'inline-block';
         btnPakai.innerText = `Gunakan "${rawInput}"`;
@@ -6545,7 +6660,7 @@
 
   const avatarRobloxCache = {};
   const avatar3dRobloxCache = {};
-  async function perbaruiAvatarRobloxAsync(playerIdx, username) {
+    async function perbaruiAvatarRobloxAsync(playerIdx, username) {
     if (!username) return;
     const uClean = String(username).replace(/^@+/, '').trim();
     if (!uClean || uClean.toLowerCase().startsWith('host') || uClean.includes('...') || uClean === '-') return;
@@ -6567,25 +6682,20 @@
     }
 
     try {
-      const res = await fetch(`http://127.0.0.1:5000/cari-roblox?username=${encodeURIComponent(uClean)}`, {
-        signal: AbortSignal.timeout(6000)
-      });
-      if (res.ok) {
-        const d = await res.json();
-        if (d && d.sukses) {
-          if (d.avatarUrl && !d.avatarUrl.includes('ui-avatars.com')) avatarRobloxCache[uClean] = d.avatarUrl;
-          if (d.avatar3dUrl) avatar3dRobloxCache[uClean.toLowerCase()] = d.avatar3dUrl;
-          const s = getSesi();
-          const targetP = (playerIdx === 19) ? s.host : s.players[playerIdx];
-          if (targetP) {
-            if (d.avatarUrl) targetP.avatar = d.avatarUrl;
-            if (d.avatar3dUrl) targetP.avatar3d = d.avatar3dUrl;
-            if (d.userId) targetP.userId = d.userId;
-            if (d.displayName && !targetP.nick) targetP.nick = d.displayName;
-            simpanDB();
-            renderHeroPodium();
-            renderIsiTabel();
-          }
+      const d = await fetchCariRoblox(uClean);
+      if (d && d.sukses) {
+        if (d.avatarUrl && !d.avatarUrl.includes('ui-avatars.com')) avatarRobloxCache[uClean] = d.avatarUrl;
+        if (d.avatar3dUrl) avatar3dRobloxCache[uClean.toLowerCase()] = d.avatar3dUrl;
+        const s = getSesi();
+        const targetP = (playerIdx === 19) ? s.host : s.players[playerIdx];
+        if (targetP) {
+          if (d.avatarUrl) targetP.avatar = d.avatarUrl;
+          if (d.avatar3dUrl) targetP.avatar3d = d.avatar3dUrl;
+          if (d.userId) targetP.userId = d.userId;
+          if (d.displayName && !targetP.nick) targetP.nick = d.displayName;
+          simpanDB();
+          renderHeroPodium();
+          renderIsiTabel();
         }
       }
     } catch (_) {}
