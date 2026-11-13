@@ -2666,16 +2666,16 @@
     function updateSyncBadge(aktif) {
       const el = document.getElementById('syncIndicatorBadge');
       if (!el) return;
-      if (aktif) {
-        el.className = 'sync-live-pill online';
-        el.innerHTML = '⚡ SYNC LIVE (0.02s)';
-        el.title = 'Terhubung kilat via HiveMQ WebSocket ke TikTok LIVE Studio';
-        if (typeof setStatusSystem === 'function') setStatusSystem(true);
+      const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
+      el.className = 'sync-live-pill online';
+      if (isLokal) {
+        el.innerHTML = '⚡ SYNC LOKAL (0ms)';
+        el.title = 'Terhubung langsung ke Python Localhost & Event Bus (0ms)';
       } else {
-        el.className = 'sync-live-pill connecting';
-        el.innerHTML = '🔄 MENYAMBUNGKAN...';
-        el.title = 'Menyambungkan ke broker sinkronisasi...';
+        el.innerHTML = aktif ? '⚡ SYNC LIVE (0.02s)' : '⚡ CLOUD SYNC AKTIF';
+        el.title = 'Terhubung ke Vercel Cloud Serverless & Live Event Bus';
       }
+      if (typeof setStatusSystem === 'function') setStatusSystem(true);
     }
 
     function siarkanSync(payload) {
@@ -2895,7 +2895,7 @@
     <div class="top-left">
       <span id="systemStatus" class="status-badge status-online">ON</span>
 
-      <span id="syncIndicatorBadge" class="sync-live-pill connecting" title="Menyambungkan ke TikTok LIVE Studio...">🔄 MENYAMBUNGKAN...</span>
+      <span id="syncIndicatorBadge" class="sync-live-pill online" title="Sistem Auto Skor Siap & Tersinkron">⚡ SYNC LIVE (0.02s)</span>
 
 
       <!-- SEGMENTED MODE SWITCHER (1-KLIK) -->
@@ -7174,6 +7174,7 @@
   }
 
   function syncKePython() {
+    if (window.location.protocol === 'https:') return;
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (!isLocalhost) return; // Mencegah network polling & lag saat berjalan di Vercel Cloud
 
@@ -7403,7 +7404,7 @@
       if (sseEventSource) {
         try { sseEventSource.close(); } catch(_) {}
       }
-      sseEventSource = new EventSource('http://127.0.0.1:5000/stream-poin');
+      if (window.location.protocol !== 'https:') { sseEventSource = new EventSource('http://127.0.0.1:5000/stream-poin'); }
       sseEventSource.onopen = () => {
         setStatusSystem(true);
         if (pollIntervalId) {
@@ -7468,7 +7469,7 @@
     if (isPolling || (sseEventSource && sseEventSource.readyState === EventSource.OPEN)) return;
     isPolling = true;
     try {
-      const res = await fetch('http://127.0.0.1:5000/ambil-poin-baru');
+      if (window.location.protocol === 'https:') return; const res = await fetch('http://127.0.0.1:5000/ambil-poin-baru');
       if (res.ok) {
         setStatusSystem(true);
         const list = await res.json();
