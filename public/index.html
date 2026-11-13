@@ -2723,7 +2723,11 @@
       } else if (msg.type === 'SYNC_FULL_STATE') {
         if (msg.db) {
           db = msg.db;
-          try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
+          try { try {
+      localStorage.setItem(DB_KEY, JSON.stringify(db));
+    } catch (errQuota) {
+      console.warn('[LocalStorage] Quota guard:', errQuota);
+    } } catch(_) {}
           if (typeof renderIsiTabel === 'function') renderIsiTabel();
           if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
         }
@@ -2929,6 +2933,7 @@
       <div class="dropdown dropdown-right" id="dropdownTest">
         <button class="btn-test-trigger" onclick="toggleDropdownTest(event)">TEST ▾</button>
         <div class="dropdown-content">
+          <button onclick="tesMunculkanNotifBg('khusus')">Tes Notif ⭐ Ikan Khusus</button>
           <button onclick="tesMunculkanNotifBg('legend')">Tes Notif 🟡 Legend</button>
           <button onclick="tesMunculkanNotifBg('mitos')">Tes Notif 🔴 Mitos</button>
           <button onclick="tesMunculkanNotifBg('secret')">Tes Notif 🟢 Secret</button>
@@ -4754,7 +4759,8 @@
       const freqMap = {
         legend: [587.33, 739.99, 880.00],
         mitos: [659.25, 783.99, 1046.50],
-        secret: [783.99, 987.77, 1318.51, 1567.98]
+        secret: [783.99, 987.77, 1318.51, 1567.98],
+        khusus: [880.00, 1108.73, 1318.51, 1760.00]
       };
       const freqs = freqMap[tierKey] || [523.25, 659.25, 783.99];
       let now = ctx.currentTime;
@@ -4869,21 +4875,32 @@
     document.getElementById('modalNotifSuara').style.display = 'none';
   }
 
-  function tesMunculkanNotifBg(tierTes = 'mitos') {
+  function tesMunculkanNotifBg(tierTes = 'khusus') {
     tutupSemuaDropdown();
     const tierKey = normalisasiTierIkan(tierTes);
 
-    let deltaVal = 2;
-    let rincianStr = "legend +1, rare +1";
-    let namaIkanTes = "Ikan Golden Trout";
-    if (tierKey === 'secret') {
+    let deltaVal = 5;
+    let rincianStr = "ikan khusus +5";
+    let namaIkanTes = "Megalodon";
+
+    if (tierKey === 'khusus') {
+      const matK = db.warnaPoin?.matrix?.khusus || DEFAULT_MATRIKS_TIER.khusus;
+      const basePts = matK?.base ?? 5;
+      rincianStr = `ikan khusus +${basePts}, shiny +2`;
+      deltaVal = basePts + 2;
+      namaIkanTes = matK?.nama || "Megalodon Khusus";
+    } else if (tierKey === 'secret') {
       rincianStr = "secret +3, mutasi +3";
       deltaVal = 6;
-      namaIkanTes = "Megalodon Ancient";
+      namaIkanTes = "Void Leviathan";
     } else if (tierKey === 'mitos') {
       rincianStr = "mitos +2, shiny +2";
       deltaVal = 4;
       namaIkanTes = "Kraken Phantom";
+    } else {
+      rincianStr = "legend +1, rare +1";
+      deltaVal = 2;
+      namaIkanTes = "Ikan Golden Trout";
     }
 
     tampilkanDynamicPill("Eatan Sanno", rincianStr, deltaVal, tierKey, '', namaIkanTes);
