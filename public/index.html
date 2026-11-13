@@ -4,129 +4,6 @@
   <meta charset="UTF-8">
 
   <script>
-
-  /* ========================================================
-     DUAL REAL-TIME SYNC ENGINE (TIKTOK LIVE STUDIO & VERCEL)
-     ======================================================== */
-  const SYNC_BUS_NAME = 'auto_skor_stream_bus';
-  const CLOUD_SYNC_TOPIC = 'galatama_auto_skor_live_bus_v1';
-  const LOCAL_SENDER_ID = 'client_' + Math.random().toString(36).substring(2, 9);
-
-  let syncChannel = null;
-  let cloudEventSource = null;
-
-  try {
-    if (typeof BroadcastChannel !== 'undefined') {
-      syncChannel = new BroadcastChannel(SYNC_BUS_NAME);
-      syncChannel.onmessage = (event) => {
-        if (event && event.data && event.data._sender !== LOCAL_SENDER_ID) {
-          tanganiPesanSync(event.data);
-        }
-      };
-    }
-  } catch (err) {
-    console.warn('BroadcastChannel error:', err);
-  }
-
-  function inisialisasiCloudSync() {
-    try {
-      if (typeof EventSource !== 'undefined') {
-        cloudEventSource = new EventSource(`https://ntfy.sh/${CLOUD_SYNC_TOPIC}/sse?since=5m`);
-        cloudEventSource.onmessage = async (event) => {
-          try {
-            if (event && event.data) {
-              const parsed = JSON.parse(event.data);
-              if (parsed) {
-                let payload = null;
-                if (parsed.attachment && parsed.attachment.url) {
-                  try {
-                    const res = await fetch(parsed.attachment.url);
-                    payload = await res.json();
-                  } catch (_) {}
-                } else if (parsed.message) {
-                  try {
-                    payload = JSON.parse(parsed.message);
-                  } catch (_) {}
-                }
-                if (payload && payload._sender !== LOCAL_SENDER_ID) {
-                  tanganiPesanSync(payload);
-                }
-              }
-            }
-          } catch (_) {}
-        };
-      }
-    } catch (e) {
-      console.warn('Cloud sync error:', e);
-    }
-  }
-  inisialisasiCloudSync();
-
-  function kirimPesanSync(tipe, payload = {}) {
-    const dataPesan = {
-      tipe: tipe,
-      _sender: LOCAL_SENDER_ID,
-      timestamp: Date.now(),
-      ...payload
-    };
-
-    // 1. BroadcastChannel (0ms sync lokal di PC yang sama)
-    if (syncChannel) {
-      try { syncChannel.postMessage(dataPesan); } catch (_) {}
-    }
-
-    // 2. ntfy.sh Cloud Bus (sinkronisasi internet antar-perangkat)
-    try {
-      fetch(`https://ntfy.sh/${CLOUD_SYNC_TOPIC}`, {
-        method: 'POST',
-        body: JSON.stringify(dataPesan),
-        headers: { 'Title': 'Auto Skor Realtime Sync' }
-      }).catch(() => {});
-    } catch (_) {}
-  }
-
-  function tanganiPesanSync(pesan) {
-    if (!pesan || !pesan.tipe) return;
-
-    if (pesan.tipe === 'SYNC_ALL' || pesan.tipe === 'SYNC_DB') {
-      if (pesan.db && Array.isArray(pesan.db)) {
-        db = pesan.db;
-        simpanKeLocalStorage();
-        if (typeof renderTabel === 'function') renderTabel();
-        if (typeof perbaruiPodiumTop3 === 'function') perbaruiPodiumTop3();
-      }
-    } else if (pesan.tipe === 'SYNC_POIN') {
-      if (typeof pesan.index === 'number' && typeof pesan.poin === 'number') {
-        if (db[pesan.index]) {
-          db[pesan.index].poin = pesan.poin;
-          simpanKeLocalStorage();
-          if (typeof renderTabel === 'function') renderTabel();
-          if (typeof perbaruiPodiumTop3 === 'function') perbaruiPodiumTop3();
-        }
-      }
-    } else if (pesan.tipe === 'SYNC_TIMER') {
-      if (typeof pesan.sisaWaktuDetik === 'number') {
-        sisaWaktuDetik = pesan.sisaWaktuDetik;
-        timerSedangBerjalan = !!pesan.timerSedangBerjalan;
-        if (typeof updateTampilanTimer === 'function') updateTampilanTimer();
-      }
-    } else if (pesan.tipe === 'SYNC_NOTIF') {
-      if (typeof tampilkanBannerNotif === 'function') {
-        tampilkanBannerNotif(pesan.tier, pesan.detail, pesan.player, pesan.pts, false);
-      }
-    } else if (pesan.tipe === 'SYNC_WINNER') {
-      if (pesan.buka) {
-        if (typeof tampilkanLayarPemenang === 'function') tampilkanLayarPemenang();
-      } else {
-        if (typeof tutupLayarPemenang === 'function') tutupLayarPemenang();
-      }
-    } else if (pesan.tipe === 'SYNC_TAB') {
-      if (pesan.mode && typeof setModeTampilanDirect === 'function') {
-        setModeTampilanDirect(pesan.mode, false);
-      }
-    }
-  }
-
     // Deteksi awal mode overlay instan agar CSS transparan aktif sebelum render halaman (anti-flicker)
     (function() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -137,16 +14,16 @@
         document.documentElement.classList.add('mode-podium');
       } else if (['notif', 'toast', 'alert'].includes(raw)) {
         document.documentElement.classList.add('mode-notif');
-      } else if (['timer', 'waktu'].includes(raw)) {
-        document.documentElement.classList.add('mode-timer');
       } else {
         document.documentElement.classList.add('mode-admin');
       }
     })();
   </script>
+  <!-- Paho MQTT WebSocket Client for Instant Cloud Sync (<25ms) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auto Skor Esports & TikTok LIVE Studio Overlay</title>
+  <title>Auto Skor Esports - TikTok LIVE Studio & OBS Overlay</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Outfit:wght@400;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
@@ -2519,11 +2396,14 @@
       padding: 0 !important;
       margin: 0 !important;
       overflow: hidden !important;
+      width: 100vw !important;
+      height: 100vh !important;
       scrollbar-width: none !important;
     }
     html.mode-overlay::-webkit-scrollbar, html.mode-overlay body::-webkit-scrollbar {
       display: none !important;
     }
+    /* Sembunyikan elemen kontrol admin & tombol host di overlay */
     html.mode-overlay .top-bar,
     html.mode-overlay .modal-overlay,
     html.mode-overlay .log-panel,
@@ -2538,19 +2418,22 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      padding: 8px 12px !important;
+      padding: 6px 12px !important;
       margin: 0 auto !important;
       max-width: 100% !important;
+      box-sizing: border-box !important;
     }
     html.mode-overlay .cell-click-popup,
-    html.mode-overlay .btn-pt-ctrl,
     html.mode-overlay .score-val,
-    html.mode-overlay .podium-hero-card {
+    html.mode-overlay .podium-hero-card,
+    html.mode-overlay .podium-player-name,
+    html.mode-overlay .m4-hud-capsule {
       pointer-events: none !important;
       cursor: default !important;
     }
     html.mode-overlay .stadium-timer-display {
       cursor: default !important;
+      pointer-events: none !important;
     }
 
     /* 2. Mode Podium Winner Saja (?view=podium) */
@@ -2571,7 +2454,7 @@
     html.mode-podium .modal-overlay,
     html.mode-podium .quick-point-popover,
     html.mode-podium .color-picker-mini,
-    html.mode-podium .notif-banner-toast {
+    html.mode-podium #notifDynamicPill {
       display: none !important;
     }
 
@@ -2590,14 +2473,300 @@
     html.mode-notif .container,
     html.mode-notif .modal-overlay,
     html.mode-notif .quick-point-popover,
-    html.mode-notif #layarPemenang3D {
+    html.mode-notif #winnerOverlay {
       display: none !important;
+    }
+
+    /* Indikator Sinkronisasi Real-Time */
+    .sync-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      transition: all 0.2s ease;
+    }
+    .sync-live-pill.online {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1.5px solid #a7f3d0;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    .sync-live-pill.online::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulseGreen 1.5s infinite;
+    }
+    .sync-live-pill.connecting {
+      background: #fffbeb;
+      color: #d97706;
+      border: 1.5px solid #fde68a;
     }
 
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <script src="/three.min.js"></script>
-  <script src="/OBJLoader.js"></script>
+  <script src="three.min.js"></script>
+  <script src="OBJLoader.js"></script>
+
+  <script>
+    /* =========================================================
+       ENGINE SINKRONISASI KILAT: HIVEMQ SECURE WSS + BROADCASTCHANNEL
+       Kecepatan respon < 25ms, realtime tanpa refresh ke TikTok LIVE Studio
+       ========================================================= */
+    const MQTT_BROKER = 'broker.hivemq.com';
+    const MQTT_PORT = 8884;
+    const MQTT_PATH = '/mqtt';
+    const MQTT_TOPIC = 'galatama_auto_skor_live_stream_v1';
+    const SYNC_BUS_NAME = 'auto_skor_stream_bus';
+    const LOCAL_SENDER_ID = 'cl_' + Math.random().toString(36).substring(2, 9);
+
+    let syncChannel = null;
+    let mqttClient = null;
+    let isMqttConnected = false;
+
+    // 1. BroadcastChannel (0ms sync antar tab di browser/PC yang sama)
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        syncChannel = new BroadcastChannel(SYNC_BUS_NAME);
+        syncChannel.onmessage = (e) => {
+          if (e && e.data && e.data._sender !== LOCAL_SENDER_ID) {
+            tanganiPesanSync(e.data);
+          }
+        };
+      }
+    } catch (err) {
+      console.warn('BroadcastChannel:', err);
+    }
+
+    // 2. Storage Event (fallback)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'auto_skor_event_bus' && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          if (payload && payload._sender !== LOCAL_SENDER_ID) {
+            tanganiPesanSync(payload);
+          }
+        } catch (_) {}
+      }
+    });
+
+    // 3. HiveMQ Secure WebSocket WSS
+    function inisialisasiMQTT() {
+      if (typeof Paho === 'undefined' || !Paho.MQTT) {
+        setTimeout(inisialisasiMQTT, 250);
+        return;
+      }
+      try {
+        const clientId = 'cl_' + Math.random().toString(36).substring(2, 10);
+        mqttClient = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, MQTT_PATH, clientId);
+        mqttClient.onConnectionLost = (resp) => {
+          isMqttConnected = false;
+          updateSyncBadge(false);
+          if (resp.errorCode !== 0) {
+            setTimeout(konekMQTT, 2000);
+          }
+        };
+        mqttClient.onMessageArrived = (msg) => {
+          try {
+            const payload = JSON.parse(msg.payloadString);
+            if (payload && payload._sender !== LOCAL_SENDER_ID) {
+              tanganiPesanSync(payload);
+            }
+          } catch (_) {}
+        };
+        konekMQTT();
+      } catch (e) {
+        setTimeout(inisialisasiMQTT, 2000);
+      }
+    }
+
+    function konekMQTT() {
+      if (!mqttClient) return;
+      mqttClient.connect({
+        useSSL: true,
+        timeout: 6,
+        keepAliveInterval: 30,
+        cleanSession: true,
+        onSuccess: () => {
+          isMqttConnected = true;
+          updateSyncBadge(true);
+          mqttClient.subscribe(MQTT_TOPIC, { qos: 0 });
+
+          // Jika halaman dibuka sebagai Overlay di TikTok LIVE Studio, segera minta state terbaru
+          if (document.documentElement.classList.contains('mode-overlay') || 
+              document.documentElement.classList.contains('mode-podium') ||
+              document.documentElement.classList.contains('mode-notif')) {
+            siarkanSync({ type: 'REQUEST_STATE' });
+          }
+        },
+        onFailure: (err) => {
+          isMqttConnected = false;
+          updateSyncBadge(false);
+          setTimeout(konekMQTT, 3000);
+        }
+      });
+    }
+
+    function updateSyncBadge(aktif) {
+      const el = document.getElementById('syncIndicatorBadge');
+      if (!el) return;
+      if (aktif) {
+        el.className = 'sync-live-pill online';
+        el.innerHTML = '⚡ SYNC LIVE (0.02s)';
+        el.title = 'Terhubung kilat via HiveMQ WebSocket ke TikTok LIVE Studio';
+      } else {
+        el.className = 'sync-live-pill connecting';
+        el.innerHTML = '🔄 MENYAMBUNGKAN...';
+        el.title = 'Menyambungkan ke broker sinkronisasi...';
+      }
+    }
+
+    function siarkanSync(payload) {
+      const data = { ...payload, _sender: LOCAL_SENDER_ID, _ts: Date.now() };
+      
+      // Kirim via HiveMQ WSS
+      if (mqttClient && isMqttConnected) {
+        try {
+          const m = new Paho.MQTT.Message(JSON.stringify(data));
+          m.destinationName = MQTT_TOPIC;
+          m.qos = 0;
+          mqttClient.send(m);
+        } catch (_) {}
+      }
+
+      // Kirim via BroadcastChannel
+      if (syncChannel) {
+        try { syncChannel.postMessage(data); } catch (_) {}
+      }
+
+      // Simpan di LocalStorage
+      try {
+        localStorage.setItem('auto_skor_event_bus', JSON.stringify(data));
+      } catch (_) {}
+    }
+
+    function tanganiPesanSync(msg) {
+      if (!msg || !msg.type) return;
+
+      if (msg.type === 'REQUEST_STATE') {
+        // Hanya mode master/admin yang merespon dan membagikan state penuh
+        if (!document.documentElement.classList.contains('mode-overlay') && 
+            !document.documentElement.classList.contains('mode-podium') &&
+            !document.documentElement.classList.contains('mode-notif')) {
+          siarkanSync({
+            type: 'SYNC_FULL_STATE',
+            db: db,
+            timerSec: (typeof timerSec !== 'undefined') ? timerSec : 900,
+            isMatchSedangJalan: !!isMatchSedangJalan,
+            isMatchDijeda: !!isMatchDijeda,
+            modeTampilan: (typeof modeTampilanAktif !== 'undefined') ? modeTampilanAktif : 'MATCH',
+            winnerActive: document.getElementById('winnerOverlay')?.classList.contains('active')
+          });
+        }
+      } else if (msg.type === 'SYNC_FULL_STATE') {
+        if (msg.db) {
+          db = msg.db;
+          try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
+          if (typeof renderIsiTabel === 'function') renderIsiTabel();
+          if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
+        }
+        if (typeof msg.timerSec === 'number') {
+          timerSec = msg.timerSec;
+          isMatchSedangJalan = !!msg.isMatchSedangJalan;
+          isMatchDijeda = !!msg.isMatchDijeda;
+          if (typeof updateTampilanTimerDisplay === 'function') updateTampilanTimerDisplay();
+          if (isMatchSedangJalan && !timerInterval) {
+            timerInterval = setInterval(updateTimer, 1000);
+          } else if (!isMatchSedangJalan && timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+          }
+        }
+        if (msg.modeTampilan && typeof setModeTampilanDirect === 'function') {
+          setModeTampilanDirect(msg.modeTampilan, false);
+        }
+        if (msg.winnerActive) {
+          if (typeof tampilkanLayarPemenang === 'function') tampilkanLayarPemenang(false, false);
+        }
+      } else if (msg.type === 'SYNC_DB') {
+        if (msg.db) {
+          db = msg.db;
+          try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
+          if (typeof renderIsiTabel === 'function') renderIsiTabel();
+          if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
+        }
+      } else if (msg.type === 'SYNC_SCORE') {
+        if (db && db.sessions && db.sessions[msg.ses] && db.sessions[msg.ses].players && db.sessions[msg.ses].players[msg.chair]) {
+          db.sessions[msg.ses].players[msg.chair].poin = msg.poin;
+          try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
+          if (typeof renderIsiTabel === 'function') renderIsiTabel();
+          if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
+        }
+      } else if (msg.type === 'SYNC_TIMER') {
+        if (typeof msg.timerSec === 'number') {
+          timerSec = msg.timerSec;
+          isMatchSedangJalan = !!msg.isMatchSedangJalan;
+          isMatchDijeda = !!msg.isMatchDijeda;
+          if (typeof updateTampilanTimerDisplay === 'function') updateTampilanTimerDisplay();
+          if (isMatchSedangJalan && !timerInterval) {
+            timerInterval = setInterval(updateTimer, 1000);
+          } else if (!isMatchSedangJalan && timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+          }
+        }
+      } else if (msg.type === 'SYNC_MODE') {
+        if (msg.mode && typeof setModeTampilanDirect === 'function') {
+          setModeTampilanDirect(msg.mode, false);
+        }
+      } else if (msg.type === 'OPEN_WINNER') {
+        if (typeof tampilkanLayarPemenang === 'function') {
+          tampilkanLayarPemenang(msg.isTestMode, false);
+        }
+      } else if (msg.type === 'CLOSE_WINNER') {
+        if (typeof tutupLayarPemenang === 'function') {
+          tutupLayarPemenang(false);
+        }
+      } else if (msg.type === 'SYNC_NOTIF') {
+        if (typeof tampilkanDynamicPill === 'function') {
+          tampilkanDynamicPill(msg.player, msg.rincian, msg.delta, msg.tier, msg.avatar, msg.fishName, false);
+        }
+      }
+    }
+
+    // Auto-fit responsive helper untuk TikTok Studio Browser Source
+    function periksaDanAutoFitOverlay() {
+      if (!document.documentElement.classList.contains('mode-overlay')) return;
+      const container = document.querySelector('.container');
+      if (!container) return;
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+      const contentW = 1180;
+      const contentH = container.scrollHeight || 760;
+      const scaleX = winW / contentW;
+      const scaleY = winH / contentH;
+      const scale = Math.min(scaleX, scaleY, 1.0);
+      if (scale < 0.98) {
+        container.style.transform = `scale(${scale})`;
+        container.style.transformOrigin = 'top center';
+        container.style.width = `${contentW}px`;
+      } else {
+        container.style.transform = 'none';
+      }
+    }
+    window.addEventListener('resize', periksaDanAutoFitOverlay);
+    window.addEventListener('DOMContentLoaded', () => {
+      inisialisasiMQTT();
+      setTimeout(periksaDanAutoFitOverlay, 300);
+    });
+  </script>
+
 </head>
 <body class="view-setup">
 
@@ -2653,6 +2822,9 @@
   <div class="top-bar">
     <div class="top-left">
       <span id="systemStatus" class="status-badge status-offline">OFF</span>
+
+      <span id="syncIndicatorBadge" class="sync-live-pill connecting" title="Menyambungkan ke TikTok LIVE Studio...">🔄 MENYAMBUNGKAN...</span>
+
 
       <!-- SEGMENTED MODE SWITCHER (1-KLIK) -->
       <div class="mode-switcher-group" id="modeSwitcherGroup">
@@ -4210,7 +4382,8 @@
     setModeTampilan(mode);
   }
 
-  function setModeTampilan(mode) {
+  function setModeTampilan(mode, broadcast = true) {
+    if (broadcast) siarkanSync({ type: "SYNC_MODE", mode: mode });
     const btnPrep = document.getElementById('btnModePrepare');
     const btnMatch = document.getElementById('btnModeMatch');
     const btnMember = document.getElementById('btnModeMember');
@@ -4274,6 +4447,7 @@
   }
 
   function eksekusiTombolUtama() {
+    setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 50);
     dapatkanAudioContext();
     if (isCountdownRunning) return;
 
@@ -4321,6 +4495,7 @@
   }
 
   function eksekusiBerhentiMatch() {
+    setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 50);
     if (timerInterval) {
       clearInterval(timerInterval);
       timerInterval = null;
@@ -4334,8 +4509,8 @@
     tambahLogAktivitas('SISTEM', 'Pertandingan DIHENTIKAN', 'system');
   }
 
-  function toggleTimerManual() {
-      setTimeout(() => kirimPesanSync("SYNC_TIMER", { sisaWaktuDetik, timerSedangBerjalan }), 50);
+  function toggleTimerManual(broadcast = true) {
+    if (broadcast) setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 40);
     dapatkanAudioContext();
     if (isCountdownRunning) return;
     if (timerInterval) {
@@ -4679,6 +4854,7 @@
   function simpanDB() {
     localStorage.setItem(DB_KEY, JSON.stringify(db));
     syncKePython();
+    siarkanSync({ type: "SYNC_DB", db: db });
   }
 
   function getSesi() {
@@ -4951,6 +5127,7 @@
     document.getElementById('modalConfirmResetTimer').style.display = 'none';
   }
   function eksekusiResetTimerPasti() {
+    setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 50);
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     timerSec = (db.durasiMenitDefault || 15) * 60; 
     isMatchSedangJalan = false;
@@ -5487,7 +5664,8 @@
     }
   }
 
-  function tampilkanLayarPemenang(isTestMode = false) {
+  function tampilkanLayarPemenang(isTestMode = false, broadcast = true) {
+    if (broadcast) siarkanSync({ type: "OPEN_WINNER", isTestMode });
     const s = getSesi();
     // 1. Ambil seluruh pemain yang terdaftar di sesi aktif (punya robloxUser, user, nick, atau poin > 0)
     const registered = (s && s.players) ? s.players.filter(p => Boolean(
@@ -5543,7 +5721,7 @@
   }
 
   function tutupLayarPemenang(broadcast = true) {
-    if (broadcast) kirimPesanSync("SYNC_WINNER", { buka: false });
+    if (broadcast) siarkanSync({ type: "CLOSE_WINNER" });
     document.getElementById('winnerOverlay').classList.remove('active');
     if (fireworksInterval) { clearInterval(fireworksInterval); fireworksInterval = null; }
     // Hentikan loop animasi 3D dancer untuk menghemat daya GPU
@@ -6003,6 +6181,7 @@
     p.poin = Math.max(0, awal + delta);
     simpanDB(); 
     urutkanOtomatis();
+    siarkanSync({ type: "SYNC_SCORE", ses: db.current, chair: index, poin: p.poin });
     tambahLogAktivitas(p.nick || p.user || `Kursi ${index+1}`, `Poin manual ${delta > 0 ? '+'+delta : delta}`, 'system', awal, p.poin, Math.abs(delta));
   }
 
@@ -6027,6 +6206,7 @@
     p.poin = Math.max(0, val);
     simpanDB(); 
     urutkanOtomatis();
+    siarkanSync({ type: "SYNC_SCORE", ses: db.current, chair: index, poin: p.poin });
     tambahLogAktivitas(p.nick || p.user || `Kursi ${index+1}`, `Poin disetel ke ${p.poin}`, 'system', awal, p.poin, Math.abs(p.poin - awal));
   }
 
