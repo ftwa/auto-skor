@@ -2659,6 +2659,7 @@
         el.className = 'sync-live-pill online';
         el.innerHTML = '⚡ SYNC LIVE (0.02s)';
         el.title = 'Terhubung kilat via HiveMQ WebSocket ke TikTok LIVE Studio';
+        if (typeof setStatusSystem === 'function') setStatusSystem(true);
       } else {
         el.className = 'sync-live-pill connecting';
         el.innerHTML = '🔄 MENYAMBUNGKAN...';
@@ -2877,7 +2878,7 @@
   <!-- BAR ATAS -->
   <div class="top-bar">
     <div class="top-left">
-      <span id="systemStatus" class="status-badge status-offline">OFF</span>
+      <span id="systemStatus" class="status-badge status-online">ON</span>
 
       <span id="syncIndicatorBadge" class="sync-live-pill connecting" title="Menyambungkan ke TikTok LIVE Studio...">🔄 MENYAMBUNGKAN...</span>
 
