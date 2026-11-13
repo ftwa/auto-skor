@@ -19,8 +19,8 @@
       }
     })();
   </script>
-  <!-- Paho MQTT WebSocket Client for Instant Cloud Sync (<25ms) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+  <!-- Paho MQTT WebSocket Client (Offline First / Local Asset) -->
+  <script src="mqttws31.min.js" defer></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auto Skor Esports - TikTok LIVE Studio & OBS Overlay</title>
@@ -1155,6 +1155,201 @@
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff; border: none; padding: 8px 16px; border-radius: 999px;
       font-weight: 800; cursor: pointer;
+    }
+
+    /* LINK STREAM MODAL & BUTTON TIKTOK STUDIO / OBS */
+    .btn-stream-link {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      color: #ffffff !important;
+      border: 1.5px solid #38bdf8 !important;
+      font-weight: 800 !important;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3) !important;
+    }
+    .btn-stream-link:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45) !important;
+      transform: translateY(-1px);
+    }
+    .modal-stream-card {
+      max-width: 660px !important;
+      width: 94% !important;
+      max-height: 90vh !important;
+      overflow-y: auto !important;
+      padding: 22px 26px !important;
+    }
+    .modal-stream-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0f2fe;
+    }
+    .modal-stream-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stream-source-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 12px;
+    }
+    .btn-source-tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      font-weight: 800;
+      font-size: 12px;
+      color: #64748b;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-source-tab.active {
+      background: #ffffff;
+      color: #0284c7;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .stream-link-row {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      transition: all 0.15s ease;
+    }
+    .stream-link-row:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.12);
+    }
+    .stream-link-row.highlight-gold {
+      background: linear-gradient(180deg, #fffbeb 0%, #f8fafc 100%);
+      border-color: #fde68a;
+    }
+    .stream-link-row.highlight-gold:hover {
+      border-color: #f59e0b;
+      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.15);
+    }
+    .stream-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .stream-row-title {
+      font-weight: 900;
+      font-size: 14px;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stream-badge-res {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #0284c7;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .stream-desc-txt {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+    .stream-input-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .stream-url-field {
+      flex: 1;
+      min-width: 0;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      color: #0f172a;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      padding: 7px 10px;
+      outline: none;
+      user-select: all;
+    }
+    .stream-url-field:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .btn-copy-stream {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-copy-stream:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+    .btn-preview-stream {
+      background: #e0f2fe;
+      color: #0284c7;
+      border: 1.5px solid #bae6fd;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 900;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .btn-preview-stream:hover {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+    .stream-guide-box {
+      background: #f0fdf4;
+      border: 1.5px dashed #86efac;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 10px;
+      margin-bottom: 12px;
+    }
+    .stream-guide-heading {
+      font-size: 12px;
+      font-weight: 900;
+      color: #166534;
+      margin-bottom: 4px;
+    }
+    .stream-guide-steps {
+      font-size: 11.5px;
+      color: #14532d;
+      padding-left: 18px;
+      line-height: 1.5;
+    }
+    .stream-guide-steps b {
+      color: #0f172a;
     }
 
     /* VIEW MODES */
@@ -2607,9 +2802,14 @@
     });
 
     // 3. HiveMQ Secure WebSocket WSS
+    let pahoRetryCount = 0;
     function inisialisasiMQTT() {
+      const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
       if (typeof Paho === 'undefined' || !Paho.MQTT) {
-        setTimeout(inisialisasiMQTT, 250);
+        pahoRetryCount++;
+        if (pahoRetryCount < 8) {
+          setTimeout(inisialisasiMQTT, 300);
+        }
         return;
       }
       try {
@@ -2617,9 +2817,11 @@
         mqttClient = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, MQTT_PATH, clientId);
         mqttClient.onConnectionLost = (resp) => {
           isMqttConnected = false;
-          updateSyncBadge(false);
-          if (resp.errorCode !== 0) {
-            setTimeout(konekMQTT, 2000);
+          if (!isLokal) {
+            updateSyncBadge(false);
+            if (resp.errorCode !== 0) {
+              setTimeout(konekMQTT, 3000);
+            }
           }
         };
         mqttClient.onMessageArrived = (msg) => {
@@ -2632,15 +2834,16 @@
         };
         konekMQTT();
       } catch (e) {
-        setTimeout(inisialisasiMQTT, 2000);
+        if (!isLokal) setTimeout(inisialisasiMQTT, 3000);
       }
     }
 
     function konekMQTT() {
       if (!mqttClient) return;
+      const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
       mqttClient.connect({
         useSSL: true,
-        timeout: 6,
+        timeout: 4,
         keepAliveInterval: 30,
         cleanSession: true,
         onSuccess: () => {
@@ -2657,8 +2860,10 @@
         },
         onFailure: (err) => {
           isMqttConnected = false;
-          updateSyncBadge(false);
-          setTimeout(konekMQTT, 3000);
+          if (!isLokal) {
+            updateSyncBadge(false);
+            setTimeout(konekMQTT, 5000);
+          }
         }
       });
     }
@@ -2700,6 +2905,18 @@
       try {
         localStorage.setItem('auto_skor_event_bus', JSON.stringify(data));
       } catch (_) {}
+
+      // Siarkan ke Live Cloud Bus (ntfy.sh) agar link Web di TikTok LIVE Studio otomatis menerima update real-time
+      if (data.type && !data._fromCloud) {
+        try {
+          fetch('https://ntfy.sh/galatama_auto_skor_live_bus_v1', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Priority': 'urgent' },
+            body: JSON.stringify(data),
+            mode: 'no-cors'
+          }).catch(() => {});
+        } catch (_) {}
+      }
     }
 
     function tanganiPesanSync(msg) {
@@ -2860,16 +3077,16 @@
       <span class="hud-catch-time" id="hudCatchTime">BARU SAJA</span>
     </div>
     <div class="hud-player-row">
-      <span class="hud-player-name" id="dynamicPillName">Eatan Sanno</span>
+      <span class="hud-player-name" id="dynamicPillName">Peserta</span>
       <span class="hud-dot-sep">•</span>
-      <span class="hud-fish-name" id="dynamicPillFish">Megalodon Ancient</span>
+      <span class="hud-fish-name" id="dynamicPillFish">Tangkapan Ikan</span>
     </div>
-    <div class="hud-desc-sub" id="dynamicPillDesc">secret +3, mutasi +3</div>
+    <div class="hud-desc-sub" id="dynamicPillDesc">-</div>
   </div>
 
   <!-- Right Glowing Points Stadium Badge -->
   <div class="hud-score-stadium">
-    <span class="hud-pts-val" id="dynamicPillPts">+6 PTS</span>
+    <span class="hud-pts-val" id="dynamicPillPts">+0 PTS</span>
   </div>
 
   <button class="hud-btn-close" onclick="klikDynamicPill(); event.stopPropagation();" title="Tutup">✕</button>
@@ -2895,7 +3112,7 @@
     <div class="top-left">
       <span id="systemStatus" class="status-badge status-online">ON</span>
 
-      <span id="syncIndicatorBadge" class="sync-live-pill online" title="Sistem Auto Skor Siap & Tersinkron">⚡ SYNC LIVE (0.02s)</span>
+      <span id="syncIndicatorBadge" class="sync-live-pill online" title="Sistem Auto Skor Siap & Tersinkron">⚡ SYNC LOKAL (0ms)</span>
 
 
       <!-- SEGMENTED MODE SWITCHER (1-KLIK) -->
@@ -2907,6 +3124,7 @@
 
       <button class="btn-action-soft" onclick="bukaModalPoin()">Point</button>
       <button class="btn-action-soft" onclick="bukaModalNotifSuara(event)">Settings</button>
+      <button class="btn-action-soft btn-stream-link" onclick="bukaModalLinkStream()" title="Salin Link Modular untuk TikTok LIVE Studio & OBS">🔗 Link Stream</button>
       
       <div class="dropdown" id="dropdownReset">
         <button class="btn-action-soft" onclick="toggleDropdownReset(event)">RESET ▾</button>
@@ -2919,17 +3137,6 @@
     </div>
 
     <div class="top-right">
-      <button id="btnStopMatch" class="btn-stop-trigger" onclick="eksekusiBerhentiMatch()" title="Hentikan pertandingan">
-        BERHENTI
-      </button>
-      <button id="btnTriggerUtama" class="btn-main-trigger" onclick="eksekusiTombolUtama()">
-        MULAI
-      </button>
-      <div class="dropdown" id="dropdownSesi">
-        <button class="btn-action-soft" onclick="toggleDropdownSesi(event)">SESI ▾</button>
-        <div class="dropdown-content" id="daftarSesiDropdown"></div>
-      </div>
-
       <div class="dropdown dropdown-right" id="dropdownTest">
         <button class="btn-test-trigger" onclick="toggleDropdownTest(event)">TEST ▾</button>
         <div class="dropdown-content">
@@ -2941,6 +3148,17 @@
           <button onclick="putarSuaraPengingatWaktu('1m'); tutupSemuaDropdown();">Tes Suara 🚨 Sisa 1 Menit</button>
           <button onclick="tesLayarPemenang()">🏆 Tes Winner</button>
         </div>
+      </div>
+
+      <button id="btnStopMatch" class="btn-stop-trigger" onclick="eksekusiBerhentiMatch()" title="Hentikan pertandingan">
+        BERHENTI
+      </button>
+      <button id="btnTriggerUtama" class="btn-main-trigger" onclick="eksekusiTombolUtama()">
+        MULAI
+      </button>
+      <div class="dropdown" id="dropdownSesi">
+        <button class="btn-action-soft" onclick="toggleDropdownSesi(event)">SESI ▾</button>
+        <div class="dropdown-content" id="daftarSesiDropdown"></div>
       </div>
     </div>
   </div>
@@ -3625,6 +3843,15 @@
       <button type="button" class="btn-close-modal" onclick="batalPengaturanNotifSuara()" style="width: 30px; height: 30px; border-radius: 50%; background: #f1f5f9; color: #64748b; font-weight: 800; border: none; cursor: pointer;">✕</button>
     </div>
 
+    <!-- BANNER SHORTCUT LINK TIKTOK STUDIO -->
+    <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%); border: 1.5px solid #38bdf8; border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+      <div>
+        <div style="font-weight: 900; font-size: 13px; color: #0369a1;">🔗 Link TikTok LIVE Studio & OBS</div>
+        <div style="font-size: 11px; color: #475569;">Buka link overlay transparan untuk siaran streaming</div>
+      </div>
+      <button type="button" onclick="batalPengaturanNotifSuara(); bukaModalLinkStream();" style="background: #0284c7; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-weight: 800; font-size: 11.5px; cursor: pointer;">Buka Link ↗</button>
+    </div>
+
     <!-- Hidden compatibility elements for existing JS -->
     <input type="file" id="modalNotifBgInput" accept="image/*" style="display:none;" onchange="unggahBackgroundNotifPreview(event)">
 
@@ -3834,6 +4061,97 @@
   </div>
 </div>
 
+  <!-- MODAL LINK TIKTOK LIVE STUDIO & OBS -->
+  <div class="modal-overlay" id="modalLinkStream" onclick="tutupModalDiLuar(event)">
+    <div class="modal-card modal-stream-card">
+      <div class="modal-stream-header">
+        <div class="modal-stream-title">
+          <span>🔗 Link TikTok Studio & OBS</span>
+        </div>
+        <button class="btn-close-hud" style="background:#e0f2fe; border:none; color:#0284c7; font-size:16px; font-weight:900; width:30px; height:30px; border-radius:50%; cursor:pointer;" onclick="tutupModalLinkStream()" title="Tutup (Esc)">✕</button>
+      </div>
+
+      <p class="stream-desc-txt" style="margin-bottom:12px;">
+        Gunakan tautan di bawah ini sebagai <b>Tautan Web (Browser Source)</b> di <b>TikTok LIVE Studio</b> atau <b>OBS Studio</b>. Tampilan berlatar belakang <b>transparan</b> dan tersinkronisasi otomatis saat pertandingan berjalan!
+      </p>
+
+      <!-- NOTICE KHUSUS TIKTOK LIVE STUDIO -->
+      <div style="background:rgba(2,132,199,0.1); border-left:4px solid #0284c7; padding:10px 14px; border-radius:8px; font-size:12.5px; margin-bottom:14px; color:#0369a1; line-height:1.45;">
+        <b>⚠️ PENTING UNTUK TIKTOK LIVE STUDIO:</b> TikTok LIVE Studio memblokir alamat lokal (<code>127.0.0.1</code>). Anda <b>wajib</b> menggunakan tautan <b>☁️ Link Web</b> di bawah ini. Skor dan podium juara akan tersinkron otomatis secara real-time via Cloud Bus ke siaran Anda!
+      </div>
+
+      <!-- SWITCHER SUMBER: WEB CLOUD (TIKTOK STUDIO & OBS) VS LOKAL (OBS) -->
+      <div class="stream-source-tabs">
+        <button type="button" class="btn-source-tab active" id="tabSourceCloud" onclick="gantiTabSumberStream('cloud')">☁️ Link Web (TikTok LIVE Studio & OBS - Wajib)</button>
+        <button type="button" class="btn-source-tab" id="tabSourceLocal" onclick="gantiTabSumberStream('local')">🖥️ Link Host Lokal (OBS Studio Saja)</button>
+      </div>
+
+      <!-- CARD 1: TABEL SKOR -->
+      <div class="stream-link-row">
+        <div class="stream-header-row">
+          <div class="stream-row-title">
+            <span>📊 Overlay Tabel Skor (20 Kursi)</span>
+          </div>
+          <span class="stream-badge-res">1060 × 520 px</span>
+        </div>
+        <div class="stream-desc-txt">Klasemen turnamen live transparan tanpa tombol admin. Otomatis realtime saat poin bertambah.</div>
+        <div class="stream-input-group">
+          <input type="text" readonly id="linkOverlayTabel" class="stream-url-field" onclick="this.select()">
+          <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayTabel', this)">📋 Salin Link</button>
+          <a id="previewOverlayTabel" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
+        </div>
+      </div>
+
+      <!-- CARD 2: PODIUM JUARA -->
+      <div class="stream-link-row highlight-gold">
+        <div class="stream-header-row">
+          <div class="stream-row-title">
+            <span>🏆 Overlay Podium Juara (Hall of Champions)</span>
+          </div>
+          <span class="stream-badge-res">1280 × 720 px</span>
+        </div>
+        <div class="stream-desc-txt">Transparan standby. Otomatis muncul megah dengan avatar Roblox Top 3 & petasan saat juara diumumkan!</div>
+        <div class="stream-input-group">
+          <input type="text" readonly id="linkOverlayPodium" class="stream-url-field" onclick="this.select()">
+          <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayPodium', this)">📋 Salin Link</button>
+          <a id="previewOverlayPodium" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
+        </div>
+      </div>
+
+      <!-- CARD 3: NOTIFIKASI TOAST -->
+      <div class="stream-link-row">
+        <div class="stream-header-row">
+          <div class="stream-row-title">
+            <span>🔔 Overlay Notifikasi Tangkapan (Toast Alert)</span>
+          </div>
+          <span class="stream-badge-res">420 × 260 px</span>
+        </div>
+        <div class="stream-desc-txt">Alert pop-up saat pemain berhasil menangkap ikan turnamen. Cocok dipasang di atas webcam/sudut layar.</div>
+        <div class="stream-input-group">
+          <input type="text" readonly id="linkOverlayNotif" class="stream-url-field" onclick="this.select()">
+          <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayNotif', this)">📋 Salin Link</button>
+          <a id="previewOverlayNotif" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
+        </div>
+      </div>
+
+      <!-- PANDUAN CEPAT PASANG DI TIKTOK STUDIO -->
+      <div class="stream-guide-box">
+        <div class="stream-guide-heading">💡 Langkah Pasang di TikTok LIVE Studio:</div>
+        <ol class="stream-guide-steps">
+          <li>Buka aplikasi <b>TikTok LIVE Studio</b> di PC Anda.</li>
+          <li>Di panel <b>Adegan (Scene)</b> ➔ Klik <b>+ Tambah Sumber</b>.</li>
+          <li>Pilih sumber <b>Tautan Web (Browser Source / URL)</b>.</li>
+          <li>Tempel link yang disalin di atas pada kolom URL, lalu isi ukuran resolusi rekomendasi.</li>
+          <li>Centang transparan / atur ukuran dan geser kotak di layar streaming sesuai selera Anda!</li>
+        </ol>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button class="btn-modal-action" style="padding:8px 24px;" onclick="tutupModalLinkStream()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
 <script>
   const DB_KEY = 'galatama_modern_light_v1';
   const COL_SIZE_KEY = 'galatama_table_col_sizes_v1';
@@ -3999,13 +4317,22 @@
     matrix: JSON.parse(JSON.stringify(DEFAULT_MATRIKS_TIER))
   };
 
-  let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
-    current: 1,
-    total: 1,
-    durasiMenitDefault: 15,
-    warnaPoin: DEFAULT_CONFIG_POIN,
-    sessions: { 1: buatSesiKosong() }
-  };
+  let db = null;
+  try {
+    const rawDb = localStorage.getItem(DB_KEY);
+    if (rawDb) db = JSON.parse(rawDb);
+  } catch(e) {
+    console.warn("Storage DB corrupt, reset fallback:", e);
+  }
+  if (!db || typeof db !== 'object') {
+    db = {
+      current: 1,
+      total: 1,
+      durasiMenitDefault: 15,
+      warnaPoin: DEFAULT_CONFIG_POIN,
+      sessions: { 1: buatSesiKosong() }
+    };
+  }
 
   db.warnaPoin = Object.assign({}, DEFAULT_CONFIG_POIN, db.warnaPoin || {});
   delete db.warnaPoin.ikanSpesial;
@@ -4049,8 +4376,17 @@
     }
   });
 
-  let memberHallDB = JSON.parse(localStorage.getItem(MEMBER_HALL_KEY)) || {};
-  let extraSettings = JSON.parse(localStorage.getItem(EXTRA_PRO_KEY)) || { antiStaticScreen: true };
+  let memberHallDB = {};
+  try {
+    const rawMh = localStorage.getItem(MEMBER_HALL_KEY);
+    if (rawMh) memberHallDB = JSON.parse(rawMh) || {};
+  } catch(_) {}
+
+  let extraSettings = { antiStaticScreen: true };
+  try {
+    const rawEs = localStorage.getItem(EXTRA_PRO_KEY);
+    if (rawEs) extraSettings = JSON.parse(rawEs) || extraSettings;
+  } catch(_) {}
 
   let customAudioTierData = {
     legend: localStorage.getItem(AUDIO_TIER_KEYS.legend) || null,
@@ -4064,8 +4400,17 @@
   };
 
   let customNotifBgData = localStorage.getItem(NOTIF_BG_KEY) || null;
-  let isBetaAutoRegisterAktif = localStorage.getItem(BETA_AUTO_REG_KEY) !== null ? JSON.parse(localStorage.getItem(BETA_AUTO_REG_KEY)) : true;
-  let isLogFolded = JSON.parse(localStorage.getItem(LOG_FOLD_KEY)) || false;
+  let isBetaAutoRegisterAktif = true;
+  try {
+    const rawBeta = localStorage.getItem(BETA_AUTO_REG_KEY);
+    if (rawBeta !== null) isBetaAutoRegisterAktif = Boolean(JSON.parse(rawBeta));
+  } catch(_) {}
+
+  let isLogFolded = false;
+  try {
+    const rawFold = localStorage.getItem(LOG_FOLD_KEY);
+    if (rawFold) isLogFolded = Boolean(JSON.parse(rawFold));
+  } catch(_) {}
 
   let tempPreviewBgData = null;
   let tipeResetPending = null;
@@ -4815,6 +5160,98 @@
     if (modal) modal.style.display = 'flex';
   }
 
+  /* =========================================================
+     FITUR LINK STREAM TIKTOK LIVE STUDIO & OBS STUDIO
+     ========================================================= */
+  let streamLinkMode = 'cloud';
+  function gantiTabSumberStream(mode) {
+    streamLinkMode = mode;
+    const tabLocal = document.getElementById('tabSourceLocal');
+    const tabCloud = document.getElementById('tabSourceCloud');
+    if (mode === 'local') {
+      if (tabLocal) tabLocal.classList.add('active');
+      if (tabCloud) tabCloud.classList.remove('active');
+    } else {
+      if (tabCloud) tabCloud.classList.add('active');
+      if (tabLocal) tabLocal.classList.remove('active');
+    }
+    updateNilaiLinkStream();
+  }
+
+  function updateNilaiLinkStream() {
+    let base = '';
+    if (streamLinkMode === 'local') {
+      base = (window.location.protocol === 'file:') ? 'http://127.0.0.1:5000/' : `${window.location.origin}/`;
+      if (!base.includes('5000')) base = 'http://127.0.0.1:5000/';
+    } else {
+      base = 'https://auto-skor.vercel.app/';
+    }
+
+    const urlTabel = `${base}?view=tabel`;
+    const urlPodium = `${base}?view=podium`;
+    const urlNotif = `${base}?view=notif`;
+
+    const elTabel = document.getElementById('linkOverlayTabel');
+    const elPodium = document.getElementById('linkOverlayPodium');
+    const elNotif = document.getElementById('linkOverlayNotif');
+
+    if (elTabel) {
+      elTabel.value = urlTabel;
+      const prev = document.getElementById('previewOverlayTabel');
+      if (prev) prev.href = urlTabel;
+    }
+    if (elPodium) {
+      elPodium.value = urlPodium;
+      const prev = document.getElementById('previewOverlayPodium');
+      if (prev) prev.href = urlPodium;
+    }
+    if (elNotif) {
+      elNotif.value = urlNotif;
+      const prev = document.getElementById('previewOverlayNotif');
+      if (prev) prev.href = urlNotif;
+    }
+  }
+
+  function bukaModalLinkStream() {
+    tutupSemuaDropdown();
+    // TikTok LIVE Studio membutuhkan tautan publik HTTPS (Web Cloud)
+    gantiTabSumberStream('cloud');
+    const modal = document.getElementById('modalLinkStream');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function tutupModalLinkStream() {
+    const modal = document.getElementById('modalLinkStream');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function salinLinkStream(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.select();
+    input.setSelectionRange(0, 99999);
+
+    const selesaiSalin = () => {
+      const teksAwal = btnEl.innerHTML;
+      btnEl.innerHTML = '✅ Tersalin!';
+      btnEl.style.background = '#059669';
+      setTimeout(() => {
+        btnEl.innerHTML = teksAwal;
+        btnEl.style.background = '#0284c7';
+      }, 2000);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(selesaiSalin).catch(() => {
+        document.execCommand('copy');
+        selesaiSalin();
+      });
+    } else {
+      document.execCommand('copy');
+      selesaiSalin();
+    }
+  }
+
   function updateLivePreview() {
     const box = document.getElementById('livePreviewBanner');
     if (!box) return;
@@ -4892,19 +5329,21 @@
     } else if (tierKey === 'secret') {
       rincianStr = "secret +3, mutasi +3";
       deltaVal = 6;
-      namaIkanTes = "Void Leviathan";
+      namaIkanTes = "Secret Catch";
     } else if (tierKey === 'mitos') {
       rincianStr = "mitos +2, shiny +2";
       deltaVal = 4;
-      namaIkanTes = "Kraken Phantom";
+      namaIkanTes = "Mythic Catch";
     } else {
       rincianStr = "legend +1, rare +1";
       deltaVal = 2;
-      namaIkanTes = "Ikan Golden Trout";
+      namaIkanTes = "Legend Catch";
     }
 
-    tampilkanDynamicPill("Eatan Sanno", rincianStr, deltaVal, tierKey, '', namaIkanTes);
-    tambahLogAktivitas('TEST', `Tes Notif Pill (${tierKey.toUpperCase()}) +${deltaVal} PTS`, tierKey);
+    const s = getSesi();
+    const p1 = s && s.players && s.players[0] && (s.players[0].nick || s.players[0].user || s.players[0].robloxUser);
+    const namaPlayer = p1 || "Peserta 1";
+    tampilkanDynamicPill(namaPlayer, rincianStr, deltaVal, tierKey, '', namaIkanTes);
   }
 
   function putarSuaraPengingatWaktu(jenis = '10m') {
@@ -5056,8 +5495,9 @@
   }
 
   function toggleDropdownTest(e) {
-    e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     const el = document.getElementById('dropdownTest');
+    if (!el) return;
     const wasOpen = el.classList.contains('show');
     tutupSemuaDropdown();
     if (!wasOpen) el.classList.add('show');
@@ -5881,18 +6321,45 @@
     if (broadcast) siarkanSync({ type: "CLOSE_WINNER" });
     document.getElementById('winnerOverlay').classList.remove('active');
     if (fireworksInterval) { clearInterval(fireworksInterval); fireworksInterval = null; }
-    // Hentikan loop animasi 3D dancer untuk menghemat daya GPU
+    const canvas = document.getElementById('fireworksCanvas');
+    if (canvas) {
+      try {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } catch(_) {}
+    }
+    // Hentikan loop animasi 3D dan bersihkan resource WebGL untuk hemat memori
     Object.keys(activeDancers3D).forEach(k => {
-      if (activeDancers3D[k] && activeDancers3D[k].animId) {
-        cancelAnimationFrame(activeDancers3D[k].animId);
+      const dancer = activeDancers3D[k];
+      if (dancer) {
+        if (dancer.animId) cancelAnimationFrame(dancer.animId);
+        if (dancer.renderer) {
+          try {
+            dancer.renderer.dispose();
+            if (dancer.renderer.domElement && dancer.renderer.domElement.parentNode) {
+              dancer.renderer.domElement.parentNode.removeChild(dancer.renderer.domElement);
+            }
+          } catch(_) {}
+        }
+        if (dancer.scene) {
+          try {
+            dancer.scene.traverse(obj => {
+              if (obj.geometry) obj.geometry.dispose();
+              if (obj.material) {
+                if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+                else obj.material.dispose();
+              }
+            });
+          } catch(_) {}
+        }
       }
+      delete activeDancers3D[k];
     });
   }
 
   function tesLayarPemenang() {
     tutupSemuaDropdown();
     tampilkanLayarPemenang(true);
-    tambahLogAktivitas('TEST', 'Tes podium juara 3D Luxury Ceremony', 'system');
   }
 
   function mulaiAnimasiPetasan() {
@@ -6666,6 +7133,7 @@
     if (!uClean || uClean.toLowerCase().startsWith('host') || uClean.includes('...') || uClean === '-') return;
 
     if (avatarRobloxCache[uClean]) {
+      if (avatarRobloxCache[uClean] === 'FAILED') return;
       const s = getSesi();
       const targetP = (playerIdx === 19) ? s.host : s.players[playerIdx];
       if (targetP) {
@@ -6697,25 +7165,31 @@
           renderHeroPodium();
           renderIsiTabel();
         }
+      } else {
+        avatarRobloxCache[uClean] = 'FAILED';
       }
-    } catch (_) {}
+    } catch (_) {
+      avatarRobloxCache[uClean] = 'FAILED';
+    }
   }
 
   function sinkronkanSemuaAvatarRoblox() {
     const s = getSesi();
     if (!s) return;
+    let delay = 100;
     if (s.players) {
       s.players.forEach((p, idx) => {
         const u = p.robloxUser || p.user || p.nick;
         if (u && (!p.avatar || p.avatar.includes('ui-avatars.com') || !p.avatar3d)) {
-          perbaruiAvatarRobloxAsync(idx, u);
+          setTimeout(() => perbaruiAvatarRobloxAsync(idx, u), delay);
+          delay += 250;
         }
       });
     }
     if (s.host) {
       const hu = s.host.robloxUser || s.host.user;
       if (hu && (!s.host.avatar || s.host.avatar.includes('ui-avatars.com') || !s.host.avatar3d)) {
-        perbaruiAvatarRobloxAsync(19, hu);
+        setTimeout(() => perbaruiAvatarRobloxAsync(19, hu), delay);
       }
     }
   }
@@ -6730,8 +7204,9 @@
       return pData.avatar;
     }
     const u = (pData.robloxUser || pData.user || '').replace(/^@+/, '').trim();
-    if (u && typeof avatarRobloxCache !== 'undefined' && avatarRobloxCache[u.toLowerCase()]) {
-      return avatarRobloxCache[u.toLowerCase()];
+    if (u && typeof avatarRobloxCache !== 'undefined') {
+      const cached = avatarRobloxCache[u] || avatarRobloxCache[u.toLowerCase()];
+      if (cached && cached !== 'FAILED') return cached;
     }
     if (pData.userId) {
       return 'https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=' + pData.userId + '&size=150x150&format=Png&isCircular=true';
@@ -7173,22 +7648,25 @@
     }
   }
 
-  function syncKePython() {
+  let lastSyncPayloadHash = '';
+  function syncKePython(force = false) {
     if (window.location.protocol === 'https:') return;
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (!isLocalhost) return; // Mencegah network polling & lag saat berjalan di Vercel Cloud
 
     const s = getSesi();
     const daftarUser = [];
-    s.players.forEach(p => {
-      const ru = (p.robloxUser || '').trim();
-      const rn = (p.nick || '').trim();
-      const tu = (p.user || '').trim();
-      if (ru) daftarUser.push(ru);
-      if (rn && rn !== ru) daftarUser.push(rn);
-      if (tu && tu !== ru && tu !== rn) daftarUser.push(tu);
-    });
-    if (s.host) {
+    if (s && s.players) {
+      s.players.forEach(p => {
+        const ru = (p.robloxUser || '').trim();
+        const rn = (p.nick || '').trim();
+        const tu = (p.user || '').trim();
+        if (ru) daftarUser.push(ru);
+        if (rn && rn !== ru) daftarUser.push(rn);
+        if (tu && tu !== ru && tu !== rn) daftarUser.push(tu);
+      });
+    }
+    if (s && s.host) {
       const hru = (s.host.robloxUser || '').trim();
       const hrn = (s.host.nick || '').trim();
       const htu = (s.host.user || '').trim();
@@ -7197,24 +7675,34 @@
       if (htu && htu !== hru && htu !== hrn) daftarUser.push(htu);
     }
 
+    const payloadObj = {
+      peserta: daftarUser,
+      warnaPoin: db.warnaPoin,
+      autoRegister: isBetaAutoRegisterAktif
+    };
+    const currentHash = JSON.stringify(payloadObj);
+    if (!force && currentHash === lastSyncPayloadHash) {
+      return; // Lewati request jika tidak ada perubahan data
+    }
+
     fetch('http://127.0.0.1:5000/sync-peserta', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        peserta: daftarUser, 
-        warnaPoin: db.warnaPoin, 
-        autoRegister: isBetaAutoRegisterAktif 
-      })
+      body: currentHash
     })
-    .then(res => setStatusSystem(res.ok))
+    .then(res => {
+      if (res.ok) lastSyncPayloadHash = currentHash;
+      setStatusSystem(res.ok);
+    })
     .catch(() => setStatusSystem(false));
   }
 
   function setStatusSystem(online) {
     const el = document.getElementById('systemStatus');
     if (!el) return;
+    const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
     const isCloudActive = typeof cloudEventSource !== 'undefined' && cloudEventSource && cloudEventSource.readyState === EventSource.OPEN;
-    if (online || isCloudActive) { 
+    if (online || isLokal || isCloudActive) { 
       el.className = 'status-badge status-online'; 
       el.innerText = 'ON'; 
     } else { 
@@ -7353,6 +7841,16 @@
           }
           if (!item) return;
 
+          if (item._sender && typeof LOCAL_SENDER_ID !== 'undefined' && item._sender === LOCAL_SENDER_ID) {
+            return; // Hindari echo pesan lokal sendiri
+          }
+
+          // Teruskan juga ke handler state sync (Timer, Mode, Score, Winner, DB)
+          if (typeof tanganiPesanSync === 'function') {
+            item._fromCloud = true;
+            tanganiPesanSync(item);
+          }
+
           // Deduplikasi tangkapan
           const eventId = item.id || `${item.user}_${item.ikan || item.fish}_${item.poin}_${item.timestamp || ''}`;
           if (processedCatchIds.has(eventId)) return;
@@ -7396,82 +7894,42 @@
   }
 
   function inisialisasiSSE() {
-    // 1. Hubungkan ke Cloud Bus Vercel (Sinkronisasi Web Otomatis tanpa Python)
-    inisialisasiCloudSSE();
+    const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
+    
+    // Hubungkan ke Cloud Bus Vercel hanya jika online di cloud
+    if (!isLokal) {
+      inisialisasiCloudSSE();
+    } else {
+      updateSyncBadge(true);
+      setStatusSystem(true);
+    }
 
-    // 2. Hubungkan ke Python localhost bila tersedia
-    try {
-      if (sseEventSource) {
-        try { sseEventSource.close(); } catch(_) {}
-      }
-      if (window.location.protocol !== 'https:') { sseEventSource = new EventSource('http://127.0.0.1:5000/stream-poin'); }
-      sseEventSource.onopen = () => {
-        setStatusSystem(true);
-        if (pollIntervalId) {
-          clearInterval(pollIntervalId);
-          pollIntervalId = null;
-        }
-      };
-      sseEventSource.onmessage = (event) => {
-        try {
-          const item = JSON.parse(event.data);
-          if (!item) return;
+    // Jalankan ultra-fast polling non-blocking di localhost (0ms latency, zero thread lock)
+    if (isLokal && window.location.protocol !== 'https:') {
+      mulaiPollingLokal();
+    }
+  }
 
-          if (item.tipe === 'MODE_CHANGE') {
-            if (item.mode === 'MATCH' && !isMatchSedangJalan) {
-              isMatchSedangJalan = true;
-              isMatchDijeda = false;
-              setModeTampilan('MATCH');
-              perbaruiStatusMatchUI();
-              mulaiIntervalTimer();
-              tambahLogAktivitas('SISTEM', 'MATCH DIMULAI (Sinkronisasi Server)', 'system');
-            } else if (item.mode === 'PAUSED' && isMatchSedangJalan) {
-              isMatchSedangJalan = false;
-              isMatchDijeda = true;
-              perbaruiStatusMatchUI();
-              tambahLogAktivitas('SISTEM', 'MATCH DIJEDA (Sinkronisasi Server)', 'system');
-            } else if (item.mode === 'SETUP') {
-              isMatchSedangJalan = false;
-              isMatchDijeda = false;
-              setModeTampilan('SETUP');
-              perbaruiStatusMatchUI();
-            }
-            return;
-          }
-
-          if (item.user && item.poin !== undefined) {
-            const eventId = `${item.user}_${item.ikan}_${item.poin}`;
-            if (processedCatchIds.has(eventId)) return;
-            processedCatchIds.add(eventId);
-
-            if (!isMatchSedangJalan) {
-              isMatchSedangJalan = true;
-              isMatchDijeda = false;
-              setModeTampilan('MATCH');
-              perbaruiStatusMatchUI();
-              mulaiIntervalTimer();
-            }
-            const poinMasuk = item.poin !== undefined ? item.poin : 1;
-            const rincianStr = item.rincian || 'Tangkapan Ikan';
-            const kategoriStr = item.kategori || 'legend';
-            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan, kategoriStr);
-          }
-        } catch (_) {}
-      };
-      sseEventSource.onerror = () => {
-        // Jika Python localhost tidak berjalan, biarkan Cloud Bus yang menangani
-      };
-    } catch (_) {}
+  let localFastPollInterval = null;
+  function mulaiPollingLokal() {
+    if (localFastPollInterval) clearInterval(localFastPollInterval);
+    pollPoinFallback();
+    localFastPollInterval = setInterval(pollPoinFallback, 400);
   }
 
   let isPolling = false;
   async function pollPoinFallback() {
-    if (isPolling || (sseEventSource && sseEventSource.readyState === EventSource.OPEN)) return;
+    if (isPolling) return;
+    if (window.location.protocol === 'https:') return;
     isPolling = true;
     try {
-      if (window.location.protocol === 'https:') return; const res = await fetch('http://127.0.0.1:5000/ambil-poin-baru');
+      const res = await fetch('http://127.0.0.1:5000/ambil-poin-baru', {
+        headers: { 'Cache-Control': 'no-cache' },
+        signal: AbortSignal.timeout(900)
+      });
       if (res.ok) {
         setStatusSystem(true);
+        updateSyncBadge(true);
         const list = await res.json();
         if (Array.isArray(list) && list.length > 0) {
           if (!isMatchSedangJalan) {
@@ -7482,14 +7940,19 @@
             mulaiIntervalTimer();
           }
           list.forEach(item => {
-            const eventId = `${item.user}_${item.ikan}_${item.poin}`;
+            if (!item) return;
+            const eventId = item.id || `${item.user}_${item.ikan || item.fish}_${item.poin}_${item.timestamp || ''}`;
             if (processedCatchIds.has(eventId)) return;
             processedCatchIds.add(eventId);
+            if (processedCatchIds.size > 200) {
+              const first = processedCatchIds.values().next().value;
+              processedCatchIds.delete(first);
+            }
 
             const poinMasuk = item.poin !== undefined ? item.poin : 1;
             const rincianStr = item.rincian || 'Tangkapan Ikan';
-            const kategoriStr = item.kategori || 'legend';
-            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan, kategoriStr);
+            const kategoriStr = item.kategori || item.tier || 'legend';
+            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan || item.fish, kategoriStr);
           });
         }
       }
@@ -7502,6 +7965,7 @@
   setInterval(syncKePython, 4000);
 
   window.addEventListener('DOMContentLoaded', () => {
+    updateSyncBadge(true);
     sudahCatatMemberSesiIni = Boolean(getSesi().sudahCatatMember);
     muatStatusFoldLog();
     terapkanBackgroundNotif();
@@ -7746,11 +8210,11 @@
     </div>
 
     <!-- Big Bold Points Badge -->
-    <div class="catch-pts-number" id="alertPointsVal">+6 PTS</div>
+    <div class="catch-pts-number" id="alertPointsVal">+0 PTS</div>
 
     <!-- Player Name & Fish Details -->
-    <div class="catch-player-title" id="alertPlayerName">EATAN SANOE</div>
-    <div class="catch-fish-subtitle" id="alertFishDesc">Ikan Secret Megalodon + Golden Mutation</div>
+    <div class="catch-player-title" id="alertPlayerName">-</div>
+    <div class="catch-fish-subtitle" id="alertFishDesc">-</div>
 
     <!-- OK Action Button (Panel 02) -->
     <button class="btn-catch-ok" onclick="tutupBigScreenAlert()">OK</button>
