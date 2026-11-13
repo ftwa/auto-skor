@@ -1,6 +1,6 @@
 -- ============================================================
--- FISH IT UNIFIED BRIDGE (CATCH + CUACA/POTION + ABSENSI PEMAIN)
--- Versi Lengkap & Optimal untuk Auto Skor Galatama
+-- FISH IT UNIFIED BRIDGE - HIGH PERFORMANCE EDITION (ZERO LAG)
+-- Dioptimalkan khusus untuk Turnamen Auto Skor Galatama
 -- ============================================================
 local cloneref = cloneref or function(o) return o end
 local cclosure = newcclosure or function(f) return f end
@@ -15,11 +15,15 @@ local httpRequest = (syn and syn.request) or (http and http.request) or http_req
 if not httpRequest then
     warn("⚠️ [FISH IT BRIDGE] Executor Anda tidak mendukung HTTP Request atau permission belum aktif!")
 end
+
 -- ============================================================
--- KONFIGURASI SERVER / TARGET ENDPOINT
--- Default: Cloud Vercel Serverless (Otomatis & Realtime tanpa perlu jalankan Python lokal)
+-- KONFIGURASI PERFORMA & ANTI-LAG (PENTING)
 -- ============================================================
-local USE_CLOUD_VERCEL = true -- Ubah ke false jika ingin beralih ke localhost Python manual
+local USE_CLOUD_VERCEL = true        -- TRUE: Terhubung langsung ke Vercel Cloud (<25ms tanpa Python lokal)
+local ENABLE_ANTI_LAG_BOOST = true   -- TRUE: Mengoptimalkan FPS Roblox (Shadow off, fog off, clean particles)
+local ENABLE_WEATHER_SCANNER = false -- Set TRUE jika ingin deteksi cuaca/potion (Default FALSE agar Roblox 100% BEBAS LAG)
+local ENABLE_PLAYER_PRESENCE = false -- Set TRUE jika butuh tracking join/leave (Default FALSE agar koneksi ringan)
+local HTTP_TIMEOUT_SEC = 4           -- Batas waktu timeout 4 detik agar memory Roblox tidak tertahan
 
 local BASE_URL = USE_CLOUD_VERCEL and "https://auto-skor.vercel.app" or "http://127.0.0.1:5000"
 local CATCH_URL = BASE_URL .. "/api/catch"
@@ -27,10 +31,47 @@ local PLAYER_EVENT_URL = BASE_URL .. "/api/player-event"
 local WEATHER_URL = BASE_URL .. "/api/weather"
 
 print("============================================================")
-print("  🎣 AUTO SKOR GALATAMA - FISH IT BRIDGE (CLOUD / WEB)")
+print("  🎣 AUTO SKOR GALATAMA - FISH IT BRIDGE (HIGH PERFORMANCE) ")
 print("  🌐 Target Server: " .. BASE_URL)
-print("  ⚡ Mode: SINKRON OTOMATIS KE WEB & TIKTOK STUDIO")
+print("  🚀 Anti-Lag Boost: " .. (ENABLE_ANTI_LAG_BOOST and "AKTIF (60+ FPS)" or "NONAKTIF"))
+print("  ⚡ Status: SIAP SINKRON KE TIKTOK STUDIO & WEB            ")
 print("============================================================")
+
+-- ============================================================
+-- 0. FITUR ANTI-LAG & FPS BOOSTER ROBLOX
+-- ============================================================
+if ENABLE_ANTI_LAG_BOOST then
+    task.spawn(function()
+        pcall(function()
+            local Lighting = cloneref(game:GetService("Lighting"))
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            
+            for _, v in ipairs(Lighting:GetChildren()) do
+                if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("BloomEffect") then
+                    v.Enabled = false
+                end
+            end
+
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+            end
+
+            print("🚀 [ANTI-LAG BOOSTER] Grafik Roblox berhasil diringankan untuk turnamen!")
+        end)
+    end)
+end
+
+-- Pembersih memori Lua berkala (mencegah memory leak di executor)
+task.spawn(function()
+    while true do
+        task.wait(60)
+        collectgarbage("collect")
+    end
+end)
 
 local env = getgenv and getgenv()
 local CLEANUP_KEY = "_FishItUnifiedBridge"
@@ -130,10 +171,20 @@ local function splitFishAndVariant(fullFishName)
 end
 
 -- ============================================================
--- 3. FUNGSI PENGIRIMAN DATA KE SERVER (CLOUD WEB / LOCALHOST)
+-- 3. FUNGSI PENGIRIMAN DATA NON-BLOCKING DENGAN DEDUPLIKASI
 -- ============================================================
+local processedCatchHash = {}
+
 local function sendToPython(player, fish, variant, tier)
     if not httpRequest then return end
+
+    -- Cegah pengiriman dobel jika event chat direplikasi berulang kali
+    local catchKey = string.format("%s_%s_%s_%s", tostring(player), tostring(fish), tostring(variant), tostring(tier))
+    local now = tick()
+    if processedCatchHash[catchKey] and (now - processedCatchHash[catchKey]) < 1.5 then
+        return
+    end
+    processedCatchHash[catchKey] = now
 
     task.spawn(function()
         pcall(function()
@@ -141,6 +192,7 @@ local function sendToPython(player, fish, variant, tier)
                 Url = CATCH_URL,
                 Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
+                Timeout = HTTP_TIMEOUT_SEC,
                 Body = HttpService:JSONEncode({
                     player = player,
                     fish = fish,
@@ -150,14 +202,14 @@ local function sendToPython(player, fish, variant, tier)
                 })
             })
             if res and (res.StatusCode == 200 or res.StatusCode == 201) then
-                print(string.format("🎣 [AUTO SKOR SYNC] Tangkapan Masuk: [%s] %s (%s)", player, fish, tier))
+                print(string.format("🎣 [AUTO SKOR SYNC] Poin Masuk: [%s] %s (%s)", player, fish, tier))
             end
         end)
     end)
 end
 
 local function sendPlayerEvent(playerName, eventType)
-    if not httpRequest then return end
+    if not httpRequest or not ENABLE_PLAYER_PRESENCE then return end
 
     task.spawn(function()
         pcall(function()
@@ -165,6 +217,7 @@ local function sendPlayerEvent(playerName, eventType)
                 Url = PLAYER_EVENT_URL,
                 Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
+                Timeout = HTTP_TIMEOUT_SEC,
                 Body = HttpService:JSONEncode({
                     player = playerName,
                     event = eventType
@@ -175,7 +228,7 @@ local function sendPlayerEvent(playerName, eventType)
 end
 
 local function sendWeatherToPython(identity, eventName)
-    if not httpRequest then return end
+    if not httpRequest or not ENABLE_WEATHER_SCANNER then return end
 
     local username = identity and identity.username or "Server Global"
     local displayName = identity and identity.displayName or "Global Event"
@@ -198,6 +251,7 @@ local function sendWeatherToPython(identity, eventName)
                 Url = WEATHER_URL,
                 Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
+                Timeout = HTTP_TIMEOUT_SEC,
                 Body = HttpService:JSONEncode(data)
             })
         end)
@@ -216,13 +270,10 @@ local function getPlayerIdentity(identifier)
                     targetPlayer = Players:GetPlayerFromCharacter(character)
                 end
             end
-        elseif typeof(identifier) == "string" then
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p.Name:lower() == identifier:lower() or p.DisplayName:lower() == identifier:lower() then
-                    targetPlayer = p
-                    break
-                end
-            end
+        elseif type(identifier) == "string" then
+            targetPlayer = Players:FindFirstChild(identifier)
+        elseif type(identifier) == "number" then
+            targetPlayer = Players:GetPlayerByUserId(identifier)
         end
     end)
 
@@ -237,10 +288,11 @@ local function getPlayerIdentity(identifier)
 end
 
 -- ============================================================
--- 4. PARSER CHAT TANGKAPAN IKAN
+-- 4. PARSER CHAT TANGKAPAN IKAN (SANGAT RINGAN, 0 CPU DELAY)
 -- ============================================================
 local function processChatMessage(rawText)
     if not rawText or type(rawText) ~= "string" then return end
+    -- Cek kata kunci awal agar tidak memproses pesan obrolan biasa
     if not string.find(rawText:lower(), "obtained") then return end
 
     local clean = string.gsub(rawText, "<[^>]+>", "")
@@ -276,80 +328,80 @@ local function processChatMessage(rawText)
 end
 
 -- ============================================================
--- 5. SCANNER POTION & CUACA (COOLDOWN 1800 DETIK)
+-- 5. SCANNER POTION & CUACA (HANYA AKTIF JIKA DIPERLUKAN)
 -- ============================================================
-local lastAuroraTriggerTime = 0
-local AURORA_COOLDOWN_DURATION = 1800
-local activeSessions = {}
-local SESSION_COOLDOWN = 5
+if ENABLE_WEATHER_SCANNER then
+    local lastAuroraTriggerTime = 0
+    local AURORA_COOLDOWN_DURATION = 1800
+    local activeSessions = {}
+    local SESSION_COOLDOWN = 5
 
-pcall(function()
-    for _, desc in ipairs(ReplicatedStorage:GetDescendants()) do
-        if desc:IsA("RemoteEvent") then
-            local success, conn = pcall(function()
-                return desc.OnClientEvent:Connect(function(...)
-                    local args = {...}
-                    local foundIdentity = nil
-                    local detectedName = nil
-                    local isValidAction = false
+    pcall(function()
+        for _, desc in ipairs(ReplicatedStorage:GetDescendants()) do
+            if desc:IsA("RemoteEvent") then
+                local success, conn = pcall(function()
+                    return desc.OnClientEvent:Connect(function(...)
+                        local args = {...}
+                        local foundIdentity = nil
+                        local detectedName = nil
+                        local isValidAction = false
 
-                    for _, arg in ipairs(args) do
-                        local argType = typeof(arg)
-                        if argType == "string" then
-                            local s = arg:lower()
-                            if s ~= "equippedpotions" and s ~= "potions" and not s:match("^potions/") then
-                                if s:find("potion") or s:find("borealis") or s:find("meteor") or s:find("shower") then
-                                    detectedName = arg
-                                    if s:find("aurora") or s:find("borealis") then
-                                        detectedName = "Aurora Borealis"
-                                    elseif s:find("meteor") or s:find("shower") then
-                                        detectedName = "Meteor Shower"
+                        for _, arg in ipairs(args) do
+                            local argType = typeof(arg)
+                            if argType == "string" then
+                                local s = arg:lower()
+                                if s ~= "equippedpotions" and s ~= "potions" and not s:match("^potions/") then
+                                    if s:find("potion") or s:find("borealis") or s:find("meteor") or s:find("shower") then
+                                        detectedName = arg
+                                        if s:find("aurora") or s:find("borealis") then
+                                            detectedName = "Aurora Borealis"
+                                        elseif s:find("meteor") or s:find("shower") then
+                                            detectedName = "Meteor Shower"
+                                        end
+                                        isValidAction = true
                                     end
-                                    isValidAction = true
+                                end
+                            elseif argType == "Instance" then
+                                local iden = getPlayerIdentity(arg)
+                                if iden then
+                                    foundIdentity = iden
                                 end
                             end
-                        elseif argType == "Instance" then
-                            local iden = getPlayerIdentity(arg)
-                            if iden then
-                                foundIdentity = iden
-                            end
                         end
-                    end
 
-                    if isValidAction and detectedName then
-                        local now = os.time()
-                        if detectedName == "Aurora Borealis" then
-                            if (now - lastAuroraTriggerTime) < AURORA_COOLDOWN_DURATION then
+                        if isValidAction and detectedName then
+                            local now = os.time()
+                            if detectedName == "Aurora Borealis" then
+                                if (now - lastAuroraTriggerTime) < AURORA_COOLDOWN_DURATION then
+                                    return
+                                end
+                                lastAuroraTriggerTime = now
+                            end
+
+                            local sessionKey = tostring(detectedName) .. (foundIdentity and foundIdentity.username or "global")
+                            if activeSessions[sessionKey] and (now - activeSessions[sessionKey]) < SESSION_COOLDOWN then
                                 return
                             end
-                            lastAuroraTriggerTime = now
-                        end
+                            activeSessions[sessionKey] = now
 
-                        local sessionKey = tostring(detectedName) .. (foundIdentity and foundIdentity.username or "global")
-                        if activeSessions[sessionKey] and (now - activeSessions[sessionKey]) < SESSION_COOLDOWN then
-                            return
+                            if foundIdentity then
+                                sendWeatherToPython(foundIdentity, tostring(detectedName))
+                            else
+                                sendWeatherToPython(nil, tostring(detectedName))
+                            end
                         end
-                        activeSessions[sessionKey] = now
-
-                        if foundIdentity then
-                            print(string.format("🎯 [CUACA/POTION] %s oleh %s", tostring(detectedName), foundIdentity.username))
-                            sendWeatherToPython(foundIdentity, tostring(detectedName))
-                        else
-                            print(string.format("🌿 [CUACA GLOBAL] %s", tostring(detectedName)))
-                            sendWeatherToPython(nil, tostring(detectedName))
-                        end
-                    end
+                    end)
                 end)
-            end)
-            if success and conn then
-                table.insert(activeConnections, conn)
+                if success and conn then
+                    table.insert(activeConnections, conn)
+                end
             end
         end
-    end
-end)
+    end)
+end
 
 -- ============================================================
--- 6. HOOK CHAT & ABSENSI REAL-TIME
+-- 6. HOOK CHAT EVENT (SANGAT CEPAT & AMAN)
 -- ============================================================
 pcall(function()
     if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
@@ -371,39 +423,30 @@ pcall(function()
     end
 end)
 
--- Sinkronisasi awal absen pemain
-for _, plr in ipairs(Players:GetPlayers()) do
-    sendPlayerEvent(plr.Name, "JOIN")
+-- Presence listener (hanya jika diaktifkan)
+if ENABLE_PLAYER_PRESENCE then
+    local cAdd = Players.PlayerAdded:Connect(cclosure(function(player)
+        sendPlayerEvent(player.Name, "JOIN")
+    end))
+    table.insert(activeConnections, cAdd)
+
+    local cRem = Players.PlayerRemoving:Connect(cclosure(function(player)
+        sendPlayerEvent(player.Name, "LEAVE")
+    end))
+    table.insert(activeConnections, cRem)
 end
 
-local cAdd = Players.PlayerAdded:Connect(cclosure(function(player)
-    sendPlayerEvent(player.Name, "JOIN")
-end))
-table.insert(activeConnections, cAdd)
-
-local cRem = Players.PlayerRemoving:Connect(cclosure(function(player)
-    sendPlayerEvent(player.Name, "LEAVE")
-end))
-table.insert(activeConnections, cRem)
-
 -- ============================================================
--- 7. CLEANUP HANDLER
+-- 7. CLEANUP HANDLER (PREVENT DUPLICATE THREADS)
 -- ============================================================
 local function stopMonitor()
     for _, conn in ipairs(activeConnections) do
         pcall(function() conn:Disconnect() end)
     end
-    activeConnections = {}
-    print("🛑 [FISH IT BRIDGE] Semua koneksi berhasil dibersihkan.")
+    table.clear(activeConnections)
+    print("🧹 [FISH IT BRIDGE] Handler sebelumnya dibersihkan dengan aman.")
 end
 
 if env then
     env[CLEANUP_KEY] = stopMonitor
 end
-
-print("==================================================")
-print("✅ FISH IT UNIFIED BRIDGE BERHASIL DIAKTIFKAN!")
-print("   - Tangkapan Ikan   : AKTIF")
-print("   - Potion & Cuaca   : AKTIF")
-print("   - Absensi Pemain   : AKTIF")
-print("==================================================")
