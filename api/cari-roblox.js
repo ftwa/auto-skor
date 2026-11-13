@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // Header CORS agar bisa diakses dari domain frontend Vercel
+  // Header CORS agar bisa diakses dari domain frontend Vercel & localhost
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -16,67 +16,112 @@ export default async function handler(req, res) {
     return res.status(400).json({ sukses: false, pesan: 'Username wajib diisi' });
   }
 
-  const cleanUser = username.trim().replace(/^@+/, '');
+  const cleanUser = username.trim().replace(/^@+/, '').trim();
+  if (!cleanUser) {
+    return res.status(400).json({ sukses: false, pesan: 'Username tidak valid' });
+  }
 
   try {
-    // 1. Cari User ID ke API Roblox
-    const userApiUrl = new URL('https://users.roblox.com/v1/usernames/users');
-    const userRes = await fetch(userApiUrl.href, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: [cleanUser], excludeBannedUsers: false })
-    });
+    let uid = null;
+    let userName = cleanUser;
+    let displayName = cleanUser;
 
-    if (!userRes.ok) {
-      return res.status(userRes.status).json({ sukses: false, pesan: 'Gagal menghubungi server Roblox' });
+    // 1. Jika angka murni (Roblox User ID)
+    if (/^\d+$/.test(cleanUser)) {
+      try {
+        const idRes = await fetch(`https://users.roblox.com/v1/users/${cleanUser}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+          signal: AbortSignal.timeout(4000)
+        });
+        if (idRes.ok) {
+          const idData = await idRes.json();
+          if (idData && idData.id) {
+            uid = idData.id;
+            userName = idData.name || cleanUser;
+            displayName = idData.displayName || userName;
+          }
+        }
+      } catch (_) {}
     }
 
-    const userData = await userRes.json();
-    const user = (userData.data || [])[0];
+    // 2. Cari via usernames/users (Roblox resmi lalu Roproxy)
+    if (!uid) {
+      const endpoints = [
+        'https://users.roblox.com/v1/usernames/users',
+        'https://users.roproxy.com/v1/usernames/users'
+      ];
+      for (const ep of endpoints) {
+        try {
+          const userRes = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+            body: JSON.stringify({ usernames: [cleanUser], excludeBannedUsers: false }),
+            signal: AbortSignal.timeout(4000)
+          });
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            const user = (userData.data || [])[0];
+            if (user && user.id) {
+              uid = user.id;
+              userName = user.name || cleanUser;
+              displayName = user.displayName || user.name || cleanUser;
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+    }
 
-    if (!user || !user.id) {
+    if (!uid) {
       return res.status(404).json({ sukses: false, pesan: 'Akun Roblox tidak ditemukan' });
     }
 
-    // 2. Ambil Avatar Headshot (untuk tabel kursi)
+    // 3. Ambil Avatar Headshot (untuk tabel kursi)
     let avatarUrl = '';
-    const thumbApiUrl = new URL('https://thumbnails.roblox.com/v1/users/avatar-headshot');
-    thumbApiUrl.searchParams.set('userIds', user.id);
-    thumbApiUrl.searchParams.set('size', '150x150');
-    thumbApiUrl.searchParams.set('format', 'Png');
-    thumbApiUrl.searchParams.set('isCircular', 'true');
-
-    const thumbRes = await fetch(thumbApiUrl.href);
-    if (thumbRes.ok) {
-      const thumbData = await thumbRes.json();
-      if (thumbData.data && thumbData.data[0] && thumbData.data[0].imageUrl) {
-        avatarUrl = thumbData.data[0].imageUrl;
-      }
+    const thumbEndpoints = [
+      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${uid}&size=150x150&format=Png&isCircular=true`,
+      `https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${uid}&size=150x150&format=Png&isCircular=true`
+    ];
+    for (const tep of thumbEndpoints) {
+      try {
+        const thumbRes = await fetch(tep, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(3500) });
+        if (thumbRes.ok) {
+          const thumbData = await thumbRes.json();
+          if (thumbData.data && thumbData.data[0] && thumbData.data[0].imageUrl) {
+            avatarUrl = thumbData.data[0].imageUrl;
+            break;
+          }
+        }
+      } catch (_) {}
     }
 
-    // 3. Ambil Avatar Full Body HD 720x720 (untuk Podium Juara 3D)
+    // 4. Ambil Avatar Full Body HD 720x720 (untuk Podium Juara 3D)
     let avatar3dUrl = '';
-    const fullThumbUrl = new URL('https://thumbnails.roblox.com/v1/users/avatar');
-    fullThumbUrl.searchParams.set('userIds', user.id);
-    fullThumbUrl.searchParams.set('size', '720x720');
-    fullThumbUrl.searchParams.set('format', 'Png');
-    fullThumbUrl.searchParams.set('isCircular', 'false');
-
-    const fullThumbRes = await fetch(fullThumbUrl.href);
-    if (fullThumbRes.ok) {
-      const fullThumbData = await fullThumbRes.json();
-      if (fullThumbData.data && fullThumbData.data[0] && fullThumbData.data[0].imageUrl) {
-        avatar3dUrl = fullThumbData.data[0].imageUrl;
-      }
+    const thumb3dEndpoints = [
+      `https://thumbnails.roblox.com/v1/users/avatar?userIds=${uid}&size=720x720&format=Png&isCircular=false`,
+      `https://thumbnails.roproxy.com/v1/users/avatar?userIds=${uid}&size=720x720&format=Png&isCircular=false`
+    ];
+    for (const t3dep of thumb3dEndpoints) {
+      try {
+        const fullRes = await fetch(t3dep, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(3500) });
+        if (fullRes.ok) {
+          const fullData = await fullRes.json();
+          if (fullData.data && fullData.data[0] && fullData.data[0].imageUrl) {
+            avatar3dUrl = fullData.data[0].imageUrl;
+            break;
+          }
+        }
+      } catch (_) {}
     }
 
-    const fallbackAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanUser)}&backgroundColor=0284c7`;
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0284c7&color=fff&rounded=true&bold=true`;
 
     return res.status(200).json({
       sukses: true,
-      userId: user.id,
-      userName: user.name,
-      displayName: user.displayName || user.name,
+      userId: uid,
+      userName: userName,
+      username: userName,
+      displayName: displayName,
       avatarUrl: avatarUrl || fallbackAvatar,
       avatar3dUrl: avatar3dUrl || avatarUrl || fallbackAvatar
     });
