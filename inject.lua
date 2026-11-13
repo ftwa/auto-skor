@@ -17,24 +17,52 @@ if not httpRequest then
 end
 
 -- ============================================================
--- KONFIGURASI PERFORMA & ANTI-LAG (PENTING)
+-- KONFIGURASI TARGET SERVER & ANTI-LAG (PENTING)
 -- ============================================================
-local USE_CLOUD_VERCEL = true        -- TRUE: Terhubung langsung ke Vercel Cloud (<25ms tanpa Python lokal)
-local ENABLE_ANTI_LAG_BOOST = true   -- TRUE: Mengoptimalkan FPS Roblox (Shadow off, fog off, clean particles)
-local ENABLE_WEATHER_SCANNER = false -- Set TRUE jika ingin deteksi cuaca/potion (Default FALSE agar Roblox 100% BEBAS LAG)
-local ENABLE_PLAYER_PRESENCE = false -- Set TRUE jika butuh tracking join/leave (Default FALSE agar koneksi ringan)
-local HTTP_TIMEOUT_SEC = 4           -- Batas waktu timeout 4 detik agar memory Roblox tidak tertahan
+-- Pilihan TARGET_MODE:
+-- "AUTO"     : Otomatis! Jika MasterAutoSkor.exe aktif di PC, pakai Localhost (0ms). Jika tidak, pakai Cloud Vercel.
+-- "LOCAL"    : 100% Offline di PC Anda (http://127.0.0.1:5000) - Tercepat, super enteng
+-- "CLOUD"    : Online via Vercel (https://auto-skor.vercel.app)
+local TARGET_MODE = "AUTO"
 
-local BASE_URL = USE_CLOUD_VERCEL and "https://auto-skor.vercel.app" or "http://127.0.0.1:5000"
+local ENABLE_ANTI_LAG_BOOST  = true   -- TRUE: Mengoptimalkan FPS Roblox (Shadows & effects off)
+local ENABLE_WEATHER_SCANNER = false  -- Set TRUE jika ingin deteksi cuaca/potion (Default FALSE agar 100% BEBAS LAG)
+local ENABLE_PLAYER_PRESENCE = false  -- Set TRUE jika butuh tracking join/leave (Default FALSE agar koneksi ringan)
+local HTTP_TIMEOUT_SEC       = 4      -- Batas waktu timeout 4 detik agar memory Roblox tidak tertahan
+
+local LOCAL_URL = "http://127.0.0.1:5000"
+local CLOUD_URL = "https://auto-skor.vercel.app"
+local BASE_URL = CLOUD_URL
+
+if TARGET_MODE == "LOCAL" then
+    BASE_URL = LOCAL_URL
+elseif TARGET_MODE == "CLOUD" then
+    BASE_URL = CLOUD_URL
+elseif TARGET_MODE == "AUTO" then
+    -- Deteksi otomatis apakah server Python lokal MasterAutoSkor.exe sedang aktif
+    pcall(function()
+        if httpRequest then
+            local check = httpRequest({
+                Url = LOCAL_URL .. "/api/catch",
+                Method = "GET",
+                Timeout = 1.0
+            })
+            if check and check.StatusCode == 200 then
+                BASE_URL = LOCAL_URL
+            end
+        end
+    end)
+end
+
 local CATCH_URL = BASE_URL .. "/api/catch"
 local PLAYER_EVENT_URL = BASE_URL .. "/api/player-event"
 local WEATHER_URL = BASE_URL .. "/api/weather"
 
 print("============================================================")
 print("  🎣 AUTO SKOR GALATAMA - FISH IT BRIDGE (HIGH PERFORMANCE) ")
-print("  🌐 Target Server: " .. BASE_URL)
+print("  🌐 Target Server: " .. BASE_URL .. " [" .. TARGET_MODE .. "]")
 print("  🚀 Anti-Lag Boost: " .. (ENABLE_ANTI_LAG_BOOST and "AKTIF (60+ FPS)" or "NONAKTIF"))
-print("  ⚡ Status: SIAP SINKRON KE TIKTOK STUDIO & WEB            ")
+print("  ⚡ Status: SINKRON OTOMATIS KE MASTER APP & TIKTOK STUDIO ")
 print("============================================================")
 
 -- ============================================================
