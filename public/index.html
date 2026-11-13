@@ -3069,12 +3069,6 @@
       </table>
     </div>
 
-    <!-- HINT BANNER IKAN KHUSUS -->
-    <div style="font-size: 11px; font-weight: 700; color: #7c3aed; margin-top: -6px; margin-bottom: 14px; padding: 7px 12px; background: #faf5ff; border-radius: 10px; border-left: 3.5px solid #a855f7; display: flex; align-items: center; gap: 8px;">
-      <span>💡</span>
-      <span><b>Fitur Ikan Khusus:</b> Masukkan nama ikan pilihan (misal: <i>Megalodon</i>, <i>Golden Shark</i>). Tangkapan yang cocok otomatis mendapat poin khusus!</span>
-    </div>
-
     <div class="table-container">
       <table id="tableRight">
         <colgroup>
@@ -3555,6 +3549,12 @@
       </table>
     </div>
 
+    <!-- HINT BANNER IKAN KHUSUS (DI DALAM MODAL POIN) -->
+    <div style="font-size: 11px; font-weight: 700; color: #7c3aed; margin-top: -6px; margin-bottom: 14px; padding: 8px 12px; background: #faf5ff; border-radius: 12px; border-left: 3.5px solid #a855f7; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 15px;">💡</span>
+      <span><b>Fitur Ikan Khusus:</b> Masukkan nama ikan pilihan di baris atas (misal: <i>Megalodon</i>, <i>Golden Shark</i>). Tangkapan yang cocok otomatis mendapat poin khusus!</span>
+    </div>
+
     <!-- Kartu Pengaturan Tambahan BIN Modern -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
       
@@ -3977,7 +3977,7 @@
     return {
       sudahCatatMember: false,
       players: players,
-      host: { id: `p_host_${Date.now()}`, robloxUser: '', user: 'Host Tu...', nick: 'Host', avatar: '', poin: 0, isReady: true, isBin: false, isHadir: false, stats: buatStatsKosong() }
+      host: { id: `p_host_${Date.now()}`, robloxUser: '', user: 'Host Turnamen', nick: 'Host', avatar: '', poin: 0, isReady: true, isBin: false, isHadir: false, stats: buatStatsKosong() }
     };
   }
 
@@ -4515,7 +4515,12 @@
     setModeTampilan(mode);
   }
 
+  let modeTampilanSaatIni = '';
   function setModeTampilan(mode, broadcast = true) {
+    if (mode === modeTampilanSaatIni && !broadcast) return;
+    const isBerubah = (mode !== modeTampilanSaatIni);
+    modeTampilanSaatIni = mode;
+
     if (broadcast) siarkanSync({ type: "SYNC_MODE", mode: mode });
     const btnPrep = document.getElementById('btnModePrepare');
     const btnMatch = document.getElementById('btnModeMatch');
@@ -4531,17 +4536,17 @@
       document.body.classList.add('view-match');
       if (btnMatch) btnMatch.classList.add('active');
       renderIsiTabel(); 
-      tambahLogAktivitas('TAMPILAN', 'Mode Match aktif (Papan Skor Poin tampil)', 'system');
+      if (isBerubah) tambahLogAktivitas('TAMPILAN', 'Mode Match aktif (Papan Skor Poin tampil)', 'system');
     } else if (mode === 'MEMBER') {
       document.body.classList.add('view-member');
       if (btnMember) btnMember.classList.add('active');
       renderTabelMemberHall();
-      tambahLogAktivitas('TAMPILAN', 'Mode Member (Statistik / Riwayat) tampil', 'system');
+      if (isBerubah) tambahLogAktivitas('TAMPILAN', 'Mode Member (Statistik / Riwayat) tampil', 'system');
     } else {
       document.body.classList.add('view-setup');
       if (btnPrep) btnPrep.classList.add('active');
       renderIsiTabel(); 
-      tambahLogAktivitas('TAMPILAN', 'Mode Prepare aktif (Daftar Standby)', 'system');
+      if (isBerubah) tambahLogAktivitas('TAMPILAN', 'Mode Prepare aktif (Daftar Standby)', 'system');
     }
   }
 
@@ -5773,7 +5778,7 @@
       // Jika belum punya avatar 3D direct URL tapi punya username Roblox, cari secara async
       if (pData.robloxUser && (!pData.avatar3d || pData.avatar3d.includes('AvatarHeadshot') || pData.avatar3d.includes('ui-avatars'))) {
         const u = pData.robloxUser.replace(/^@+/, '').trim();
-        if (u) {
+        if (u && !u.toLowerCase().startsWith('host') && !u.includes('...')) {
           fetch(`http://127.0.0.1:5000/cari-roblox?username=${encodeURIComponent(u)}`)
             .then(res => res.json())
             .then(data => {
@@ -5813,6 +5818,9 @@
       const pA = a.poin || 0;
       const pB = b.poin || 0;
       if (pB !== pA) return pB - pA;
+      const khuA = (a.stats && a.stats.k) || 0;
+      const khuB = (b.stats && b.stats.k) || 0;
+      if (khuB !== khuA) return khuB - khuA;
       const secA = (a.stats && a.stats.s) || 0;
       const secB = (b.stats && b.stats.s) || 0;
       if (secB !== secA) return secB - secA;
@@ -6523,7 +6531,7 @@
   async function perbaruiAvatarRobloxAsync(playerIdx, username) {
     if (!username) return;
     const uClean = String(username).replace(/^@+/, '').trim();
-    if (!uClean || uClean.toLowerCase() === 'host' || uClean === '-') return;
+    if (!uClean || uClean.toLowerCase().startsWith('host') || uClean.includes('...') || uClean === '-') return;
 
     if (avatarRobloxCache[uClean]) {
       const s = getSesi();
@@ -6618,6 +6626,9 @@
       const pA = a.poin || 0;
       const pB = b.poin || 0;
       if (pB !== pA) return pB - pA;
+      const khuA = (a.stats && a.stats.k) || 0;
+      const khuB = (b.stats && b.stats.k) || 0;
+      if (khuB !== khuA) return khuB - khuA;
       const secA = (a.stats && a.stats.s) || 0;
       const secB = (b.stats && b.stats.s) || 0;
       if (secB !== secA) return secB - secA;
@@ -6849,6 +6860,9 @@
       const pA = a.poin || 0;
       const pB = b.poin || 0;
       if (pB !== pA) return pB - pA;
+      const khuA = (a.stats && a.stats.k) || 0;
+      const khuB = (b.stats && b.stats.k) || 0;
+      if (khuB !== khuA) return khuB - khuA;
       const secA = (a.stats && a.stats.s) || 0;
       const secB = (b.stats && b.stats.s) || 0;
       if (secB !== secA) return secB - secA;
