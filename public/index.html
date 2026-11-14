@@ -4142,7 +4142,7 @@
         🔊 Audio & Notifikasi
       </button>
       <button type="button" id="tabBtnSettingsIkan" class="settings-tab-btn" onclick="switchSettingsTab('ikan')">
-        🖼️ Kelola Gambar Ikan (70)
+        🖼️ Kelola Gambar Ikan (269)
       </button>
     </div>
 
@@ -8995,6 +8995,8 @@
       if (pMit) pMit.innerText = `🔴 Mitos (${cMit})`;
       const pLeg = document.querySelector("#tierFilterContainer button[onclick*=\"'legend'\"]");
       if (pLeg) pLeg.innerText = `🟡 Legend (${cLeg})`;
+      const tabBtnIkan = document.getElementById('tabBtnSettingsIkan');
+      if (tabBtnIkan) tabBtnIkan.innerText = `🖼️ Kelola Gambar Ikan (${cAll})`;
     } catch (_) {}
 
     const filtered = allFish.filter(f => {
