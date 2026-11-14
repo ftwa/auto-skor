@@ -4090,17 +4090,32 @@
     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
       <span style="font-size: 11.5px; font-weight: 900; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">Suara Notifikasi Per Tier Ikan</span>
 
-      <!-- LEGEND -->
-      <div class="audio-cyber-card" style="border-left: 3.5px solid #eab308;">
+      <!-- FORGOTTEN -->
+      <div class="audio-cyber-card" style="border-left: 3.5px solid #a855f7;">
         <div class="audio-cyber-top">
-          <span style="font-size: 12px; font-weight: 900; color: #ca8a04;">🟡 Suara LEGEND</span>
-          <span id="statusAudio_legend" style="font-size: 10px; color: #16a34a; font-weight: 800; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Synth Bawaan</span>
+          <span style="font-size: 12px; font-weight: 900; color: #9333ea;">🌌 Suara FORGOTTEN</span>
+          <span id="statusAudio_forgotten" style="font-size: 10px; color: #16a34a; font-weight: 800; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Synth Bawaan</span>
         </div>
         <div class="audio-cyber-actions">
-          <input type="file" id="audioInput_legend" accept="audio/*" style="font-size: 10.5px; max-width: 220px;" onchange="unggahAudioTier('legend', event)">
+          <input type="file" id="audioInput_forgotten" accept="audio/*" style="font-size: 10.5px; max-width: 220px;" onchange="unggahAudioTier('forgotten', event)">
           <div style="display: flex; gap: 4px;">
-            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800;" onclick="putarSuaraNotif('legend')">🔊 Tes</button>
-            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800; color: #ef4444;" onclick="resetAudioTier('legend')">Reset</button>
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800;" onclick="putarSuaraNotif('forgotten')">🔊 Tes</button>
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800; color: #ef4444;" onclick="resetAudioTier('forgotten')">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECRET -->
+      <div class="audio-cyber-card" style="border-left: 3.5px solid #22c55e;">
+        <div class="audio-cyber-top">
+          <span style="font-size: 12px; font-weight: 900; color: #16a34a;">🟢 Suara SECRET</span>
+          <span id="statusAudio_secret" style="font-size: 10px; color: #16a34a; font-weight: 800; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Synth Bawaan</span>
+        </div>
+        <div class="audio-cyber-actions">
+          <input type="file" id="audioInput_secret" accept="audio/*" style="font-size: 10.5px; max-width: 220px;" onchange="unggahAudioTier('secret', event)">
+          <div style="display: flex; gap: 4px;">
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800;" onclick="putarSuaraNotif('secret')">🔊 Tes</button>
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800; color: #ef4444;" onclick="resetAudioTier('secret')">Reset</button>
           </div>
         </div>
       </div>
@@ -4120,17 +4135,32 @@
         </div>
       </div>
 
-      <!-- SECRET -->
-      <div class="audio-cyber-card" style="border-left: 3.5px solid #22c55e;">
+      <!-- LEGEND -->
+      <div class="audio-cyber-card" style="border-left: 3.5px solid #eab308;">
         <div class="audio-cyber-top">
-          <span style="font-size: 12px; font-weight: 900; color: #16a34a;">🟢 Suara SECRET</span>
-          <span id="statusAudio_secret" style="font-size: 10px; color: #16a34a; font-weight: 800; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Synth Bawaan</span>
+          <span style="font-size: 12px; font-weight: 900; color: #ca8a04;">🟡 Suara LEGEND</span>
+          <span id="statusAudio_legend" style="font-size: 10px; color: #16a34a; font-weight: 800; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Synth Bawaan</span>
         </div>
         <div class="audio-cyber-actions">
-          <input type="file" id="audioInput_secret" accept="audio/*" style="font-size: 10.5px; max-width: 220px;" onchange="unggahAudioTier('secret', event)">
+          <input type="file" id="audioInput_legend" accept="audio/*" style="font-size: 10.5px; max-width: 220px;" onchange="unggahAudioTier('legend', event)">
           <div style="display: flex; gap: 4px;">
-            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800;" onclick="putarSuaraNotif('secret')">🔊 Tes</button>
-            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800; color: #ef4444;" onclick="resetAudioTier('secret')">Reset</button>
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800;" onclick="putarSuaraNotif('legend')">🔊 Tes</button>
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800; color: #ef4444;" onclick="resetAudioTier('legend')">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KHUSUS -->
+      <div class="audio-cyber-card" style="border-left: 3.5px solid #ec4899;">
+        <div class="audio-cyber-top">
+          <span style="font-size: 12px; font-weight: 900; color: #db2777;">⭐ Suara IKAN KHUSUS</span>
+          <span id="statusAudio_khusus" style="font-size: 10px; color: #16a34a; font-weight: 800; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Synth Bawaan</span>
+        </div>
+        <div class="audio-cyber-actions">
+          <input type="file" id="audioInput_khusus" accept="audio/*" style="font-size: 10.5px; max-width: 220px;" onchange="unggahAudioTier('khusus', event)">
+          <div style="display: flex; gap: 4px;">
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800;" onclick="putarSuaraNotif('khusus')">🔊 Tes</button>
+            <button type="button" class="btn-action-soft" style="padding: 3px 9px; font-size: 10.5px; font-weight: 800; color: #ef4444;" onclick="resetAudioTier('khusus')">Reset</button>
           </div>
         </div>
       </div>
@@ -4430,9 +4460,11 @@
   const DB_KEY = 'galatama_modern_light_v1';
   const COL_SIZE_KEY = 'galatama_table_col_sizes_v1';
   const AUDIO_TIER_KEYS = {
+    forgotten: 'galatama_custom_sound_forgotten',
     legend: 'galatama_custom_sound_legend',
     mitos: 'galatama_custom_sound_mitos',
-    secret: 'galatama_custom_sound_secret'
+    secret: 'galatama_custom_sound_secret',
+    khusus: 'galatama_custom_sound_khusus'
   };
   const AUDIO_TIMER_KEYS = {
     '10m': 'galatama_custom_sound_timer_10m',
@@ -4552,7 +4584,7 @@
   }
 
   function buatStatsKosong() {
-    return { s: 0, m: 0, l: 0, b: 0, sh: 0, mut: 0 };
+    return { f: 0, s: 0, m: 0, l: 0, k: 0, b: 0, sh: 0, mut: 0 };
   }
 
   function buatSesiKosong() {
@@ -4620,6 +4652,7 @@
     db.warnaPoin.matrix.legend = Object.assign({}, DEFAULT_MATRIKS_TIER.legend, db.warnaPoin.matrix.legend || {});
     db.warnaPoin.matrix.mitos  = Object.assign({}, DEFAULT_MATRIKS_TIER.mitos, db.warnaPoin.matrix.mitos || {});
     db.warnaPoin.matrix.secret = Object.assign({}, DEFAULT_MATRIKS_TIER.secret, db.warnaPoin.matrix.secret || {});
+    db.warnaPoin.matrix.khusus = Object.assign({}, DEFAULT_MATRIKS_TIER.khusus, db.warnaPoin.matrix.khusus || {});
   }
   if (!db.durasiMenitDefault) db.durasiMenitDefault = 15;
 
@@ -4665,9 +4698,11 @@
   } catch(_) {}
 
   let customAudioTierData = {
+    forgotten: localStorage.getItem(AUDIO_TIER_KEYS.forgotten) || null,
     legend: localStorage.getItem(AUDIO_TIER_KEYS.legend) || null,
     mitos: localStorage.getItem(AUDIO_TIER_KEYS.mitos) || null,
-    secret: localStorage.getItem(AUDIO_TIER_KEYS.secret) || null
+    secret: localStorage.getItem(AUDIO_TIER_KEYS.secret) || null,
+    khusus: localStorage.getItem(AUDIO_TIER_KEYS.khusus) || null
   };
 
   let customAudioTimerData = {
@@ -4814,6 +4849,7 @@
   function tambahkanKeStatsPemain(p, hasilMatriks) {
     if (!p.stats) p.stats = buatStatsKosong();
     if (hasilMatriks.tierKey === 'khusus') p.stats.k = (p.stats.k || 0) + 1;
+    else if (hasilMatriks.tierKey === 'forgotten') p.stats.f = (p.stats.f || 0) + 1;
     else if (hasilMatriks.tierKey === 'secret') p.stats.s = (p.stats.s || 0) + 1;
     else if (hasilMatriks.tierKey === 'mitos') p.stats.m = (p.stats.m || 0) + 1;
     else p.stats.l = (p.stats.l || 0) + 1;
@@ -4880,7 +4916,7 @@
     const q = (document.getElementById('searchMemberInput')?.value || '').trim().toLowerCase();
     if (!tbody) return;
 
-    const semua = Object.values(memberHallDB);
+    const semua = Object.entries(memberHallDB).map(([k, v]) => ({ ...v, key: v.key || k }));
     if (counter) counter.innerText = `(${semua.length} Member Terdaftar)`;
 
     const terfilter = semua.filter(m => {
@@ -5390,9 +5426,10 @@
       const ctx = dapatkanAudioContext();
       if (!ctx) return;
       const freqMap = {
-        legend: [587.33, 739.99, 880.00],
-        mitos: [659.25, 783.99, 1046.50],
+        forgotten: [1046.50, 1318.51, 1567.98, 2093.00],
         secret: [783.99, 987.77, 1318.51, 1567.98],
+        mitos: [659.25, 783.99, 1046.50],
+        legend: [587.33, 739.99, 880.00],
         khusus: [880.00, 1108.73, 1318.51, 1760.00]
       };
       const freqs = freqMap[tierKey] || [523.25, 659.25, 783.99];
@@ -5400,7 +5437,7 @@
       freqs.forEach((f, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = tierKey === 'secret' ? 'triangle' : 'sine';
+        osc.type = (tierKey === 'forgotten' || tierKey === 'secret') ? 'triangle' : 'sine';
         osc.frequency.setValueAtTime(f, now + i * 0.08);
         gain.gain.setValueAtTime(0.2, now + i * 0.08);
         gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.22);
@@ -5424,7 +5461,7 @@
   }
 
   function updateStatusAudioTierUI() {
-    ['legend', 'mitos', 'secret', 'khusus'].forEach(t => {
+    ['forgotten', 'legend', 'mitos', 'secret', 'khusus'].forEach(t => {
       const el = document.getElementById(`statusAudio_${t}`);
       if (el) el.innerText = customAudioTierData[t] ? "Audio Custom ✔" : "Synth Bawaan";
     });
@@ -5451,7 +5488,7 @@
   /* =========================================================
      FITUR LINK STREAM TIKTOK LIVE STUDIO & OBS STUDIO
      ========================================================= */
-  let streamLinkMode = 'cloud';
+  let streamLinkMode = 'local';
   function gantiTabSumberStream(mode) {
     streamLinkMode = mode;
     const tabLocal = document.getElementById('tabSourceLocal');
@@ -5508,8 +5545,8 @@
 
   function bukaModalLinkStream() {
     tutupSemuaDropdown();
-    // TikTok LIVE Studio membutuhkan tautan publik HTTPS (Web Cloud)
-    gantiTabSumberStream('cloud');
+    // Default: Tautan Lokal 5000 untuk TikTok LIVE Studio & OBS
+    gantiTabSumberStream('local');
     const modal = document.getElementById('modalLinkStream');
     if (modal) modal.style.display = 'flex';
   }
@@ -6588,6 +6625,9 @@
       const khuA = (a.stats && a.stats.k) || 0;
       const khuB = (b.stats && b.stats.k) || 0;
       if (khuB !== khuA) return khuB - khuA;
+      const forgA = (a.stats && a.stats.f) || 0;
+      const forgB = (b.stats && b.stats.f) || 0;
+      if (forgB !== forgA) return forgB - forgA;
       const secA = (a.stats && a.stats.s) || 0;
       const secB = (b.stats && b.stats.s) || 0;
       if (secB !== secA) return secB - secA;
@@ -7542,6 +7582,9 @@
       const khuA = (a.stats && a.stats.k) || 0;
       const khuB = (b.stats && b.stats.k) || 0;
       if (khuB !== khuA) return khuB - khuA;
+      const forgA = (a.stats && a.stats.f) || 0;
+      const forgB = (b.stats && b.stats.f) || 0;
+      if (forgB !== forgA) return forgB - forgA;
       const secA = (a.stats && a.stats.s) || 0;
       const secB = (b.stats && b.stats.s) || 0;
       if (secB !== secA) return secB - secA;
@@ -7780,6 +7823,9 @@
       const khuA = (a.stats && a.stats.k) || 0;
       const khuB = (b.stats && b.stats.k) || 0;
       if (khuB !== khuA) return khuB - khuA;
+      const forgA = (a.stats && a.stats.f) || 0;
+      const forgB = (b.stats && b.stats.f) || 0;
+      if (forgB !== forgA) return forgB - forgA;
       const secA = (a.stats && a.stats.s) || 0;
       const secB = (b.stats && b.stats.s) || 0;
       if (secB !== secA) return secB - secA;
