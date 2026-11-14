@@ -5229,6 +5229,7 @@
     } else if (isMatchDijeda) {
       isMatchSedangJalan = true;
       isMatchDijeda = false;
+      setModeTampilan('MATCH');
       perbaruiStatusMatchUI();
       mulaiIntervalTimer();
       tambahLogAktivitas('SISTEM', 'Pertandingan DILANJUTKAN', 'system');
@@ -5273,6 +5274,7 @@
     isWaitingWinnerAfterQueue = false;
     isExtraTimeBin = false;
     extraTimerSec = 0;
+    setModeTampilan('PREPARE');
     perbaruiStatusMatchUI();
     tambahLogAktivitas('SISTEM', 'Pertandingan DIHENTIKAN', 'system');
     siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false });
