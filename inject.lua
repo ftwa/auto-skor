@@ -32,23 +32,26 @@ local HTTP_TIMEOUT_SEC       = 4      -- Batas waktu timeout 4 detik agar memory
 
 local LOCAL_URL = "http://127.0.0.1:5000"
 local CLOUD_URL = "https://auto-skor.vercel.app"
-local BASE_URL = CLOUD_URL
+local BASE_URL = LOCAL_URL -- Default ke Localhost 0ms (Murni Lokal)
 
 if TARGET_MODE == "LOCAL" then
     BASE_URL = LOCAL_URL
 elseif TARGET_MODE == "CLOUD" then
     BASE_URL = CLOUD_URL
 elseif TARGET_MODE == "AUTO" then
-    -- Deteksi otomatis apakah server Python lokal MasterAutoSkor.exe sedang aktif
+    -- Deteksi otomatis: prioritaskan lokal MasterAutoSkor_Lokal.exe (0ms).
+    -- Jika offline dan executor punya internet, fallback ke cloud.
     pcall(function()
         if httpRequest then
             local check = httpRequest({
                 Url = LOCAL_URL .. "/api/catch",
                 Method = "GET",
-                Timeout = 1.0
+                Timeout = 0.8
             })
             if check and check.StatusCode == 200 then
                 BASE_URL = LOCAL_URL
+            else
+                BASE_URL = CLOUD_URL
             end
         end
     end)
@@ -93,11 +96,19 @@ if ENABLE_ANTI_LAG_BOOST then
     end)
 end
 
--- Pembersih memori Lua berkala (mencegah memory leak di executor)
+-- Pembersih memori Lua & deduplikasi berkala (mencegah memory leak di executor)
 task.spawn(function()
     while true do
-        task.wait(60)
-        collectgarbage("collect")
+        task.wait(45)
+        pcall(function()
+            local now = tick()
+            for k, t in pairs(processedCatchHash) do
+                if (now - t) > 15 then
+                    processedCatchHash[k] = nil
+                end
+            end
+            collectgarbage("collect")
+        end)
     end
 end)
 
@@ -114,10 +125,12 @@ local activeConnections = {}
 -- 1. DAFTAR VARIAN / MUTASI IKAN RESMI
 -- ============================================================
 local KNOWN_VARIANTS = {
-    "shiny", "big", "giant",
+    "shiny", "big", "giant", "tiny",
+    "mutasi", "mutation", "mutated",
+    "aurora", "translucent", "dark", "electric", "sparkling", "rainbow",
     "galaxy", "sandy", "albino", "ghost", "haunted",
     "midnight", "corrupt", "radioactive", "holographic", "gemstone",
-    "binary", "gold", "frozen", "glitch", "equinox",
+    "binary", "gold", "golden", "frozen", "glitch", "equinox",
     "disco", "elemental", "solar", "bloodmoon", "festive", "lightning",
     "fairy dust", "color burn", "crystalized", "moon fragment", "8-bit", "stone", "duskbreaker"
 }
@@ -133,7 +146,10 @@ local function determineTier(rawText, cleanText)
         local g = tonumber(hex:sub(3, 4), 16) or 0
         local b = tonumber(hex:sub(5, 6), 16) or 0
 
-        if (g > 170 and (b > 110 or r < 130)) or (r > 110 and b > 140 and g < 110) then
+        -- Ungu / Violet = FORGOTTEN (#c084fc, #a855f7)
+        if (r > 160 and b > 200 and g < 150) or (r > 150 and b > 230) then
+            return "FORGOTTEN"
+        elseif (g > 170 and (b > 110 or r < 130)) or (r > 110 and b > 140 and g < 110) then
             return "SECRET"
         elseif r > 200 and g < 90 then
             return "MYTHIC"
@@ -142,18 +158,22 @@ local function determineTier(rawText, cleanText)
         end
     end
 
-    local chanceStr = cleanText:match("with%s+a%s+1%s+in%s+([%w%.]+)%s+chance")
+    local chanceStr = cleanText:match("with%s+a%s+1%s+in%s+([%w%.,]+)%s+chance")
     if chanceStr then
         local upper = string.upper(chanceStr)
+        local rawDigits = string.gsub(chanceStr, "[^%d]", "")
+        local rawNum = tonumber(rawDigits) or 0
         local num = tonumber(string.match(upper, "[%d%.]+")) or 0
 
-        if string.find(upper, "M") or (string.find(upper, "K") and num >= 400) then
+        if (string.find(upper, "M") and num >= 10) or rawNum >= 10000000 then
+            return "FORGOTTEN"
+        elseif string.find(upper, "M") or (string.find(upper, "K") and num >= 400) or rawNum >= 400000 then
             return "SECRET"
-        elseif string.find(upper, "K") and num >= 50 then
+        elseif (string.find(upper, "K") and num >= 50) or rawNum >= 50000 then
             return "MYTHIC"
-        elseif string.find(upper, "K") and num >= 5 then
+        elseif (string.find(upper, "K") and num >= 5) or rawNum >= 5000 then
             return "LEGENDARY"
-        elseif string.find(upper, "K") and num >= 1 then
+        elseif (string.find(upper, "K") and num >= 1) or rawNum >= 1000 then
             return "RARE"
         end
     end
@@ -161,9 +181,24 @@ local function determineTier(rawText, cleanText)
     return "NORMAL"
 end
 
+local PROTECTED_FISH_NAMES = {
+    ["ghost shark"] = true,
+    ["giant squid"] = true,
+    ["dark megalodon"] = true,
+    ["solar koi"] = true,
+    ["solarflare koi"] = true,
+    ["pyroclast stonefish"] = true,
+    ["brimstone catfish"] = true
+}
+
 local function splitFishAndVariant(fullFishName)
     local detectedVariants = {}
     local cleanFish = fullFishName
+
+    -- Jika nama utuh sudah merupakan nama ikan resmi yang dilindungi, jangan pecah
+    if PROTECTED_FISH_NAMES[string.lower(string.gsub(cleanFish, "^%s*(.-)%s*$", "%1"))] then
+        return cleanFish, "None"
+    end
 
     for _, v in ipairs(KNOWN_VARIANTS) do
         local target = string.lower(v)
