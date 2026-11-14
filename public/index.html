@@ -6272,10 +6272,11 @@
     const cleanUser = (robloxUser || playerName || '').replace(/^@+/, '').trim();
 
     // 4. MEMUAT MODEL 3D RESMI PEMAIN DARI ROBLOX API
-    if (cleanUser) {
+    if (cleanUser && !window.location.hostname.includes('github.io')) {
       fetch(`/api/roblox-3d-model?username=${encodeURIComponent(cleanUser)}`)
-        .then(res => res.json())
+        .then(res => res.ok ? res.json() : null)
         .then(data => {
+          if (!data) return;
           if (data && data.sukses && data.objUrl) {
             const objLoader = new THREE.OBJLoader();
             objLoader.load(data.objUrl, (loadedObj) => {
@@ -8316,10 +8317,21 @@
       return;
     }
 
+    if (window.location.protocol === 'https:') {
+      if (statusEl) {
+        statusEl.style.color = '#f59e0b';
+        statusEl.innerText = 'Fitur Auto-Add otomatis membutuhkan MasterAutoSkor_Lokal.exe (Lokal 5000).';
+      }
+      return;
+    }
+
     btnAdd.disabled = true;
     btnAdd.innerText = "⏳ Memproses...";
 
-    fetch('http://127.0.0.1:5000/auto-add-friend', {
+    const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
+    const endpoint = isLokal ? '/auto-add-friend' : 'http://127.0.0.1:5000/auto-add-friend';
+
+    fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: usernameRoblox })
