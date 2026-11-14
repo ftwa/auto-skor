@@ -96,6 +96,9 @@ if ENABLE_ANTI_LAG_BOOST then
     end)
 end
 
+-- Hash deduplikasi tangkapan ikan (dideklarasikan lebih awal untuk GC loop)
+local processedCatchHash = {}
+
 -- Pembersih memori Lua & deduplikasi berkala (mencegah memory leak di executor)
 task.spawn(function()
     while true do
@@ -201,6 +204,10 @@ local function splitFishAndVariant(fullFishName)
     end
 
     for _, v in ipairs(KNOWN_VARIANTS) do
+        local trimmedCurrent = string.lower(string.match(cleanFish, "^%s*(.-)%s*$") or "")
+        if PROTECTED_FISH_NAMES[trimmedCurrent] then
+            break
+        end
         local target = string.lower(v)
         local escapedTarget = string.gsub(target, "([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
         while true do
@@ -236,7 +243,7 @@ end
 -- ============================================================
 -- 3. FUNGSI PENGIRIMAN DATA NON-BLOCKING DENGAN DEDUPLIKASI
 -- ============================================================
-local processedCatchHash = {}
+-- (processedCatchHash dideklarasikan di blok awal)
 
 local function sendToPython(player, fish, variant, tier)
     if not httpRequest then return end
