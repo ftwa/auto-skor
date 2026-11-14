@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Skor - Showcase Notifikasi 66 Ikan Secret (Layar Depan)</title>
+  <style>
+    :root {
+      --bg: #070d18;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --border: rgba(30, 41, 59, 0.9);
+      --accent: #facc15;
+      --secret-glow: rgba(250, 204, 21, 0.5);
+      --secret-emerald: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #0d1e38 0%, #070d18 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      padding: 24px 20px 100px;
+    }
+
+    /* ========================================================
+       MODERN BROADCAST ESPORTS TOAST HUD NOTIFICATION
+       ======================================================== */
+    .esports-toast-hud {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%) translateY(-140px) scale(0.92);
+      width: 580px; max-width: 94vw; min-height: 76px;
+      background: linear-gradient(135deg, rgba(8, 28, 54, 0.97) 0%, rgba(3, 14, 28, 0.98) 100%);
+      border: 2.5px solid #facc15;
+      border-radius: 22px;
+      padding: 10px 18px 10px 14px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 16px 50px rgba(250, 204, 21, 0.55), 0 0 35px rgba(34, 197, 94, 0.4);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      z-index: 99999;
+      opacity: 0; pointer-events: none;
+      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+      cursor: pointer;
+    }
+    .esports-toast-hud.show {
+      transform: translateX(-50%) translateY(0) scale(1);
+      opacity: 1; pointer-events: auto;
+    }
+    .esports-toast-hud.pulse-pop {
+      animation: hudPulsePop 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes hudPulsePop {
+      0% { transform: translateX(-50%) translateY(0) scale(0.94); }
+      50% { transform: translateX(-50%) translateY(0) scale(1.04); }
+      100% { transform: translateX(-50%) translateY(0) scale(1.0); }
+    }
+
+    .hud-avatar-stage {
+      position: relative; width: 56px; height: 56px; flex-shrink: 0;
+    }
+    .hud-avatar-circle {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #0b192c;
+      border: 2.5px solid #facc15;
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.7);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hud-avatar-circle img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .hud-crown-icon {
+      position: absolute; top: -8px; right: -6px;
+      font-size: 16px;
+      filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.9));
+    }
+
+    .hud-body-info {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; justify-content: center; gap: 2px;
+    }
+    .hud-tag-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .hud-tier-badge {
+      font-size: 11px; font-weight: 900; letter-spacing: 0.8px;
+      padding: 3px 8px; border-radius: 6px;
+      background: rgba(250, 204, 21, 0.2); border: 1px solid #facc15; color: #fde047;
+      text-transform: uppercase;
+    }
+    .hud-catch-time {
+      font-size: 10px; font-weight: 700; color: #94a3b8;
+    }
+    .hud-player-row {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 15px; font-weight: 800; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hud-player-name {
+      color: #38bdf8;
+    }
+    .hud-dot-sep { color: #64748b; font-size: 12px; }
+    .hud-fish-name {
+      color: #facc15; text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+    }
+    .hud-desc-sub {
+      font-size: 11px; color: #cbd5e1; font-weight: 600;
+    }
+
+    .hud-score-stadium {
+      display: flex; flex-direction: column; align-items: flex-end; justify-content: center;
+      padding-left: 8px;
+    }
+    .hud-pts-val {
+      font-size: 18px; font-weight: 900; color: #34d399;
+      text-shadow: 0 0 12px rgba(52, 211, 153, 0.6);
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      padding: 4px 10px; border-radius: 10px;
+    }
+
+    .hud-btn-close {
+      background: none; border: none; color: #94a3b8; font-size: 18px;
+      cursor: pointer; padding: 4px; line-height: 1; transition: color 0.15s;
+    }
+    .hud-btn-close:hover { color: #fff; }
+
+    /* ========================================================
+       PAGE HEADER & CONTROLS
+       ======================================================== */
+    .header-banner {
+      max-width: 1280px; margin: 0 auto 24px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      border-radius: 18px; padding: 22px 28px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.4);
+    }
+    .title-box h1 {
+      font-size: 24px; font-weight: 900; letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #facc15 0%, #34d399 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    .title-box p {
+      font-size: 13px; color: #94a3b8;
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e;
+      color: #86efac; font-size: 12px; font-weight: 800;
+      padding: 6px 14px; border-radius: 999px;
+    }
+    .status-badge::before {
+      content: ''; width: 8px; height: 8px; background: #22c55e; border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      max-width: 1280px; margin: 0 auto 28px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+      background: rgba(15, 23, 42, 0.6); padding: 14px 20px;
+      border-radius: 14px; border: 1px solid #1e293b;
+    }
+    .btn-action {
+      background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+      color: #050b14; border: none; font-weight: 800; font-size: 13px;
+      padding: 10px 18px; border-radius: 10px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4);
+    }
+    .btn-action.btn-stop {
+      background: #334155; color: #f8fafc;
+    }
+    .btn-action.btn-random {
+      background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+      color: #fff;
+    }
+    .search-input {
+      flex: 1; min-width: 220px;
+      background: #0f172a; border: 1px solid #334155;
+      padding: 10px 16px; border-radius: 10px; color: #fff; font-size: 14px;
+    }
+    .search-input:focus { outline: none; border-color: #facc15; }
+
+    /* ========================================================
+       GRID OF 66 SECRET FISH
+       ======================================================== */
+    .fish-grid {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .fish-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(250, 204, 21, 0.25);
+      border-radius: 16px; padding: 16px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .fish-card:hover {
+      transform: translateY(-4px);
+      border-color: #facc15;
+      box-shadow: 0 12px 30px rgba(250, 204, 21, 0.25);
+    }
+    .fish-card .tier-tag {
+      position: absolute; top: 10px; left: 10px;
+      background: rgba(250, 204, 21, 0.2); border: 1px solid #facc15;
+      color: #fde047; font-size: 10px; font-weight: 900;
+      padding: 2px 8px; border-radius: 999px;
+    }
+    .fish-card .num-tag {
+      position: absolute; top: 10px; right: 10px;
+      font-size: 11px; font-weight: 800; color: #64748b;
+    }
+    .fish-img-wrap {
+      width: 100px; height: 100px; margin: 18px 0 12px;
+      border-radius: 50%; background: #070d18;
+      border: 2px solid rgba(250, 204, 21, 0.4);
+      box-shadow: 0 0 15px rgba(250, 204, 21, 0.2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .fish-img-wrap img {
+      width: 86px; height: 86px; object-fit: contain;
+      transition: transform 0.3s;
+    }
+    .fish-card:hover .fish-img-wrap img {
+      transform: scale(1.12);
+    }
+    .fish-name {
+      font-size: 15px; font-weight: 800; color: #fff;
+      margin-bottom: 4px; line-height: 1.3;
+    }
+    .fish-loc {
+      font-size: 11px; color: #94a3b8; font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .fish-odds {
+      font-size: 11px; color: #34d399; font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .btn-test-card {
+      width: 100%;
+      background: rgba(250, 204, 21, 0.15); border: 1px solid rgba(250, 204, 21, 0.5);
+      color: #facc15; font-size: 12px; font-weight: 800;
+      padding: 8px 12px; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-test-card:hover {
+      background: #facc15; color: #050b14;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic Island Toast Notification (Layar Depan) -->
+  <div class="esports-toast-hud" id="dynamicPillBanner" onclick="tutupToast()">
+    <div class="hud-avatar-stage">
+      <div class="hud-avatar-circle" id="dynamicPillAvatar">
+        <img id="dynamicPillImg" src="" alt="Avatar" style="display:none;">
+        <span id="dynamicPillInitial" style="font-size: 26px;">🎣</span>
+      </div>
+      <span class="hud-crown-icon" id="hudCrownIcon">👑</span>
+    </div>
+
+    <div class="hud-body-info">
+      <div class="hud-tag-row">
+        <span class="hud-tier-badge" id="hudTierBadge">🟢 SECRET CATCH</span>
+        <span class="hud-catch-time" id="hudCatchTime">BARU SAJA</span>
+      </div>
+      <div class="hud-player-row">
+        <span class="hud-player-name" id="dynamicPillName">SultanMancing</span>
+        <span class="hud-dot-sep">•</span>
+        <span class="hud-fish-name" id="dynamicPillFish">Leviathan</span>
+      </div>
+      <div class="hud-desc-sub" id="dynamicPillDesc">Tangkapan Langka (1 in 5.000.000)</div>
+    </div>
+
+    <div class="hud-score-stadium">
+      <span class="hud-pts-val" id="dynamicPillPts">+5 PTS</span>
+    </div>
+
+    <button class="hud-btn-close" onclick="tutupToast(); event.stopPropagation();" title="Tutup">✕</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header-banner">
+    <div class="title-box">
+      <h1>FISH IT - SHOWCASE TOAST NOTIFIKASI IKAN SECRET</h1>
+      <p>Bench Pengujian Layar Depan: Tampilan Asli Nama & Foto 66 Ikan Secret Turnamen</p>
+    </div>
+    <div>
+      <span class="status-badge">66 IKAN SECRET VERIFIED (100% PASS)</span>
+    </div>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <button class="btn-action" onclick="mulaiTurOtomatis()" id="btnAutoTour">▶ Putar Tur Otomatis (66 Ikan)</button>
+    <button class="btn-action btn-stop" onclick="stopTurOtomatis()" id="btnStopTour" style="display:none;">⏹ Stop Tur</button>
+    <button class="btn-action btn-random" onclick="tesIkanAcak()">🎲 Tes Ikan Acak</button>
+    <input type="text" class="search-input" id="searchBox" placeholder="Cari nama ikan secret atau pulau..." oninput="filterCards()">
+  </div>
+
+  <!-- Grid of Cards -->
+  <div class="fish-grid" id="fishGrid">
+
+    <div class="fish-card" data-name="king jelly" data-loc="ancient jungle">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#1</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/King%20Jelly.png" alt="King Jelly" loading="lazy" onerror="this.onerror=null; this.src='ikan/King%20Jelly.png';">
+      </div>
+      <div class="fish-name">King Jelly</div>
+      <div class="fish-loc">📍 Ancient Jungle</div>
+      <div class="fish-odds">⚡ 1 in 1.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('King Jelly', 'fish_images/King%20Jelly.png', 'Ancient Jungle', '1 in 1.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="mosasaur shark" data-loc="ancient jungle">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#2</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Mosasaur%20Shark.png" alt="Mosasaur Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Mosasaur%20Shark.png';">
+      </div>
+      <div class="fish-name">Mosasaur Shark</div>
+      <div class="fish-loc">📍 Ancient Jungle</div>
+      <div class="fish-odds">⚡ 1 in 800.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Mosasaur Shark', 'fish_images/Mosasaur%20Shark.png', 'Ancient Jungle', '1 in 800.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="flame tyrant" data-loc="copper canyon">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#3</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Flame%20Tyrant.png" alt="Flame Tyrant" loading="lazy" onerror="this.onerror=null; this.src='ikan/Flame%20Tyrant.png';">
+      </div>
+      <div class="fish-name">Flame Tyrant</div>
+      <div class="fish-loc">📍 Copper Canyon</div>
+      <div class="fish-odds">⚡ 1 in 5.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Flame Tyrant', 'fish_images/Flame%20Tyrant.png', 'Copper Canyon', '1 in 5.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="scorching veinmaw" data-loc="copper canyon">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#4</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Scorching%20Veinmaw.png" alt="Scorching Veinmaw" loading="lazy" onerror="this.onerror=null; this.src='ikan/Scorching%20Veinmaw.png';">
+      </div>
+      <div class="fish-name">Scorching Veinmaw</div>
+      <div class="fish-loc">📍 Copper Canyon</div>
+      <div class="fish-odds">⚡ 1 in 5.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Scorching Veinmaw', 'fish_images/Scorching%20Veinmaw.png', 'Copper Canyon', '1 in 5.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="crystal goliath" data-loc="crater island">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#5</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Crystal%20Goliath.png" alt="Crystal Goliath" loading="lazy" onerror="this.onerror=null; this.src='ikan/Crystal%20Goliath.png';">
+      </div>
+      <div class="fish-name">Crystal Goliath</div>
+      <div class="fish-loc">📍 Crater Island</div>
+      <div class="fish-odds">⚡ 1 in 3.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Crystal Goliath', 'fish_images/Crystal%20Goliath.png', 'Crater Island', '1 in 3.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="frostborn shark" data-loc="crater island">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#6</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Frostborn%20Shark.png" alt="Frostborn Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Frostborn%20Shark.png';">
+      </div>
+      <div class="fish-name">Frostborn Shark</div>
+      <div class="fish-loc">📍 Crater Island</div>
+      <div class="fish-odds">⚡ 1 in 500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Frostborn Shark', 'fish_images/Frostborn%20Shark.png', 'Crater Island', '1 in 500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="cursed kraken" data-loc="crystal depths">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#7</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Cursed%20Kraken.png" alt="Cursed Kraken" loading="lazy" onerror="this.onerror=null; this.src='ikan/Cursed%20Kraken.png';">
+      </div>
+      <div class="fish-name">Cursed Kraken</div>
+      <div class="fish-loc">📍 Crystal Depths</div>
+      <div class="fish-odds">⚡ 1 in 3.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Cursed Kraken', 'fish_images/Cursed%20Kraken.png', 'Crystal Depths', '1 in 3.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="elpirate gran maja" data-loc="crystal depths">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#8</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Elpirate%20Gran%20Maja.png" alt="Elpirate Gran Maja" loading="lazy" onerror="this.onerror=null; this.src='ikan/Elpirate%20Gran%20Maja.png';">
+      </div>
+      <div class="fish-name">Elpirate Gran Maja</div>
+      <div class="fish-loc">📍 Crystal Depths</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Elpirate Gran Maja', 'fish_images/Elpirate%20Gran%20Maja.png', 'Crystal Depths', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="pyrocoil" data-loc="elemental island">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#9</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Pyrocoil.png" alt="Pyrocoil" loading="lazy" onerror="this.onerror=null; this.src='ikan/Pyrocoil.png';">
+      </div>
+      <div class="fish-name">Pyrocoil</div>
+      <div class="fish-loc">📍 Elemental Island</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Pyrocoil', 'fish_images/Pyrocoil.png', 'Elemental Island', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="stormshell brute" data-loc="elemental island">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#10</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Stormshell%20Brute.png" alt="Stormshell Brute" loading="lazy" onerror="this.onerror=null; this.src='ikan/Stormshell%20Brute.png';">
+      </div>
+      <div class="fish-name">Stormshell Brute</div>
+      <div class="fish-loc">📍 Elemental Island</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Stormshell Brute', 'fish_images/Stormshell%20Brute.png', 'Elemental Island', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="wintertusk mammofin" data-loc="elemental island">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#11</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Wintertusk%20Mammofin.png" alt="Wintertusk Mammofin" loading="lazy" onerror="this.onerror=null; this.src='ikan/Wintertusk%20Mammofin.png';">
+      </div>
+      <div class="fish-name">Wintertusk Mammofin</div>
+      <div class="fish-loc">📍 Elemental Island</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Wintertusk Mammofin', 'fish_images/Wintertusk%20Mammofin.png', 'Elemental Island', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="scare" data-loc="esoteric depths">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#12</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Scare.png" alt="Scare" loading="lazy" onerror="this.onerror=null; this.src='ikan/Scare.png';">
+      </div>
+      <div class="fish-name">Scare</div>
+      <div class="fish-loc">📍 Esoteric Depths</div>
+      <div class="fish-odds">⚡ 1 in 3.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Scare', 'fish_images/Scare.png', 'Esoteric Depths', '1 in 3.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="thin armor shark" data-loc="esoteric depths">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#13</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Thin%20Armor%20Shark.png" alt="Thin Armor Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Thin%20Armor%20Shark.png';">
+      </div>
+      <div class="fish-name">Thin Armor Shark</div>
+      <div class="fish-loc">📍 Esoteric Depths</div>
+      <div class="fish-odds">⚡ 1 in 300.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Thin Armor Shark', 'fish_images/Thin%20Armor%20Shark.png', 'Esoteric Depths', '1 in 300.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="spiritborn axolotl" data-loc="esoteric grove">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#14</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Spiritborn%20Axolotl.png" alt="Spiritborn Axolotl" loading="lazy" onerror="this.onerror=null; this.src='ikan/Spiritborn%20Axolotl.png';">
+      </div>
+      <div class="fish-name">Spiritborn Axolotl</div>
+      <div class="fish-loc">📍 Esoteric Grove</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Spiritborn Axolotl', 'fish_images/Spiritborn%20Axolotl.png', 'Esoteric Grove', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="crystal crab" data-loc="fisherman island">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#15</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Crystal%20Crab.png" alt="Crystal Crab" loading="lazy" onerror="this.onerror=null; this.src='ikan/Crystal%20Crab.png';">
+      </div>
+      <div class="fish-name">Crystal Crab</div>
+      <div class="fish-loc">📍 Fisherman Island</div>
+      <div class="fish-odds">⚡ 1 in 750.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Crystal Crab', 'fish_images/Crystal%20Crab.png', 'Fisherman Island', '1 in 750.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="orca" data-loc="fisherman island">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#16</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Orca.png" alt="Orca" loading="lazy" onerror="this.onerror=null; this.src='ikan/Orca.png';">
+      </div>
+      <div class="fish-name">Orca</div>
+      <div class="fish-loc">📍 Fisherman Island</div>
+      <div class="fish-odds">⚡ 1 in 1.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Orca', 'fish_images/Orca.png', 'Fisherman Island', '1 in 1.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="riftborn arowana" data-loc="gloomcap grotto">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#17</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Riftborn%20Arowana.png" alt="Riftborn Arowana" loading="lazy" onerror="this.onerror=null; this.src='ikan/Riftborn%20Arowana.png';">
+      </div>
+      <div class="fish-name">Riftborn Arowana</div>
+      <div class="fish-loc">📍 Gloomcap Grotto</div>
+      <div class="fish-odds">⚡ 1 in 4.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Riftborn Arowana', 'fish_images/Riftborn%20Arowana.png', 'Gloomcap Grotto', '1 in 4.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="caustic maw" data-loc="lava basin">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#18</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Caustic%20Maw.png" alt="Caustic Maw" loading="lazy" onerror="this.onerror=null; this.src='ikan/Caustic%20Maw.png';">
+      </div>
+      <div class="fish-name">Caustic Maw</div>
+      <div class="fish-loc">📍 Lava Basin</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Caustic Maw', 'fish_images/Caustic%20Maw.png', 'Lava Basin', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="leviathan" data-loc="leviathan's den">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#19</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Leviathan.png" alt="Leviathan" loading="lazy" onerror="this.onerror=null; this.src='ikan/Leviathan.png';">
+      </div>
+      <div class="fish-name">Leviathan</div>
+      <div class="fish-loc">📍 Leviathan's Den</div>
+      <div class="fish-odds">⚡ 1 in 5.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Leviathan', 'fish_images/Leviathan.png', 'Leviathan's Den', '1 in 5.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="caeruleum razerback" data-loc="mariana trench">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#20</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Caeruleum%20Razerback.png" alt="Caeruleum Razerback" loading="lazy" onerror="this.onerror=null; this.src='ikan/Caeruleum%20Razerback.png';">
+      </div>
+      <div class="fish-name">Caeruleum Razerback</div>
+      <div class="fish-loc">📍 Mariana Trench</div>
+      <div class="fish-odds">⚡ 1 in 3.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Caeruleum Razerback', 'fish_images/Caeruleum%20Razerback.png', 'Mariana Trench', '1 in 3.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="colossal shipwreck crab" data-loc="mariana trench">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#21</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Colossal%20Shipwreck%20Crab.png" alt="Colossal Shipwreck Crab" loading="lazy" onerror="this.onerror=null; this.src='ikan/Colossal%20Shipwreck%20Crab.png';">
+      </div>
+      <div class="fish-name">Colossal Shipwreck Crab</div>
+      <div class="fish-loc">📍 Mariana Trench</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Colossal Shipwreck Crab', 'fish_images/Colossal%20Shipwreck%20Crab.png', 'Mariana Trench', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="bone whale" data-loc="sacred temple">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#22</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Bone%20Whale.png" alt="Bone Whale" loading="lazy" onerror="this.onerror=null; this.src='ikan/Bone%20Whale.png';">
+      </div>
+      <div class="fish-name">Bone Whale</div>
+      <div class="fish-loc">📍 Sacred Temple</div>
+      <div class="fish-odds">⚡ 1 in 2.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Bone Whale', 'fish_images/Bone%20Whale.png', 'Sacred Temple', '1 in 2.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="viridis lurker" data-loc="sacred temple">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#23</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Viridis%20Lurker.png" alt="Viridis Lurker" loading="lazy" onerror="this.onerror=null; this.src='ikan/Viridis%20Lurker.png';">
+      </div>
+      <div class="fish-name">Viridis Lurker</div>
+      <div class="fish-loc">📍 Sacred Temple</div>
+      <div class="fish-odds">⚡ 1 in 1.400.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Viridis Lurker', 'fish_images/Viridis%20Lurker.png', 'Sacred Temple', '1 in 1.400.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="runic enchant stone" data-loc="sewers">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#24</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Runic%20Enchant%20Stone.png" alt="Runic Enchant Stone" loading="lazy" onerror="this.onerror=null; this.src='ikan/Runic%20Enchant%20Stone.png';">
+      </div>
+      <div class="fish-name">Runic Enchant Stone</div>
+      <div class="fish-loc">📍 Sewers</div>
+      <div class="fish-odds">⚡ 1 in 700.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Runic Enchant Stone', 'fish_images/Runic%20Enchant%20Stone.png', 'Sewers', '1 in 700.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="cryoshade glider" data-loc="sisyphus statue">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#25</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Cryoshade%20Glider.png" alt="Cryoshade Glider" loading="lazy" onerror="this.onerror=null; this.src='ikan/Cryoshade%20Glider.png';">
+      </div>
+      <div class="fish-name">Cryoshade Glider</div>
+      <div class="fish-loc">📍 Sisyphus Statue</div>
+      <div class="fish-odds">⚡ 1 in 450.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Cryoshade Glider', 'fish_images/Cryoshade%20Glider.png', 'Sisyphus Statue', '1 in 450.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="depthseeker ray" data-loc="sisyphus statue">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#26</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Depthseeker%20Ray.png" alt="Depthseeker Ray" loading="lazy" onerror="this.onerror=null; this.src='ikan/Depthseeker%20Ray.png';">
+      </div>
+      <div class="fish-name">Depthseeker Ray</div>
+      <div class="fish-loc">📍 Sisyphus Statue</div>
+      <div class="fish-odds">⚡ 1 in 1.200.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Depthseeker Ray', 'fish_images/Depthseeker%20Ray.png', 'Sisyphus Statue', '1 in 1.200.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="giant squid" data-loc="sisyphus statue">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#27</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Giant%20Squid.png" alt="Giant Squid" loading="lazy" onerror="this.onerror=null; this.src='ikan/Giant%20Squid.png';">
+      </div>
+      <div class="fish-name">Giant Squid</div>
+      <div class="fish-loc">📍 Sisyphus Statue</div>
+      <div class="fish-odds">⚡ 1 in 800.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Giant Squid', 'fish_images/Giant%20Squid.png', 'Sisyphus Statue', '1 in 800.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="coral reaper" data-loc="stingray shores">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#28</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Coral%20Reaper.png" alt="Coral Reaper" loading="lazy" onerror="this.onerror=null; this.src='ikan/Coral%20Reaper.png';">
+      </div>
+      <div class="fish-name">Coral Reaper</div>
+      <div class="fish-loc">📍 Stingray Shores</div>
+      <div class="fish-odds">⚡ 1 in 6.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Coral Reaper', 'fish_images/Coral%20Reaper.png', 'Stingray Shores', '1 in 6.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="dark megalodon" data-loc="stingray shores">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#29</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Dark%20Megalodon.png" alt="Dark Megalodon" loading="lazy" onerror="this.onerror=null; this.src='ikan/Dark%20Megalodon.png';">
+      </div>
+      <div class="fish-name">Dark Megalodon</div>
+      <div class="fish-loc">📍 Stingray Shores</div>
+      <div class="fish-odds">⚡ 1 in 8.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Dark Megalodon', 'fish_images/Dark%20Megalodon.png', 'Stingray Shores', '1 in 8.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="elemental tempestray" data-loc="stingray shores">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#30</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Elemental%20Tempestray.png" alt="Elemental Tempestray" loading="lazy" onerror="this.onerror=null; this.src='ikan/Elemental%20Tempestray.png';">
+      </div>
+      <div class="fish-name">Elemental Tempestray</div>
+      <div class="fish-loc">📍 Stingray Shores</div>
+      <div class="fish-odds">⚡ 1 in 1.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Elemental Tempestray', 'fish_images/Elemental%20Tempestray.png', 'Stingray Shores', '1 in 1.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="two-headed shark" data-loc="stingray shores">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#31</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Two-Headed%20Shark.png" alt="Two-Headed Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Two-Headed%20Shark.png';">
+      </div>
+      <div class="fish-name">Two-Headed Shark</div>
+      <div class="fish-loc">📍 Stingray Shores</div>
+      <div class="fish-odds">⚡ 1 in 6.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Two-Headed Shark', 'fish_images/Two-Headed%20Shark.png', 'Stingray Shores', '1 in 6.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="ancient lochness monster" data-loc="sub ancient ruin">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#32</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Ancient%20Lochness%20Monster.png" alt="Ancient Lochness Monster" loading="lazy" onerror="this.onerror=null; this.src='ikan/Ancient%20Lochness%20Monster.png';">
+      </div>
+      <div class="fish-name">Ancient Lochness Monster</div>
+      <div class="fish-loc">📍 Sub Ancient Ruin</div>
+      <div class="fish-odds">⚡ -</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Ancient Lochness Monster', 'fish_images/Ancient%20Lochness%20Monster.png', 'Sub Ancient Ruin', '-')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="elshark gran maja" data-loc="sub ancient ruin">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#33</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Elshark%20Gran%20Maja.png" alt="Elshark Gran Maja" loading="lazy" onerror="this.onerror=null; this.src='ikan/Elshark%20Gran%20Maja.png';">
+      </div>
+      <div class="fish-name">Elshark Gran Maja</div>
+      <div class="fish-loc">📍 Sub Ancient Ruin</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Elshark Gran Maja', 'fish_images/Elshark%20Gran%20Maja.png', 'Sub Ancient Ruin', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="gladiator shark" data-loc="sub ancient ruin">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#34</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Gladiator%20Shark.png" alt="Gladiator Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Gladiator%20Shark.png';">
+      </div>
+      <div class="fish-name">Gladiator Shark</div>
+      <div class="fish-loc">📍 Sub Ancient Ruin</div>
+      <div class="fish-odds">⚡ 1 in 1.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Gladiator Shark', 'fish_images/Gladiator%20Shark.png', 'Sub Ancient Ruin', '1 in 1.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="eerie shark" data-loc="sub coral reefs">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#35</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Eerie%20Shark.png" alt="Eerie Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Eerie%20Shark.png';">
+      </div>
+      <div class="fish-name">Eerie Shark</div>
+      <div class="fish-loc">📍 Sub Coral Reefs</div>
+      <div class="fish-odds">⚡ 1 in 250.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Eerie Shark', 'fish_images/Eerie%20Shark.png', 'Sub Coral Reefs', '1 in 250.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="monster shark" data-loc="sub coral reefs">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#36</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Monster%20Shark.png" alt="Monster Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Monster%20Shark.png';">
+      </div>
+      <div class="fish-name">Monster Shark</div>
+      <div class="fish-loc">📍 Sub Coral Reefs</div>
+      <div class="fish-odds">⚡ 1 in 2.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Monster Shark', 'fish_images/Monster%20Shark.png', 'Sub Coral Reefs', '1 in 2.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="phantom dead zombie shark" data-loc="sub hallows eve">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#37</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Phantom%20Dead%20Zombie%20Shark.png" alt="Phantom Dead Zombie Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Phantom%20Dead%20Zombie%20Shark.png';">
+      </div>
+      <div class="fish-name">Phantom Dead Zombie Shark</div>
+      <div class="fish-loc">📍 Sub Hallows Eve</div>
+      <div class="fish-odds">⚡ 1 in 500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Phantom Dead Zombie Shark', 'fish_images/Phantom%20Dead%20Zombie%20Shark.png', 'Sub Hallows Eve', '1 in 500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="sweettooth gourdling" data-loc="sub hallows eve">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#38</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/SweetTooth%20Gourdling.png" alt="SweetTooth Gourdling" loading="lazy" onerror="this.onerror=null; this.src='ikan/SweetTooth%20Gourdling.png';">
+      </div>
+      <div class="fish-name">SweetTooth Gourdling</div>
+      <div class="fish-loc">📍 Sub Hallows Eve</div>
+      <div class="fish-odds">⚡ 1 in 3.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('SweetTooth Gourdling', 'fish_images/SweetTooth%20Gourdling.png', 'Sub Hallows Eve', '1 in 3.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="lochness monster" data-loc="sub kohana lab">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#39</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Lochness%20Monster.png" alt="Lochness Monster" loading="lazy" onerror="this.onerror=null; this.src='ikan/Lochness%20Monster.png';">
+      </div>
+      <div class="fish-name">Lochness Monster</div>
+      <div class="fish-loc">📍 Sub Kohana Lab</div>
+      <div class="fish-odds">⚡ 1 in 3.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Lochness Monster', 'fish_images/Lochness%20Monster.png', 'Sub Kohana Lab', '1 in 3.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="bloodmoon whale" data-loc="sub ocean">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#40</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Bloodmoon%20Whale.png" alt="Bloodmoon Whale" loading="lazy" onerror="this.onerror=null; this.src='ikan/Bloodmoon%20Whale.png';">
+      </div>
+      <div class="fish-name">Bloodmoon Whale</div>
+      <div class="fish-loc">📍 Sub Ocean</div>
+      <div class="fish-odds">⚡ 1 in 5.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Bloodmoon Whale', 'fish_images/Bloodmoon%20Whale.png', 'Sub Ocean', '1 in 5.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="frostmoon whale" data-loc="sub ocean">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#41</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Frostmoon%20Whale.png" alt="Frostmoon Whale" loading="lazy" onerror="this.onerror=null; this.src='ikan/Frostmoon%20Whale.png';">
+      </div>
+      <div class="fish-name">Frostmoon Whale</div>
+      <div class="fish-loc">📍 Sub Ocean</div>
+      <div class="fish-odds">⚡ 1 in 5.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Frostmoon Whale', 'fish_images/Frostmoon%20Whale.png', 'Sub Ocean', '1 in 5.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="glacial serpent" data-loc="sub ocean">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#42</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Glacial%20Serpent.png" alt="Glacial Serpent" loading="lazy" onerror="this.onerror=null; this.src='ikan/Glacial%20Serpent.png';">
+      </div>
+      <div class="fish-name">Glacial Serpent</div>
+      <div class="fish-loc">📍 Sub Ocean</div>
+      <div class="fish-odds">⚡ 1 in 6.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Glacial Serpent', 'fish_images/Glacial%20Serpent.png', 'Sub Ocean', '1 in 6.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="jellybeam" data-loc="sub ocean">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#43</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Jellybeam.png" alt="Jellybeam" loading="lazy" onerror="this.onerror=null; this.src='ikan/Jellybeam.png';">
+      </div>
+      <div class="fish-name">Jellybeam</div>
+      <div class="fish-loc">📍 Sub Ocean</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Jellybeam', 'fish_images/Jellybeam.png', 'Sub Ocean', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="megalodon" data-loc="sub ocean">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#44</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Megalodon.png" alt="Megalodon" loading="lazy" onerror="this.onerror=null; this.src='ikan/Megalodon.png';">
+      </div>
+      <div class="fish-name">Megalodon</div>
+      <div class="fish-loc">📍 Sub Ocean</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Megalodon', 'fish_images/Megalodon.png', 'Sub Ocean', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="pirate megalodon" data-loc="sub pirate treasure room">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#45</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Pirate%20Megalodon.png" alt="Pirate Megalodon" loading="lazy" onerror="this.onerror=null; this.src='ikan/Pirate%20Megalodon.png';">
+      </div>
+      <div class="fish-name">Pirate Megalodon</div>
+      <div class="fish-loc">📍 Sub Pirate Treasure Room</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Pirate Megalodon', 'fish_images/Pirate%20Megalodon.png', 'Sub Pirate Treasure Room', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="blob shark" data-loc="sub planetary observatory">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#46</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Blob%20Shark.png" alt="Blob Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Blob%20Shark.png';">
+      </div>
+      <div class="fish-name">Blob Shark</div>
+      <div class="fish-loc">📍 Sub Planetary Observatory</div>
+      <div class="fish-odds">⚡ 1 in 250.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Blob Shark', 'fish_images/Blob%20Shark.png', 'Sub Planetary Observatory', '1 in 250.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="cosmic mutant shark" data-loc="sub planetary observatory">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#47</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Cosmic%20Mutant%20Shark.png" alt="Cosmic Mutant Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Cosmic%20Mutant%20Shark.png';">
+      </div>
+      <div class="fish-name">Cosmic Mutant Shark</div>
+      <div class="fish-loc">📍 Sub Planetary Observatory</div>
+      <div class="fish-odds">⚡ 1 in 2.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Cosmic Mutant Shark', 'fish_images/Cosmic%20Mutant%20Shark.png', 'Sub Planetary Observatory', '1 in 2.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="bonemaw tyrant" data-loc="sub sewers">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#48</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Bonemaw%20Tyrant.png" alt="Bonemaw Tyrant" loading="lazy" onerror="this.onerror=null; this.src='ikan/Bonemaw%20Tyrant.png';">
+      </div>
+      <div class="fish-name">Bonemaw Tyrant</div>
+      <div class="fish-loc">📍 Sub Sewers</div>
+      <div class="fish-odds">⚡ 1 in 2.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Bonemaw Tyrant', 'fish_images/Bonemaw%20Tyrant.png', 'Sub Sewers', '1 in 2.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="dawnbringer betta" data-loc="sub talon kikir region">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#49</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Dawnbringer%20Betta.png" alt="Dawnbringer Betta" loading="lazy" onerror="this.onerror=null; this.src='ikan/Dawnbringer%20Betta.png';">
+      </div>
+      <div class="fish-name">Dawnbringer Betta</div>
+      <div class="fish-loc">📍 Sub Talon Kikir Region</div>
+      <div class="fish-odds">⚡ 1 in 1.250.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Dawnbringer Betta', 'fish_images/Dawnbringer%20Betta.png', 'Sub Talon Kikir Region', '1 in 1.250.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="ghost shark" data-loc="sub talon kikir region">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#50</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Ghost%20Shark.png" alt="Ghost Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Ghost%20Shark.png';">
+      </div>
+      <div class="fish-name">Ghost Shark</div>
+      <div class="fish-loc">📍 Sub Talon Kikir Region</div>
+      <div class="fish-odds">⚡ 1 in 500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Ghost Shark', 'fish_images/Ghost%20Shark.png', 'Sub Talon Kikir Region', '1 in 500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="mr money bags" data-loc="sub talon kikir region">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#51</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Mr%20Money%20Bags.png" alt="Mr Money Bags" loading="lazy" onerror="this.onerror=null; this.src='ikan/Mr%20Money%20Bags.png';">
+      </div>
+      <div class="fish-name">Mr Money Bags</div>
+      <div class="fish-loc">📍 Sub Talon Kikir Region</div>
+      <div class="fish-odds">⚡ 1 in 4.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Mr Money Bags', 'fish_images/Mr%20Money%20Bags.png', 'Sub Talon Kikir Region', '1 in 4.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="skeleton narwhal" data-loc="sub talon kikir region">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#52</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Skeleton%20Narwhal.png" alt="Skeleton Narwhal" loading="lazy" onerror="this.onerror=null; this.src='ikan/Skeleton%20Narwhal.png';">
+      </div>
+      <div class="fish-name">Skeleton Narwhal</div>
+      <div class="fish-loc">📍 Sub Talon Kikir Region</div>
+      <div class="fish-odds">⚡ 1 in 600.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Skeleton Narwhal', 'fish_images/Skeleton%20Narwhal.png', 'Sub Talon Kikir Region', '1 in 600.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="worm fish" data-loc="sub talon kikir region">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#53</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Worm%20Fish.png" alt="Worm Fish" loading="lazy" onerror="this.onerror=null; this.src='ikan/Worm%20Fish.png';">
+      </div>
+      <div class="fish-name">Worm Fish</div>
+      <div class="fish-loc">📍 Sub Talon Kikir Region</div>
+      <div class="fish-odds">⚡ 1 in 3.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Worm Fish', 'fish_images/Worm%20Fish.png', 'Sub Talon Kikir Region', '1 in 3.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="midnight blue wildes shark" data-loc="sub the forgotten graveyard">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#54</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Midnight%20Blue%20Wildes%20Shark.png" alt="Midnight Blue Wildes Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Midnight%20Blue%20Wildes%20Shark.png';">
+      </div>
+      <div class="fish-name">Midnight Blue Wildes Shark</div>
+      <div class="fish-loc">📍 Sub The Forgotten Graveyard</div>
+      <div class="fish-odds">⚡ -</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Midnight Blue Wildes Shark', 'fish_images/Midnight%20Blue%20Wildes%20Shark.png', 'Sub The Forgotten Graveyard', '-')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="sky blue talon shark" data-loc="sub the forgotten graveyard">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#55</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Sky%20Blue%20Talon%20Shark.png" alt="Sky Blue Talon Shark" loading="lazy" onerror="this.onerror=null; this.src='ikan/Sky%20Blue%20Talon%20Shark.png';">
+      </div>
+      <div class="fish-name">Sky Blue Talon Shark</div>
+      <div class="fish-loc">📍 Sub The Forgotten Graveyard</div>
+      <div class="fish-odds">⚡ -</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Sky Blue Talon Shark', 'fish_images/Sky%20Blue%20Talon%20Shark.png', 'Sub The Forgotten Graveyard', '-')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="soulveil koi" data-loc="sub the forgotten graveyard">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#56</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Soulveil%20Koi.png" alt="Soulveil Koi" loading="lazy" onerror="this.onerror=null; this.src='ikan/Soulveil%20Koi.png';">
+      </div>
+      <div class="fish-name">Soulveil Koi</div>
+      <div class="fish-loc">📍 Sub The Forgotten Graveyard</div>
+      <div class="fish-odds">⚡ 1 in 2.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Soulveil Koi', 'fish_images/Soulveil%20Koi.png', 'Sub The Forgotten Graveyard', '1 in 2.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="vineyard kraken" data-loc="sub the forgotten graveyard">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#57</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Vineyard%20Kraken.png" alt="Vineyard Kraken" loading="lazy" onerror="this.onerror=null; this.src='ikan/Vineyard%20Kraken.png';">
+      </div>
+      <div class="fish-name">Vineyard Kraken</div>
+      <div class="fish-loc">📍 Sub The Forgotten Graveyard</div>
+      <div class="fish-odds">⚡ 1 in 5.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Vineyard Kraken', 'fish_images/Vineyard%20Kraken.png', 'Sub The Forgotten Graveyard', '1 in 5.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="ancient whale" data-loc="sub underground cellar">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#58</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Ancient%20Whale.png" alt="Ancient Whale" loading="lazy" onerror="this.onerror=null; this.src='ikan/Ancient%20Whale.png';">
+      </div>
+      <div class="fish-name">Ancient Whale</div>
+      <div class="fish-loc">📍 Sub Underground Cellar</div>
+      <div class="fish-odds">⚡ 1 in 2.750.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Ancient Whale', 'fish_images/Ancient%20Whale.png', 'Sub Underground Cellar', '1 in 2.750.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="deepsea monster axolotl" data-loc="sub underwater city">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#59</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Deepsea%20Monster%20Axolotl.png" alt="Deepsea Monster Axolotl" loading="lazy" onerror="this.onerror=null; this.src='ikan/Deepsea%20Monster%20Axolotl.png';">
+      </div>
+      <div class="fish-name">Deepsea Monster Axolotl</div>
+      <div class="fish-loc">📍 Sub Underwater City</div>
+      <div class="fish-odds">⚡ 1 in 2.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Deepsea Monster Axolotl', 'fish_images/Deepsea%20Monster%20Axolotl.png', 'Sub Underwater City', '1 in 2.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="mutant runic koi" data-loc="sub underwater city">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#60</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Mutant%20Runic%20Koi.png" alt="Mutant Runic Koi" loading="lazy" onerror="this.onerror=null; this.src='ikan/Mutant%20Runic%20Koi.png';">
+      </div>
+      <div class="fish-name">Mutant Runic Koi</div>
+      <div class="fish-loc">📍 Sub Underwater City</div>
+      <div class="fish-odds">⚡ -</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Mutant Runic Koi', 'fish_images/Mutant%20Runic%20Koi.png', 'Sub Underwater City', '-')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="ancient magma whale" data-loc="sub volcanic cavern">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#61</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Ancient%20Magma%20Whale.png" alt="Ancient Magma Whale" loading="lazy" onerror="this.onerror=null; this.src='ikan/Ancient%20Magma%20Whale.png';">
+      </div>
+      <div class="fish-name">Ancient Magma Whale</div>
+      <div class="fish-loc">📍 Sub Volcanic Cavern</div>
+      <div class="fish-odds">⚡ 1 in 5.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Ancient Magma Whale', 'fish_images/Ancient%20Magma%20Whale.png', 'Sub Volcanic Cavern', '1 in 5.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="ashen kingfish" data-loc="throne room">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#62</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Ashen%20Kingfish.png" alt="Ashen Kingfish" loading="lazy" onerror="this.onerror=null; this.src='ikan/Ashen%20Kingfish.png';">
+      </div>
+      <div class="fish-name">Ashen Kingfish</div>
+      <div class="fish-loc">📍 Throne Room</div>
+      <div class="fish-odds">⚡ 1 in 3.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Ashen Kingfish', 'fish_images/Ashen%20Kingfish.png', 'Throne Room', '1 in 3.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="pelagon" data-loc="treasure room">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#63</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Pelagon.png" alt="Pelagon" loading="lazy" onerror="this.onerror=null; this.src='ikan/Pelagon.png';">
+      </div>
+      <div class="fish-name">Pelagon</div>
+      <div class="fish-loc">📍 Treasure Room</div>
+      <div class="fish-odds">⚡ 1 in 4.500.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Pelagon', 'fish_images/Pelagon.png', 'Treasure Room', '1 in 4.500.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="queen crab" data-loc="treasure room">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#64</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Queen%20Crab.png" alt="Queen Crab" loading="lazy" onerror="this.onerror=null; this.src='ikan/Queen%20Crab.png';">
+      </div>
+      <div class="fish-name">Queen Crab</div>
+      <div class="fish-loc">📍 Treasure Room</div>
+      <div class="fish-odds">⚡ 1 in 800.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Queen Crab', 'fish_images/Queen%20Crab.png', 'Treasure Room', '1 in 800.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="coral whale" data-loc="tropical grove">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#65</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Coral%20Whale.png" alt="Coral Whale" loading="lazy" onerror="this.onerror=null; this.src='ikan/Coral%20Whale.png';">
+      </div>
+      <div class="fish-name">Coral Whale</div>
+      <div class="fish-loc">📍 Tropical Grove</div>
+      <div class="fish-odds">⚡ 1 in 2.000.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Coral Whale', 'fish_images/Coral%20Whale.png', 'Tropical Grove', '1 in 2.000.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+    <div class="fish-card" data-name="great whale" data-loc="tropical grove">
+      <span class="tier-tag">SECRET</span>
+      <span class="num-tag">#66</span>
+      <div class="fish-img-wrap">
+        <img src="fish_images/Great%20Whale.png" alt="Great Whale" loading="lazy" onerror="this.onerror=null; this.src='ikan/Great%20Whale.png';">
+      </div>
+      <div class="fish-name">Great Whale</div>
+      <div class="fish-loc">📍 Tropical Grove</div>
+      <div class="fish-odds">⚡ 1 in 950.000</div>
+      <button class="btn-test-card" onclick="tesIkanSpesifik('Great Whale', 'fish_images/Great%20Whale.png', 'Tropical Grove', '1 in 950.000')">
+        ⚡ Tes Notifikasi Toast
+      </button>
+    </div>
+    
+  </div>
+
+  <script>
+    const allSecretFish = [{"name": "King Jelly", "tier": "secret", "rarity": "Secret", "odds": "1 in 1.500.000", "location": "Ancient Jungle", "filename": "King Jelly.png", "local_image": "fish_images/King Jelly.png", "ikan_image": "ikan/King Jelly.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/08_Ancient Jungle/Tier_7_Secret/King Jelly.png", "assetId": "104757933481327"}, {"name": "Mosasaur Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 800.000", "location": "Ancient Jungle", "filename": "Mosasaur Shark.png", "local_image": "fish_images/Mosasaur Shark.png", "ikan_image": "ikan/Mosasaur Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/08_Ancient Jungle/Tier_7_Secret/Mosasaur Shark.png", "assetId": "119021943786069"}, {"name": "Flame Tyrant", "tier": "secret", "rarity": "Secret", "odds": "1 in 5.000.000", "location": "Copper Canyon", "filename": "Flame Tyrant.png", "local_image": "fish_images/Flame Tyrant.png", "ikan_image": "ikan/Flame Tyrant.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/19_Copper Canyon/Tier_7_Secret/Flame Tyrant.png", "assetId": "72886777827927"}, {"name": "Scorching Veinmaw", "tier": "secret", "rarity": "Secret", "odds": "1 in 5.000.000", "location": "Copper Canyon", "filename": "Scorching Veinmaw.png", "local_image": "fish_images/Scorching Veinmaw.png", "ikan_image": "ikan/Scorching Veinmaw.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/19_Copper Canyon/Tier_7_Secret/Scorching Veinmaw.png", "assetId": "130117020359343"}, {"name": "Crystal Goliath", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.000.000", "location": "Crater Island", "filename": "Crystal Goliath.png", "local_image": "fish_images/Crystal Goliath.png", "ikan_image": "ikan/Crystal Goliath.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/_Ikon_Baru_Tambahan/Crystal Goliath.png", "assetId": "99835874671011"}, {"name": "Frostborn Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 500.000", "location": "Crater Island", "filename": "Frostborn Shark.png", "local_image": "fish_images/Frostborn Shark.png", "ikan_image": "ikan/Frostborn Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/07_Crater Island/Tier_7_Secret/Frostborn Shark.png", "assetId": "125463067542850"}, {"name": "Cursed Kraken", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.500.000", "location": "Crystal Depths", "filename": "Cursed Kraken.png", "local_image": "fish_images/Cursed Kraken.png", "ikan_image": "ikan/Cursed Kraken.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/16_Crystal Depths/Tier_7_Secret/Cursed Kraken.png", "assetId": "88584771745160"}, {"name": "Elpirate Gran Maja", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Crystal Depths", "filename": "Elpirate Gran Maja.png", "local_image": "fish_images/Elpirate Gran Maja.png", "ikan_image": "ikan/Elpirate Gran Maja.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/16_Crystal Depths/Tier_7_Secret/Elpirate Gran Maja.png", "assetId": "131441237084542"}, {"name": "Pyrocoil", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Elemental Island", "filename": "Pyrocoil.png", "local_image": "fish_images/Pyrocoil.png", "ikan_image": "ikan/Pyrocoil.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/_Ikon_Baru_Tambahan/Pyrocoil.png", "assetId": "83448114611390"}, {"name": "Stormshell Brute", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Elemental Island", "filename": "Stormshell Brute.png", "local_image": "fish_images/Stormshell Brute.png", "ikan_image": "ikan/Stormshell Brute.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/22_Elemental Island/Tier_7_Secret/Stormshell Brute.png", "assetId": "108844510160138"}, {"name": "Wintertusk Mammofin", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Elemental Island", "filename": "Wintertusk Mammofin.png", "local_image": "fish_images/Wintertusk Mammofin.png", "ikan_image": "ikan/Wintertusk Mammofin.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/22_Elemental Island/Tier_7_Secret/Wintertusk Mammofin.png", "assetId": "130511306644353"}, {"name": "Scare", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.000.000", "location": "Esoteric Depths", "filename": "Scare.png", "local_image": "fish_images/Scare.png", "ikan_image": "ikan/Scare.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/_Ikon_Baru_Tambahan/Scare.png", "assetId": "76893887663677"}, {"name": "Thin Armor Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 300.000", "location": "Esoteric Depths", "filename": "Thin Armor Shark.png", "local_image": "fish_images/Thin Armor Shark.png", "ikan_image": "ikan/Thin Armor Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/05_Esoteric Depths/Tier_7_Secret/Thin Armor Shark.png", "assetId": "123540389497955"}, {"name": "Spiritborn Axolotl", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Esoteric Grove", "filename": "Spiritborn Axolotl.png", "local_image": "fish_images/Spiritborn Axolotl.png", "ikan_image": "ikan/Spiritborn Axolotl.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/06_Esoteric Grove/Tier_7_Secret/Spiritborn Axolotl.png", "assetId": "74924050887640"}, {"name": "Crystal Crab", "tier": "secret", "rarity": "Secret", "odds": "1 in 750.000", "location": "Fisherman Island", "filename": "Crystal Crab.png", "local_image": "fish_images/Crystal Crab.png", "ikan_image": "ikan/Crystal Crab.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/_Ikon_Baru_Tambahan/Crystal Crab.png", "assetId": "110188263756245"}, {"name": "Orca", "tier": "secret", "rarity": "Secret", "odds": "1 in 1.500.000", "location": "Fisherman Island", "filename": "Orca.png", "local_image": "fish_images/Orca.png", "ikan_image": "ikan/Orca.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/01_Fisherman Island/Tier_7_Secret/Orca.png", "assetId": "120876783250189"}, {"name": "Riftborn Arowana", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.500.000", "location": "Gloomcap Grotto", "filename": "Riftborn Arowana.png", "local_image": "fish_images/Riftborn Arowana.png", "ikan_image": "ikan/Riftborn Arowana.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/17_Gloomcap Grotto/Tier_7_Secret/Riftborn Arowana.png", "assetId": "95701753644235"}, {"name": "Caustic Maw", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Lava Basin", "filename": "Caustic Maw.png", "local_image": "fish_images/Caustic Maw.png", "ikan_image": "ikan/Caustic Maw.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/13_Lava Basin/Tier_7_Secret/Caustic Maw.png", "assetId": "139189575041763"}, {"name": "Leviathan", "tier": "secret", "rarity": "Secret", "odds": "1 in 5.000.000", "location": "Leviathan's Den", "filename": "Leviathan.png", "local_image": "fish_images/Leviathan.png", "ikan_image": "ikan/Leviathan.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/15_Leviathan's Den/Tier_7_Secret/Leviathan.png", "assetId": "121794505904244"}, {"name": "Caeruleum Razerback", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.000.000", "location": "Mariana Trench", "filename": "Caeruleum Razerback.png", "local_image": "fish_images/Caeruleum Razerback.png", "ikan_image": "ikan/Caeruleum Razerback.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/21_Mariana Trench/Tier_7_Secret/Caeruleum Razerback.png", "assetId": "104374429564135"}, {"name": "Colossal Shipwreck Crab", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Mariana Trench", "filename": "Colossal Shipwreck Crab.png", "local_image": "fish_images/Colossal Shipwreck Crab.png", "ikan_image": "ikan/Colossal Shipwreck Crab.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/21_Mariana Trench/Tier_7_Secret/Colossal Shipwreck Crab.png", "assetId": "75383928056122"}, {"name": "Bone Whale", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.000.000", "location": "Sacred Temple", "filename": "Bone Whale.png", "local_image": "fish_images/Bone Whale.png", "ikan_image": "ikan/Bone Whale.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/09_Sacred Temple/Tier_7_Secret/Bone Whale.png", "assetId": "99804145194043"}, {"name": "Viridis Lurker", "tier": "secret", "rarity": "Secret", "odds": "1 in 1.400.000", "location": "Sacred Temple", "filename": "Viridis Lurker.png", "local_image": "fish_images/Viridis Lurker.png", "ikan_image": "ikan/Viridis Lurker.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/09_Sacred Temple/Tier_7_Secret/Viridis Lurker.png", "assetId": "104425720050620"}, {"name": "Runic Enchant Stone", "tier": "secret", "rarity": "Secret", "odds": "1 in 700.000", "location": "Sewers", "filename": "Runic Enchant Stone.png", "local_image": "fish_images/Runic Enchant Stone.png", "ikan_image": "ikan/Runic Enchant Stone.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/_Ikon_Baru_Tambahan/Runic Enchant Stone.png", "assetId": "139603424264761"}, {"name": "Cryoshade Glider", "tier": "secret", "rarity": "Secret", "odds": "1 in 450.000", "location": "Sisyphus Statue", "filename": "Cryoshade Glider.png", "local_image": "fish_images/Cryoshade Glider.png", "ikan_image": "ikan/Cryoshade Glider.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/11_Sisyphus Statue/Tier_7_Secret/Cryoshade Glider.png", "assetId": "107008051913908"}, {"name": "Depthseeker Ray", "tier": "secret", "rarity": "Secret", "odds": "1 in 1.200.000", "location": "Sisyphus Statue", "filename": "Depthseeker Ray.png", "local_image": "fish_images/Depthseeker Ray.png", "ikan_image": "ikan/Depthseeker Ray.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/11_Sisyphus Statue/Tier_7_Secret/Depthseeker Ray.png", "assetId": "92527448781061"}, {"name": "Giant Squid", "tier": "secret", "rarity": "Secret", "odds": "1 in 800.000", "location": "Sisyphus Statue", "filename": "Giant Squid.png", "local_image": "fish_images/Giant Squid.png", "ikan_image": "ikan/Giant Squid.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/11_Sisyphus Statue/Tier_7_Secret/Giant Squid.png", "assetId": "135470649745250"}, {"name": "Coral Reaper", "tier": "secret", "rarity": "Secret", "odds": "1 in 6.000.000", "location": "Stingray Shores", "filename": "Coral Reaper.png", "local_image": "fish_images/Coral Reaper.png", "ikan_image": "ikan/Coral Reaper.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/18_Stingray Shores/Tier_7_Secret/Coral Reaper.png", "assetId": "101738084296566"}, {"name": "Dark Megalodon", "tier": "secret", "rarity": "Secret", "odds": "1 in 8.000.000", "location": "Stingray Shores", "filename": "Dark Megalodon.png", "local_image": "fish_images/Dark Megalodon.png", "ikan_image": "ikan/Dark Megalodon.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/18_Stingray Shores/Tier_7_Secret/Dark Megalodon.png", "assetId": "114809272977194"}, {"name": "Elemental Tempestray", "tier": "secret", "rarity": "Secret", "odds": "1 in 1.000.000", "location": "Stingray Shores", "filename": "Elemental Tempestray.png", "local_image": "fish_images/Elemental Tempestray.png", "ikan_image": "ikan/Elemental Tempestray.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/18_Stingray Shores/Tier_7_Secret/Elemental Tempestray.png", "assetId": "116857965937952"}, {"name": "Two-Headed Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 6.000.000", "location": "Stingray Shores", "filename": "Two-Headed Shark.png", "local_image": "fish_images/Two-Headed Shark.png", "ikan_image": "ikan/Two-Headed Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/18_Stingray Shores/Tier_7_Secret/Two-Headed Shark.png", "assetId": "104938167952995"}, {"name": "Ancient Lochness Monster", "tier": "secret", "rarity": "Secret", "odds": "-", "location": "Sub Ancient Ruin", "filename": "Ancient Lochness Monster.png", "local_image": "fish_images/Ancient Lochness Monster.png", "ikan_image": "ikan/Ancient Lochness Monster.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ancient Ruin/Tier_7_Secret/Ancient Lochness Monster.png", "assetId": "122849883484708"}, {"name": "Elshark Gran Maja", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Sub Ancient Ruin", "filename": "Elshark Gran Maja.png", "local_image": "fish_images/Elshark Gran Maja.png", "ikan_image": "ikan/Elshark Gran Maja.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ancient Ruin/Tier_7_Secret/Elshark Gran Maja.png", "assetId": "115522161459382"}, {"name": "Gladiator Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 1.000.000", "location": "Sub Ancient Ruin", "filename": "Gladiator Shark.png", "local_image": "fish_images/Gladiator Shark.png", "ikan_image": "ikan/Gladiator Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ancient Ruin/Tier_7_Secret/Gladiator Shark.png", "assetId": "131785277053113"}, {"name": "Eerie Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 250.000", "location": "Sub Coral Reefs", "filename": "Eerie Shark.png", "local_image": "fish_images/Eerie Shark.png", "ikan_image": "ikan/Eerie Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Coral Reefs/Tier_7_Secret/Eerie Shark.png", "assetId": "114252804065144"}, {"name": "Monster Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.500.000", "location": "Sub Coral Reefs", "filename": "Monster Shark.png", "local_image": "fish_images/Monster Shark.png", "ikan_image": "ikan/Monster Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Coral Reefs/Tier_7_Secret/Monster Shark.png", "assetId": "109551787474599"}, {"name": "Phantom Dead Zombie Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 500.000", "location": "Sub Hallows Eve", "filename": "Phantom Dead Zombie Shark.png", "local_image": "fish_images/Phantom Dead Zombie Shark.png", "ikan_image": "ikan/Phantom Dead Zombie Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Hallows Eve/Tier_7_Secret/Phantom Dead Zombie Shark.png", "assetId": "71307005282080"}, {"name": "SweetTooth Gourdling", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.000.000", "location": "Sub Hallows Eve", "filename": "SweetTooth Gourdling.png", "local_image": "fish_images/SweetTooth Gourdling.png", "ikan_image": "ikan/SweetTooth Gourdling.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Hallows Eve/Tier_7_Secret/SweetTooth Gourdling.png", "assetId": "121042393735316"}, {"name": "Lochness Monster", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.000.000", "location": "Sub Kohana Lab", "filename": "Lochness Monster.png", "local_image": "fish_images/Lochness Monster.png", "ikan_image": "ikan/Lochness Monster.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Kohana Lab/Tier_7_Secret/Lochness Monster.png", "assetId": "88964613838360"}, {"name": "Bloodmoon Whale", "tier": "secret", "rarity": "Secret", "odds": "1 in 5.000.000", "location": "Sub Ocean", "filename": "Bloodmoon Whale.png", "local_image": "fish_images/Bloodmoon Whale.png", "ikan_image": "ikan/Bloodmoon Whale.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ocean/Tier_7_Secret/Bloodmoon Whale.png", "assetId": "113886190969614"}, {"name": "Frostmoon Whale", "tier": "secret", "rarity": "Secret", "odds": "1 in 5.000.000", "location": "Sub Ocean", "filename": "Frostmoon Whale.png", "local_image": "fish_images/Frostmoon Whale.png", "ikan_image": "ikan/Frostmoon Whale.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ocean/Tier_7_Secret/Frostmoon Whale.png", "assetId": "79116906979409"}, {"name": "Glacial Serpent", "tier": "secret", "rarity": "Secret", "odds": "1 in 6.000.000", "location": "Sub Ocean", "filename": "Glacial Serpent.png", "local_image": "fish_images/Glacial Serpent.png", "ikan_image": "ikan/Glacial Serpent.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ocean/Tier_7_Secret/Glacial Serpent.png", "assetId": "89525947297991"}, {"name": "Jellybeam", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Sub Ocean", "filename": "Jellybeam.png", "local_image": "fish_images/Jellybeam.png", "ikan_image": "ikan/Jellybeam.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ocean/Tier_7_Secret/Jellybeam.png", "assetId": "90794797545427"}, {"name": "Megalodon", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Sub Ocean", "filename": "Megalodon.png", "local_image": "fish_images/Megalodon.png", "ikan_image": "ikan/Megalodon.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Ocean/Tier_7_Secret/Megalodon.png", "assetId": "126066407227328"}, {"name": "Pirate Megalodon", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Sub Pirate Treasure Room", "filename": "Pirate Megalodon.png", "local_image": "fish_images/Pirate Megalodon.png", "ikan_image": "ikan/Pirate Megalodon.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Pirate Treasure Room/Tier_7_Secret/Pirate Megalodon.png", "assetId": "111717850876602"}, {"name": "Blob Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 250.000", "location": "Sub Planetary Observatory", "filename": "Blob Shark.png", "local_image": "fish_images/Blob Shark.png", "ikan_image": "ikan/Blob Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Planetary Observatory/Tier_7_Secret/Blob Shark.png", "assetId": "120294742064292"}, {"name": "Cosmic Mutant Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.000.000", "location": "Sub Planetary Observatory", "filename": "Cosmic Mutant Shark.png", "local_image": "fish_images/Cosmic Mutant Shark.png", "ikan_image": "ikan/Cosmic Mutant Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Planetary Observatory/Tier_7_Secret/Cosmic Mutant Shark.png", "assetId": "73059280090488"}, {"name": "Bonemaw Tyrant", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.500.000", "location": "Sub Sewers", "filename": "Bonemaw Tyrant.png", "local_image": "fish_images/Bonemaw Tyrant.png", "ikan_image": "ikan/Bonemaw Tyrant.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Sewers/Tier_7_Secret/Bonemaw Tyrant.png", "assetId": "113238296585201"}, {"name": "Dawnbringer Betta", "tier": "secret", "rarity": "Secret", "odds": "1 in 1.250.000", "location": "Sub Talon Kikir Region", "filename": "Dawnbringer Betta.png", "local_image": "fish_images/Dawnbringer Betta.png", "ikan_image": "ikan/Dawnbringer Betta.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Talon Kikir Region/Tier_7_Secret/Dawnbringer Betta.png", "assetId": "102382748870108"}, {"name": "Ghost Shark", "tier": "secret", "rarity": "Secret", "odds": "1 in 500.000", "location": "Sub Talon Kikir Region", "filename": "Ghost Shark.png", "local_image": "fish_images/Ghost Shark.png", "ikan_image": "ikan/Ghost Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Talon Kikir Region/Tier_7_Secret/Ghost Shark.png", "assetId": "102028503382077"}, {"name": "Mr Money Bags", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.000.000", "location": "Sub Talon Kikir Region", "filename": "Mr Money Bags.png", "local_image": "fish_images/Mr Money Bags.png", "ikan_image": "ikan/Mr Money Bags.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Talon Kikir Region/Tier_7_Secret/Mr Money Bags.png", "assetId": "79425130872856"}, {"name": "Skeleton Narwhal", "tier": "secret", "rarity": "Secret", "odds": "1 in 600.000", "location": "Sub Talon Kikir Region", "filename": "Skeleton Narwhal.png", "local_image": "fish_images/Skeleton Narwhal.png", "ikan_image": "ikan/Skeleton Narwhal.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Talon Kikir Region/Tier_7_Secret/Skeleton Narwhal.png", "assetId": "72248976760148"}, {"name": "Worm Fish", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.000.000", "location": "Sub Talon Kikir Region", "filename": "Worm Fish.png", "local_image": "fish_images/Worm Fish.png", "ikan_image": "ikan/Worm Fish.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Talon Kikir Region/Tier_7_Secret/Worm Fish.png", "assetId": "88157067345872"}, {"name": "Midnight Blue Wildes Shark", "tier": "secret", "rarity": "Secret", "odds": "-", "location": "Sub The Forgotten Graveyard", "filename": "Midnight Blue Wildes Shark.png", "local_image": "fish_images/Midnight Blue Wildes Shark.png", "ikan_image": "ikan/Midnight Blue Wildes Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_The Forgotten Graveyard/Tier_7_Secret/Midnight Blue Wildes Shark.png", "assetId": "107447774703522"}, {"name": "Sky Blue Talon Shark", "tier": "secret", "rarity": "Secret", "odds": "-", "location": "Sub The Forgotten Graveyard", "filename": "Sky Blue Talon Shark.png", "local_image": "fish_images/Sky Blue Talon Shark.png", "ikan_image": "ikan/Sky Blue Talon Shark.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_The Forgotten Graveyard/Tier_7_Secret/Sky Blue Talon Shark.png", "assetId": "89934004739066"}, {"name": "Soulveil Koi", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.000.000", "location": "Sub The Forgotten Graveyard", "filename": "Soulveil Koi.png", "local_image": "fish_images/Soulveil Koi.png", "ikan_image": "ikan/Soulveil Koi.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_The Forgotten Graveyard/Tier_7_Secret/Soulveil Koi.png", "assetId": "90194192359329"}, {"name": "Vineyard Kraken", "tier": "secret", "rarity": "Secret", "odds": "1 in 5.000.000", "location": "Sub The Forgotten Graveyard", "filename": "Vineyard Kraken.png", "local_image": "fish_images/Vineyard Kraken.png", "ikan_image": "ikan/Vineyard Kraken.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_The Forgotten Graveyard/Tier_7_Secret/Vineyard Kraken.png", "assetId": "85758264678366"}, {"name": "Ancient Whale", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.750.000", "location": "Sub Underground Cellar", "filename": "Ancient Whale.png", "local_image": "fish_images/Ancient Whale.png", "ikan_image": "ikan/Ancient Whale.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Underground Cellar/Tier_7_Secret/Ancient Whale.png", "assetId": "106712272327597"}, {"name": "Deepsea Monster Axolotl", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.000.000", "location": "Sub Underwater City", "filename": "Deepsea Monster Axolotl.png", "local_image": "fish_images/Deepsea Monster Axolotl.png", "ikan_image": "ikan/Deepsea Monster Axolotl.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Underwater City/Tier_7_Secret/Deepsea Monster Axolotl.png", "assetId": "96135359777643"}, {"name": "Mutant Runic Koi", "tier": "secret", "rarity": "Secret", "odds": "-", "location": "Sub Underwater City", "filename": "Mutant Runic Koi.png", "local_image": "fish_images/Mutant Runic Koi.png", "ikan_image": "ikan/Mutant Runic Koi.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Underwater City/Tier_7_Secret/Mutant Runic Koi.png", "assetId": "70864605663877"}, {"name": "Ancient Magma Whale", "tier": "secret", "rarity": "Secret", "odds": "1 in 5.000.000", "location": "Sub Volcanic Cavern", "filename": "Ancient Magma Whale.png", "local_image": "fish_images/Ancient Magma Whale.png", "ikan_image": "ikan/Ancient Magma Whale.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/Sub_Volcanic Cavern/Tier_7_Secret/Ancient Magma Whale.png", "assetId": "79419619363511"}, {"name": "Ashen Kingfish", "tier": "secret", "rarity": "Secret", "odds": "1 in 3.500.000", "location": "Throne Room", "filename": "Ashen Kingfish.png", "local_image": "fish_images/Ashen Kingfish.png", "ikan_image": "ikan/Ashen Kingfish.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/23_Throne Room/Tier_7_Secret/Ashen Kingfish.png", "assetId": "75710475218086"}, {"name": "Pelagon", "tier": "secret", "rarity": "Secret", "odds": "1 in 4.500.000", "location": "Treasure Room", "filename": "Pelagon.png", "local_image": "fish_images/Pelagon.png", "ikan_image": "ikan/Pelagon.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/12_Treasure Room/Tier_7_Secret/Pelagon.png", "assetId": "107218888924440"}, {"name": "Queen Crab", "tier": "secret", "rarity": "Secret", "odds": "1 in 800.000", "location": "Treasure Room", "filename": "Queen Crab.png", "local_image": "fish_images/Queen Crab.png", "ikan_image": "ikan/Queen Crab.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/12_Treasure Room/Tier_7_Secret/Queen Crab.png", "assetId": "73709080100110"}, {"name": "Coral Whale", "tier": "secret", "rarity": "Secret", "odds": "1 in 2.000.000", "location": "Tropical Grove", "filename": "Coral Whale.png", "local_image": "fish_images/Coral Whale.png", "ikan_image": "ikan/Coral Whale.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/04_Tropical Grove/Tier_7_Secret/Coral Whale.png", "assetId": "118677548023630"}, {"name": "Great Whale", "tier": "secret", "rarity": "Secret", "odds": "1 in 950.000", "location": "Tropical Grove", "filename": "Great Whale.png", "local_image": "fish_images/Great Whale.png", "ikan_image": "ikan/Great Whale.png", "perpulau_path": "Hasil_Ikan_Per_Pulau/_Ikon_Baru_Tambahan/Great Whale.png", "assetId": "110349456710432"}];
+    let toastTimer = null;
+    let autoTourInterval = null;
+    let autoTourIndex = 0;
+
+    // Web Audio Synthesizer Pop Sound
+    function playSecretChime() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+        
+        // Two-tone magical chime
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.18, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.4);
+        });
+      } catch (_) {}
+    }
+
+    function tampilkanToastSecret(playerName, fishName, imgSrc, loc, odds, duration = 3000) {
+      const banner = document.getElementById('dynamicPillBanner');
+      const nameEl = document.getElementById('dynamicPillName');
+      const fishEl = document.getElementById('dynamicPillFish');
+      const imgEl = document.getElementById('dynamicPillImg');
+      const initEl = document.getElementById('dynamicPillInitial');
+      const descEl = document.getElementById('dynamicPillDesc');
+      const timeEl = document.getElementById('hudCatchTime');
+
+      nameEl.innerText = playerName || 'PlayerPro';
+      fishEl.innerText = fishName;
+      descEl.innerText = `${loc} • ${odds}`;
+      timeEl.innerText = 'BARU SAJA';
+
+      if (imgSrc) {
+        imgEl.src = imgSrc;
+        imgEl.style.display = 'block';
+        initEl.style.display = 'none';
+      }
+
+      banner.classList.remove('show', 'pulse-pop');
+      void banner.offsetWidth; // Trigger reflow
+      banner.classList.add('show', 'pulse-pop');
+
+      playSecretChime();
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        banner.classList.remove('show', 'pulse-pop');
+      }, duration);
+    }
+
+    function tutupToast() {
+      const banner = document.getElementById('dynamicPillBanner');
+      banner.classList.remove('show', 'pulse-pop');
+      if (toastTimer) clearTimeout(toastTimer);
+    }
+
+    function tesIkanSpesifik(name, imgSrc, loc, odds) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      tampilkanToastSecret('SultanMancing', name, imgSrc, loc, odds, 4000);
+    }
+
+    function tesIkanAcak() {
+      const rand = allSecretFish[Math.floor(Math.random() * allSecretFish.length)];
+      const imgSrc = `fish_images/${encodeURIComponent(rand.filename)}`;
+      tesIkanSpesifik(rand.name, imgSrc, rand.location, rand.odds);
+    }
+
+    function mulaiTurOtomatis() {
+      document.getElementById('btnAutoTour').style.display = 'none';
+      document.getElementById('btnStopTour').style.display = 'inline-flex';
+      autoTourIndex = 0;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      function jalankanSatu() {
+        if (autoTourIndex >= allSecretFish.length) {
+          stopTurOtomatis();
+          return;
+        }
+        const fish = allSecretFish[autoTourIndex];
+        const imgSrc = `fish_images/${encodeURIComponent(fish.filename)}`;
+        tampilkanToastSecret(`Pemain #${autoTourIndex + 1}`, fish.name, imgSrc, fish.location, fish.odds, 2200);
+        autoTourIndex++;
+      }
+
+      jalankanSatu();
+      autoTourInterval = setInterval(jalankanSatu, 2500);
+    }
+
+    function stopTurOtomatis() {
+      if (autoTourInterval) {
+        clearInterval(autoTourInterval);
+        autoTourInterval = null;
+      }
+      document.getElementById('btnAutoTour').style.display = 'inline-flex';
+      document.getElementById('btnStopTour').style.display = 'none';
+      tutupToast();
+    }
+
+    function filterCards() {
+      const q = document.getElementById('searchBox').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.fish-card');
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        const loc = card.getAttribute('data-loc');
+        if (!q || name.includes(q) || loc.includes(q)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Auto test on load with Sultan Leviathan
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        tesIkanSpesifik('Leviathan', 'fish_images/Leviathan.png', "Leviathan's Den", '1 in 5.000.000');
+      }, 600);
+    });
+  </script>
+</body>
+</html>
