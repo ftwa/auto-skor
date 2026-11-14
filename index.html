@@ -5768,6 +5768,65 @@
     tampilkanDynamicPill(namaPlayer, rincianStr, deltaVal, tierKey, '', namaIkanTes);
   }
 
+  function putarSuaraPengingatBawaan(jenis = '10m') {
+    try {
+      const ctx = dapatkanAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      if (jenis === '10m') {
+        const notes = [587.33, 880];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.22);
+          gain.gain.setValueAtTime(0.25, now + idx * 0.22);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.22 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.22);
+          osc.stop(now + idx * 0.22 + 0.35);
+        });
+      } else {
+        const notes = [659.25, 783.99, 987.77];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.15);
+          gain.gain.setValueAtTime(0.3, now + idx * 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.15 + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.15);
+          osc.stop(now + idx * 0.15 + 0.25);
+        });
+      }
+    } catch (_) {}
+  }
+
+  function tampilkanToastModern(pesan) {
+    try {
+      let c = document.getElementById('globalModernToastContainer');
+      if (!c) {
+        c = document.createElement('div');
+        c.id = 'globalModernToastContainer';
+        c.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:999999;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+        document.body.appendChild(c);
+      }
+      const t = document.createElement('div');
+      t.style.cssText = 'background:rgba(15,23,42,0.95);border:1px solid #38bdf8;box-shadow:0 8px 24px rgba(0,0,0,0.5);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;pointer-events:auto;animation:hudFadeIn 0.25s ease-out;';
+      t.innerHTML = `<span>⚡</span><span>${pesan}</span>`;
+      c.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(8px)';
+        t.style.transition = 'all 0.3s ease';
+        setTimeout(() => t.remove(), 320);
+      }, 2600);
+    } catch (_) {}
+  }
+
   function putarSuaraPengingatWaktu(jenis = '10m') {
     const customData = customAudioTimerData[jenis];
     if (customData) {
