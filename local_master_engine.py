@@ -4,9 +4,15 @@
 # ==============================================================================
 import sys
 import os
+# Prevent PyInstaller windowed crash when sys.stdout is None
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, 'w')
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, 'w')
 import re
 import json
 import queue
+import collections
 import threading
 import logging
 import time
@@ -22,8 +28,11 @@ def get_bundle_dir():
         return sys._MEIPASS
     return os.path.dirname(os.path.abspath(__file__))
 
+exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
 bundle_dir = get_bundle_dir()
 public_dir = os.path.join(bundle_dir, 'public')
+if not os.path.exists(public_dir):
+    public_dir = os.path.join(exe_dir, 'public')
 if not os.path.exists(public_dir):
     public_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'public')
 
@@ -31,6 +40,7 @@ if not os.path.exists(public_dir):
 # LOGIKA SCORING & DATABASE IKAN RINGAN
 # ==============================================================================
 DEFAULT_CONFIG_POIN = {
+    "forgotten": 4,
     "secret": 3,
     "mitos": 2,
     "legend": 1,
@@ -66,6 +76,37 @@ if os.path.exists(db_path):
             DATABASE_IKAN = json.load(f)
     except Exception:
         pass
+
+
+FISH_IMAGE_CACHE = {}
+
+def build_fish_image_cache():
+    global FISH_IMAGE_CACHE
+    cache = {}
+    search_dirs = [
+        os.path.join(exe_dir, 'fish_images'),
+        os.path.join(exe_dir, 'ikan'),
+        os.path.join(exe_dir, 'Hasil_Ikan_Per_Pulau'),
+        os.path.join(public_dir, 'fish_images'),
+        os.path.join(bundle_dir, 'fish_images'),
+        os.path.join(bundle_dir, 'Hasil_Ikan_Per_Pulau')
+    ]
+    for s_dir in search_dirs:
+        if os.path.exists(s_dir):
+            for root, _, files in os.walk(s_dir):
+                for f in files:
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                        full_p = os.path.join(root, f)
+                        low_f = f.lower()
+                        if low_f not in cache:
+                            cache[low_f] = full_p
+                        rel_p = os.path.relpath(full_p, s_dir).replace('\\', '/').lower()
+                        cache[rel_p] = full_p
+                        rel_p2 = f"{os.path.basename(s_dir)}/{rel_p}".lower()
+                        cache[rel_p2] = full_p
+    FISH_IMAGE_CACHE = cache
+
+build_fish_image_cache()
 
 def hitung_poin_lokal(tier_str, nama_ikan, varian_str, config_poin):
     tier_clean = str(tier_str).lower().strip()
@@ -113,7 +154,9 @@ def hitung_poin_lokal(tier_str, nama_ikan, varian_str, config_poin):
         return total, ", ".join(rincian), kategori
 
     # 2. Tentukan Kategori Tier Standar
-    if "secret" in tier_clean:
+    if "forgotten" in tier_clean:
+        kategori = "forgotten"
+    elif "secret" in tier_clean:
         kategori = "secret"
     elif "mythic" in tier_clean or "mitos" in tier_clean:
         kategori = "mitos"
@@ -153,6 +196,7 @@ def hitung_poin_lokal(tier_str, nama_ikan, varian_str, config_poin):
 data_lock = threading.Lock()
 daftar_peserta_raw = []
 antrean_tangkapan = []
+antrean_tangkapan_history = collections.deque(maxlen=100)
 sse_listeners = []
 mode_sistem = "MATCH"              # Langsung MATCH agar siap terima tangkapan
 mode_sumber_aktif = "ROBLOX LANGSUNG"
@@ -177,9 +221,16 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.route('/')
 def route_index():
-    index_file = os.path.join(public_dir, 'index.html')
-    if os.path.exists(index_file):
-        return send_file(index_file)
+    candidates = [
+        os.path.join(public_dir, 'index.html'),
+        os.path.join(bundle_dir, 'index.html'),
+        os.path.join(bundle_dir, 'papan_skor.html'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'papan_skor.html'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'public', 'index.html')
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return send_file(c)
     return "<h1>Auto Skor Papan Skor Ready</h1>"
 
 @app.route('/<path:filename>')
@@ -188,6 +239,51 @@ def route_static(filename):
     if os.path.exists(file_path):
         return send_file(file_path)
     return route_index()
+
+@app.route('/fish_images/<path:filename>')
+@app.route('/ikan/<path:filename>')
+@app.route('/Hasil_Ikan_Per_Pulau/<path:filename>')
+@app.route('/hasil_ikan_perpulau/<path:filename>')
+def route_fish_images_serve(filename):
+    clean_fn = urllib.parse.unquote(filename).strip().replace('\\', '/')
+    low_fn = clean_fn.lower()
+    base_low = os.path.basename(low_fn)
+
+    # 1. Fast O(1) Memory Cache Lookup (Zero disk walk delay)
+    cached_path = (
+        FISH_IMAGE_CACHE.get(low_fn) or
+        FISH_IMAGE_CACHE.get(base_low) or
+        FISH_IMAGE_CACHE.get(low_fn.replace('_', ' ')) or
+        FISH_IMAGE_CACHE.get(base_low.replace('_', ' '))
+    )
+    if cached_path and os.path.exists(cached_path):
+        return send_file(cached_path)
+
+    # 2. Direct relative path fallback
+    for name_variant in [clean_fn, clean_fn.replace('_', ' ')]:
+        for base_folder in [exe_dir, public_dir, bundle_dir, r"d:\galatamaapp\AUTO_SKOR"]:
+            for sub in ['fish_images', 'ikan', 'Hasil_Ikan_Per_Pulau', '']:
+                check_p = os.path.join(base_folder, sub, name_variant)
+                if os.path.exists(check_p) and os.path.isfile(check_p):
+                    FISH_IMAGE_CACHE[low_fn] = check_p
+                    return send_file(check_p)
+
+    return jsonify({"status": "not_found", "file": clean_fn}), 404
+
+@app.route('/api/fish-database')
+def route_api_fish_database():
+    candidates = [
+        os.path.join(bundle_dir, 'fish_database.json'),
+        os.path.join(bundle_dir, 'ikan', 'fish_database.json'),
+        os.path.join(exe_dir, 'fish_database.json'),
+        os.path.join(exe_dir, 'ikan', 'fish_database.json'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fish_database.json'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ikan', 'fish_database.json')
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return send_file(c, mimetype='application/json')
+    return jsonify({})
 
 @app.route('/catch', methods=['POST', 'OPTIONS'])
 @app.route('/api/catch', methods=['POST', 'GET', 'OPTIONS'])
@@ -216,15 +312,41 @@ def route_catch():
         nama_ikan_bersih = nama_ikan
         varian_bersih = varian if varian.lower() not in ["none", "-", ""] else ""
 
+    # Ekstrak otomatis prefix varian jika varian kosong (Aman: lindungi ikan dengan nama kata varian)
+    if not varian_bersih:
+        # Cek apakah nama utuh sudah merupakan nama ikan resmi di database
+        is_known_direct = (nama_ikan_bersih in DATABASE_IKAN) or (nama_ikan_bersih.lower() in [k.lower() for k in DATABASE_IKAN.keys()])
+        if not is_known_direct:
+            regex_prefix = r'^(big|shiny|mutasi|mutation|mutated|sparkling|rainbow|albino|radioactive|translucent|dark|electric|tiny|golden|ghostly|cosmic|aurora|giant|ikan)\s+'
+            base_cand = re.sub(regex_prefix, '', nama_ikan_bersih, flags=re.IGNORECASE).strip()
+            if base_cand != nama_ikan_bersih and base_cand:
+                extracted_var = nama_ikan_bersih[:len(nama_ikan_bersih) - len(base_cand)].strip()
+                varian_bersih = extracted_var
+                nama_ikan_bersih = base_cand
+
     nama_lengkap = f"{varian_bersih} {nama_ikan_bersih}".strip() if varian_bersih else nama_ikan_bersih
 
     with data_lock:
         cfg = dict(config_poin)
 
+    # Cek info database ikan jika tier kosong atau untuk gambar
+    fish_info = DATABASE_IKAN.get(nama_ikan_bersih) or DATABASE_IKAN.get(nama_ikan)
+    if not fish_info:
+        n_low = nama_ikan_bersih.lower()
+        for k, v in DATABASE_IKAN.items():
+            if k.lower() == n_low:
+                fish_info = v
+                break
+
+    if not tier and fish_info and fish_info.get("tier"):
+        tier = fish_info.get("tier")
+
     total_poin, rincian_popup, tier_kategori = hitung_poin_lokal(tier, nama_ikan_bersih, varian_bersih, cfg)
 
     if total_poin <= 0:
         return jsonify({"status": "ignored", "pesan": f"Ikan '{nama_lengkap}' bukan tier turnamen (0 poin)"})
+
+    img_filename = fish_info.get("filename") if fish_info else f"{nama_ikan_bersih}.png"
 
     payload = {
         "id": f"catch_{int(time.time()*1000)}_{os.urandom(3).hex()}",
@@ -237,12 +359,14 @@ def route_catch():
         "poin": total_poin,
         "kategori": tier_kategori,
         "tier": tier_kategori,
+        "image": f"fish_images/{img_filename}",
         "timestamp": int(time.time() * 1000)
     }
 
     # Distribusikan ke listener lokal SSE
     with data_lock:
         antrean_tangkapan.append(payload)
+        antrean_tangkapan_history.append(payload)
         if len(antrean_tangkapan) > 50:
             del antrean_tangkapan[:-50]
         for q in list(sse_listeners):
@@ -301,10 +425,15 @@ def route_stream_poin():
 
 @app.route('/ambil-poin-baru')
 def route_ambil_poin():
+    since = request.args.get('since', 0, type=int)
     with data_lock:
-        data_kirim = list(antrean_tangkapan)
-        antrean_tangkapan.clear()
-    return jsonify(data_kirim)
+        if since > 0:
+            data_kirim = [item for item in antrean_tangkapan_history if item.get('timestamp', 0) > since]
+            return jsonify(data_kirim)
+        else:
+            data_kirim = list(antrean_tangkapan)
+            antrean_tangkapan.clear()
+            return jsonify(data_kirim)
 
 @app.route('/set-mode', methods=['POST', 'OPTIONS'])
 def route_set_mode():
@@ -340,7 +469,7 @@ def route_sync_peserta():
             # Parse matrix jika dikirim dari frontend
             matrix = custom_poin.get("matrix", {})
             if isinstance(matrix, dict):
-                for tier_name in ["secret", "mitos", "legend"]:
+                for tier_name in ["forgotten", "secret", "mitos", "legend"]:
                     t_obj = matrix.get(tier_name)
                     if isinstance(t_obj, dict):
                         config_poin[tier_name] = int(t_obj.get("base", 1))
@@ -497,6 +626,141 @@ def route_cari_roblox():
         }
         return jsonify(fallback)
 
+@app.route('/auto-add-friend', methods=['POST', 'OPTIONS'])
+@app.route('/api/auto-add-friend', methods=['POST', 'OPTIONS'])
+def route_auto_add_friend():
+    if request.method == 'OPTIONS':
+        return jsonify({"status": "ok"})
+    data = request.get_json(silent=True) or {}
+    target_username = str(data.get("username") or "").strip().lstrip('@')
+    if not target_username:
+        return jsonify({"sukses": False, "pesan": "Username kosong"}), 400
+
+    # 1. Cari info akun di Roblox untuk mendapatkan User ID
+    user_id = None
+    user_name = target_username
+    display_name = target_username
+    try:
+        req_data = json.dumps({"usernames": [target_username], "excludeBannedUsers": False}).encode('utf-8')
+        req = urllib.request.Request(
+            'https://users.roblox.com/v1/usernames/users',
+            data=req_data,
+            headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            u_res = json.loads(resp.read().decode())
+        users = u_res.get('data', [])
+        if users:
+            user_id = users[0].get('id')
+            user_name = users[0].get('name', target_username)
+            display_name = users[0].get('displayName', user_name)
+    except Exception:
+        pass
+
+    if not user_id and target_username.isdigit():
+        user_id = int(target_username)
+
+    if not user_id:
+        return jsonify({
+            "sukses": False,
+            "status": "NOT_FOUND",
+            "pesan": f"User '{target_username}' tidak ditemukan di Roblox"
+        }), 404
+
+    profile_url = f"https://www.roblox.com/users/{user_id}/profile"
+
+    # 2. Cek apakah ada cookie ROBLOSECURITY di environment atau config
+    roblox_cookie = os.environ.get("ROBLOX_COOKIE", "").strip()
+    if not roblox_cookie:
+        try:
+            import config
+            roblox_cookie = getattr(config, 'ROBLOX_COOKIE', '')
+        except Exception:
+            pass
+
+    if not roblox_cookie or "MASUKKAN_" in roblox_cookie or "KODE_COOKIE" in roblox_cookie:
+        return jsonify({
+            "sukses": True,
+            "status": "USER_FOUND",
+            "userId": user_id,
+            "username": user_name,
+            "displayName": display_name,
+            "profileUrl": profile_url,
+            "pesan": f"Akun @{user_name} ({display_name}) ditemukan! Siap dipasang ke kursi."
+        })
+
+    # 3. Jika cookie tersedia, kirim permintaan pertemanan via API Roblox resmi
+    try:
+        import requests
+        session = requests.Session()
+        session.cookies.update({".ROBLOSECURITY": roblox_cookie})
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        })
+
+        rel_res = session.get(f"https://friends.roblox.com/v1/users/{user_id}/relation", timeout=5)
+        if rel_res.status_code == 200:
+            rel_status = rel_res.json().get("status")
+            if rel_status == "Friends":
+                return jsonify({
+                    "sukses": True,
+                    "status": "FRIENDS",
+                    "userId": user_id,
+                    "username": user_name,
+                    "profileUrl": profile_url,
+                    "pesan": f"@{user_name} sudah berteman dengan Anda di Roblox."
+                })
+            elif rel_status == "RequestSent":
+                return jsonify({
+                    "sukses": True,
+                    "status": "PENDING_SENT",
+                    "userId": user_id,
+                    "username": user_name,
+                    "profileUrl": profile_url,
+                    "pesan": f"Permintaan pertemanan ke @{user_name} sudah dikirim (Pending)."
+                })
+
+        csrf_res = session.post("https://auth.roblox.com/v1/logout", timeout=5)
+        csrf_token = csrf_res.headers.get("x-csrf-token")
+        headers = {"Content-Type": "application/json"}
+        if csrf_token:
+            headers["X-CSRF-TOKEN"] = csrf_token
+
+        friend_res = session.post(
+            f"https://friends.roblox.com/v1/users/{user_id}/request-friendship",
+            headers=headers,
+            timeout=5
+        )
+        if friend_res.status_code == 200:
+            return jsonify({
+                "sukses": True,
+                "status": "SENT_SUCCESS",
+                "userId": user_id,
+                "username": user_name,
+                "profileUrl": profile_url,
+                "pesan": f"Permintaan pertemanan berhasil dikirim ke @{user_name}!"
+            })
+        else:
+            return jsonify({
+                "sukses": True,
+                "status": "USER_FOUND",
+                "userId": user_id,
+                "username": user_name,
+                "displayName": display_name,
+                "profileUrl": profile_url,
+                "pesan": f"Akun @{user_name} ditemukan."
+            })
+    except Exception:
+        return jsonify({
+            "sukses": True,
+            "status": "USER_FOUND",
+            "userId": user_id,
+            "username": user_name,
+            "displayName": display_name,
+            "profileUrl": profile_url,
+            "pesan": f"Akun @{user_name} ditemukan."
+        })
+
 @app.route('/weather', methods=['POST', 'OPTIONS'])
 @app.route('/api/weather', methods=['POST', 'OPTIONS'])
 def route_weather():
@@ -517,6 +781,108 @@ def route_player_event():
     event = (data.get("event") or "").strip().upper()
     return jsonify({"status": "ok", "player": player, "event": event})
 
+def unduh_gambar_ke_folder_hasil(data):
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        out_dir = os.path.join(base_dir, 'hasil_ekstraksi_ikan')
+        os.makedirs(out_dir, exist_ok=True)
+
+        json_path = os.path.join(out_dir, 'data_ekstraksi_lengkap.json')
+        try:
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
+
+        report_lines = [
+            "============================================================",
+            "  HASIL EKSTRAKSI GAMBAR IKAN FISH IT! ROBLOX",
+            f"  Waktu: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+            f"  Total Ikan Ditemukan: {len(data)}",
+            "============================================================\n"
+        ]
+
+        downloaded = 0
+        for clean_key, item in data.items():
+            fish_name = item.get('fish_name', clean_key)
+            tier = (item.get('tier') or 'secret').lower()
+            if tier not in ['forgotten', 'secret', 'mitos', 'legend']:
+                tier = 'secret'
+
+            asset_id = str(item.get('asset_id') or '').strip()
+            tier_folder = os.path.join(out_dir, tier)
+            os.makedirs(tier_folder, exist_ok=True)
+
+            safe_name = re.sub(r'[^a-zA-Z0-9]+', '_', fish_name.lower()).strip('_') + '.png'
+            file_path = os.path.join(tier_folder, safe_name)
+
+            img_url = item.get('web_png_url') or item.get('cdn_delivery')
+
+            if asset_id and asset_id.isdigit():
+                try:
+                    api_url = f"https://thumbnails.roblox.com/v1/assets?assetIds={asset_id}&size=420x420&format=Png&isCircular=false"
+                    req_api = urllib.request.Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req_api, timeout=4) as resp:
+                        api_data = json.loads(resp.read().decode())
+                        if api_data.get('data') and api_data['data'][0].get('imageUrl'):
+                            img_url = api_data['data'][0]['imageUrl']
+                except Exception:
+                    pass
+
+            success = False
+            if img_url:
+                try:
+                    req = urllib.request.Request(img_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, timeout=5) as img_resp:
+                        if img_resp.status == 200:
+                            content = img_resp.read()
+                            if len(content) > 200:
+                                with open(file_path, 'wb') as img_out:
+                                    img_out.write(content)
+                                success = True
+                                downloaded += 1
+                except Exception:
+                    pass
+
+            status_str = f"BERHASIL DISIMPAN -> {safe_name}" if success else "GAGAL DIUNDUH"
+            report_lines.append(f"[{tier.upper()}] {fish_name} (Asset ID: {asset_id}) => {status_str}")
+
+        report_path = os.path.join(out_dir, 'Daftar_Ikan_Ekstraksi.txt')
+        try:
+            with open(report_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(report_lines))
+        except Exception:
+            pass
+
+        # Buka folder otomatis di Windows Explorer
+        try:
+            import subprocess
+            subprocess.Popen(['explorer.exe', out_dir])
+        except Exception:
+            try:
+                os.system(f'explorer "{out_dir}"')
+            except Exception:
+                pass
+    except Exception as e:
+        log_local_error(f"Error in unduh_gambar_ke_folder_hasil: {e}")
+
+@app.route('/api/save_to_folder', methods=['POST', 'OPTIONS'])
+@app.route('/api/preview_fish_assets', methods=['POST', 'OPTIONS'])
+def route_save_to_folder():
+    if request.method == 'OPTIONS':
+        return jsonify({"status": "ok"})
+    data = request.get_json(silent=True) or {}
+    if not data:
+        return jsonify({"status": "empty", "message": "No data received"}), 400
+
+    threading.Thread(target=unduh_gambar_ke_folder_hasil, args=(data,), daemon=True).start()
+
+    return jsonify({
+        "status": "success",
+        "message": "Sedang mengunduh dan membuka folder di Windows Explorer...",
+        "total_items": len(data)
+    }), 200
+
 # ==============================================================================
 # RUNNER BACKGROUND & WEBVIEW GUI
 # ==============================================================================
@@ -531,7 +897,7 @@ def is_port_in_use(port):
 def check_auto_skor_responsive(port=5000):
     try:
         req = urllib.request.Request(f'http://127.0.0.1:{port}/', headers={'User-Agent': 'LocalCheck'})
-        with urllib.request.urlopen(req, timeout=1.5) as r:
+        with urllib.request.urlopen(req, timeout=0.6) as r:
             if r.status == 200:
                 body = r.read().decode('utf-8', errors='ignore')
                 return ('FISH IT' in body or 'Auto Skor' in body)
@@ -542,7 +908,8 @@ def check_auto_skor_responsive(port=5000):
 def kill_stale_port_5000():
     try:
         import subprocess
-        out = subprocess.check_output('netstat -ano -p tcp', shell=True, text=True, errors='ignore')
+        creationflags = 0x08000000 if os.name == 'nt' else 0
+        out = subprocess.check_output('netstat -ano -p tcp', shell=True, text=True, errors='ignore', creationflags=creationflags)
         current_pid = os.getpid()
         for line in out.splitlines():
             if ':5000' in line and 'LISTENING' in line:
@@ -550,10 +917,10 @@ def kill_stale_port_5000():
                 if len(parts) >= 5:
                     pid = int(parts[-1])
                     if pid != current_pid and pid > 0:
-                        subprocess.run(f'taskkill /F /PID {pid}', shell=True, capture_output=True)
+                        subprocess.run(f'taskkill /F /PID {pid}', shell=True, capture_output=True, creationflags=creationflags)
                         time.sleep(0.3)
-    except Exception:
-        pass
+    except Exception as e:
+        log_local_error(f"kill_stale_port error: {e}")
 
 def start_flask_server():
     try:
@@ -571,6 +938,16 @@ def log_local_error(msg):
         pass
 
 def main():
+    import tempfile, uuid
+
+    # Set User Data Folder unik per PID agar WebView2 tidak pernah terkunci 0x800700AA
+    wv2_dir = os.path.join(tempfile.gettempdir(), f"AutoSkor_WV2_{os.getpid()}_{uuid.uuid4().hex[:6]}")
+    try:
+        os.makedirs(wv2_dir, exist_ok=True)
+        os.environ['WEBVIEW2_USER_DATA_FOLDER'] = wv2_dir
+    except Exception:
+        pass
+
     target_url = "http://127.0.0.1:5000/"
 
     # 1. Pastikan server Flask berjalan di port 5000
