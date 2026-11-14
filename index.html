@@ -8,7 +8,9 @@
     (function() {
       const urlParams = new URLSearchParams(window.location.search);
       const raw = (urlParams.get('view') || urlParams.get('overlay') || 'admin').toLowerCase();
-      if (['overlay', 'stream', 'live', 'tiktok', 'obs', 'match', 'tabel', 'table'].includes(raw)) {
+      if (['tabel', 'table'].includes(raw)) {
+        document.documentElement.classList.add('mode-tabel');
+      } else if (['overlay', 'stream', 'live', 'tiktok', 'obs', 'match'].includes(raw)) {
         document.documentElement.classList.add('mode-overlay');
       } else if (['top3', '3besar', 'tigabesar', 'top-3', '3-besar'].includes(raw)) {
         document.documentElement.classList.add('mode-top3');
@@ -2703,6 +2705,105 @@
       pointer-events: none !important;
     }
 
+    /* ========================================================
+       1.5. Mode Tabel Saja (?view=tabel atau ?view=table)
+       Khusus TikTok LIVE Studio & OBS Browser Source:
+       HANYA menampilkan tabel dan background card-nya, tanpa banner header, stadium timer, podium 3 besar, atau tombol admin
+       ======================================================== */
+    html.mode-tabel, html.mode-tabel body {
+      background: transparent !important;
+      background-image: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      scrollbar-width: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+    }
+    html.mode-tabel::-webkit-scrollbar, html.mode-tabel body::-webkit-scrollbar {
+      display: none !important;
+    }
+    /* Sembunyikan SEMUA elemen selain tabel dan card container */
+    html.mode-tabel .top-bar,
+    html.mode-tabel .esports-header-banner,
+    html.mode-tabel .middle-strip,
+    html.mode-tabel #podiumHeroStage,
+    html.mode-tabel .log-panel,
+    html.mode-tabel .footer-brand,
+    html.mode-tabel .modal-overlay,
+    html.mode-tabel .btn-stadium-ctrl,
+    html.mode-tabel .btn-pt-ctrl,
+    html.mode-tabel .color-picker-mini,
+    html.mode-tabel .quick-point-popover,
+    html.mode-tabel .col-resizer,
+    html.mode-tabel .container-resizer-right,
+    html.mode-tabel #winnerOverlay,
+    html.mode-tabel #notifDynamicPill,
+    html.mode-tabel #dynamicPillBanner,
+    html.mode-tabel .esports-toast-hud,
+    html.mode-tabel #memberHallContainer,
+    html.mode-tabel #bigScreenAlertOverlay,
+    html.mode-tabel .hud-btn-close {
+      display: none !important;
+    }
+    /* Pertahankan background card dan styling tabel */
+    html.mode-tabel .container {
+      background: var(--card-bg) !important;
+      backdrop-filter: blur(24px) !important;
+      -webkit-backdrop-filter: blur(24px) !important;
+      border: 2px solid var(--card-border) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 16px 45px rgba(0, 80, 160, 0.22) !important;
+      padding: 10px 14px !important;
+      margin: 4px auto !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    html.mode-tabel .grid-tables {
+      display: grid !important;
+      margin-top: 0 !important;
+    }
+    /* Sembunyikan kolom READY & tampilkan kolom POIN di mode tabel */
+    html.mode-tabel body col.col-ready,
+    html.mode-tabel body th.col-ready,
+    html.mode-tabel body td.col-ready {
+      display: none !important;
+    }
+    html.mode-tabel body col.col-point,
+    html.mode-tabel body th.col-point,
+    html.mode-tabel body td.col-point {
+      display: table-cell !important;
+    }
+    html.mode-tabel .btn-pt-ctrl {
+      display: none !important;
+    }
+    html.mode-tabel .pt-ctrl-group {
+      justify-content: center !important;
+    }
+    html.mode-tabel .score-val {
+      min-width: 44px !important;
+      text-align: center !important;
+      font-size: 14px !important;
+      pointer-events: none !important;
+    }
+    html.mode-tabel .cell-click-popup,
+    html.mode-tabel .m4-hud-capsule,
+    html.mode-tabel .badge-bin-inline,
+    html.mode-tabel .btn-stat-check {
+      pointer-events: none !important;
+      cursor: default !important;
+    }
+    html.mode-tabel .cell-nama-target,
+    html.mode-tabel .cell-roblox-target {
+      cursor: default !important;
+      pointer-events: none !important;
+    }
+
     /* 2. Mode Podium Winner Saja (?view=podium) */
     html.mode-podium, html.mode-podium body {
       background: transparent !important;
@@ -3117,6 +3218,7 @@
 
           // Jika halaman dibuka sebagai Overlay di TikTok LIVE Studio, segera minta state terbaru
           if (document.documentElement.classList.contains('mode-overlay') || 
+              document.documentElement.classList.contains('mode-tabel') ||
               document.documentElement.classList.contains('mode-top3') ||
               document.documentElement.classList.contains('mode-podium') ||
               document.documentElement.classList.contains('mode-notif') ||
@@ -3191,6 +3293,7 @@
       if (msg.type === 'REQUEST_STATE') {
         // Hanya mode master/admin yang merespon dan membagikan state penuh
         if (!document.documentElement.classList.contains('mode-overlay') && 
+            !document.documentElement.classList.contains('mode-tabel') && 
             !document.documentElement.classList.contains('mode-top3') &&
             !document.documentElement.classList.contains('mode-podium') &&
             !document.documentElement.classList.contains('mode-notif') &&
@@ -3310,13 +3413,15 @@
 
     // Auto-fit responsive helper untuk TikTok Studio Browser Source
     function periksaDanAutoFitOverlay() {
-      if (!document.documentElement.classList.contains('mode-overlay')) return;
+      const isModeTabel = document.documentElement.classList.contains('mode-tabel');
+      const isModeOverlay = document.documentElement.classList.contains('mode-overlay');
+      if (!isModeTabel && !isModeOverlay) return;
       const container = document.querySelector('.container');
       if (!container) return;
       const winW = window.innerWidth;
       const winH = window.innerHeight;
       const contentW = 1180;
-      const contentH = container.scrollHeight || 760;
+      const contentH = container.scrollHeight || (isModeTabel ? 520 : 760);
       const scaleX = winW / contentW;
       const scaleY = winH / contentH;
       const scale = Math.min(scaleX, scaleY, 1.0);
@@ -3326,11 +3431,12 @@
         container.style.width = `${contentW}px`;
       } else {
         container.style.transform = 'none';
+        container.style.width = '100%';
       }
     }
     window.addEventListener('resize', periksaDanAutoFitOverlay);
     window.addEventListener('DOMContentLoaded', () => {
-      if (document.documentElement.classList.contains('mode-overlay')) {
+      if (document.documentElement.classList.contains('mode-overlay') || document.documentElement.classList.contains('mode-tabel')) {
         document.body.classList.remove('view-setup', 'view-member');
         document.body.classList.add('view-match');
         if (typeof setModeTampilanDirect === 'function') {
@@ -4530,7 +4636,7 @@
           </div>
           <span class="stream-badge-res">1060 × 520 px</span>
         </div>
-        <div class="stream-desc-txt">Klasemen turnamen live transparan tanpa tombol admin. Otomatis realtime saat poin bertambah.</div>
+        <div class="stream-desc-txt">Khusus tabel 20 kursi dan background card-nya (tanpa banner header, timer, atau tombol admin). Sangat pas ditaruh terus-menerus di layar siaran!</div>
         <div class="stream-input-group">
           <input type="text" readonly id="linkOverlayTabel" class="stream-url-field" onclick="this.select()">
           <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayTabel', this)">📋 Salin Link</button>
@@ -8266,6 +8372,11 @@
   let lastSyncPayloadHash = '';
   function syncKePython(force = false) {
     if (window.location.protocol === 'https:') return;
+    if (document.documentElement.classList.contains('mode-overlay') ||
+        document.documentElement.classList.contains('mode-tabel') ||
+        document.documentElement.classList.contains('mode-top3') ||
+        document.documentElement.classList.contains('mode-podium') ||
+        document.documentElement.classList.contains('mode-timer')) return;
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (!isLocalhost) return; // Mencegah network polling & lag saat berjalan di Vercel Cloud
 
@@ -8600,6 +8711,7 @@
     inisialisasiResizeKolomDanContainer();
     renderIsiTabel(); 
     const isOverlayMode = document.documentElement.classList.contains('mode-overlay') || 
+                          document.documentElement.classList.contains('mode-tabel') || 
                           document.documentElement.classList.contains('mode-top3') || 
                           document.documentElement.classList.contains('mode-podium') || 
                           document.documentElement.classList.contains('mode-timer');
@@ -8613,10 +8725,12 @@
     isWaitingWinnerAfterQueue = false;
     perbaruiStatusMatchUI();
     updateIndikatorAntrean();
-    syncKePython();
-    sinkronkanSemuaAvatarRoblox();
+    if (!isOverlayMode) {
+      syncKePython();
+      sinkronkanSemuaAvatarRoblox();
+      ambilStatusCookieRoblox();
+    }
     inisialisasiSSE();
-    ambilStatusCookieRoblox();
     tambahLogAktivitas('SISTEM', 'Leaderboard Fish It siap digunakan', 'system');
   });
 
