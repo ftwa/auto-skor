@@ -148,42 +148,48 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 4,500)",
         "location": "Fisherman Island",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/lined-cardinal-fish-fisherman-island-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/lined-cardinal-fish-fisherman-island-fish-it.png",
+        "local_image": "fish_images/legend/lined_cardinal_fish.png"
       },
       "yellowfin tuna": {
         "name": "Yellowfin Tuna",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 7,500)",
         "location": "Fisherman Island",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/yellowfin-tuna-fish-fisherman-island-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/yellowfin-tuna-fish-fisherman-island-fish-it.png",
+        "local_image": "fish_images/legend/yellowfin_tuna.png"
       },
       "lake sturgeon": {
         "name": "Lake Sturgeon",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 20,000)",
         "location": "Fisherman Island",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/gBwK79VULoU/hqdefault.jpg",
+        "local_image": "fish_images/legend/lake_sturgeon.jpg"
       },
       "dotted stingray": {
         "name": "Dotted Stingray",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 91,000)",
         "location": "Fisherman Island",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/PUOaO4RRbB0/hqdefault.jpg",
+        "local_image": "fish_images/mitos/dotted_stingray.jpg"
       },
       "crystal crab": {
         "name": "Crystal Crab",
         "tier": "secret",
         "rarity_str": "1 in 750k",
         "location": "Fisherman Island",
-        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg",
+        "local_image": "fish_images/secret/crystal_crab.jpg"
       },
       "orca": {
         "name": "Orca",
         "tier": "secret",
         "rarity_str": "1 in 1.5m",
         "location": "Fisherman Island",
-        "image_url": "https://img.youtube.com/vi/EwcjDuQAcvw/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/EwcjDuQAcvw/hqdefault.jpg",
+        "local_image": "fish_images/secret/orca.jpg"
       }
     }
   },
@@ -308,56 +314,64 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 9,000)",
         "location": "Ocean",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/chrome-tune-fish-fisherman-island-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/chrome-tune-fish-fisherman-island-fish-it.png",
+        "local_image": "fish_images/legend/chrome_tuna.png"
       },
       "manta ray": {
         "name": "Manta Ray",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 50,000)",
         "location": "Ocean",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/kVjwiBcytdI/hqdefault.jpg",
+        "local_image": "fish_images/mitos/manta_ray.jpg"
       },
       "hammerhead shark": {
         "name": "Hammerhead Shark",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 99,999)",
         "location": "Ocean",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/as9oyyyVgfs/hqdefault.jpg",
+        "local_image": "fish_images/mitos/hammerhead_shark.jpg"
       },
       "shark": {
         "name": "Shark",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 55,000)",
         "location": "Ocean",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/ZclBIFi3ZDg/hqdefault.jpg",
+        "local_image": "fish_images/mitos/shark.jpg"
       },
       "worm fish": {
         "name": "Worm Fish",
         "tier": "secret",
         "rarity_str": "1 in 1m",
         "location": "Ocean",
-        "image_url": "https://img.youtube.com/vi/74gPzIWl9DM/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/74gPzIWl9DM/hqdefault.jpg",
+        "local_image": "fish_images/secret/worm_fish.jpg"
       },
       "ghost shark": {
         "name": "Ghost Shark",
         "tier": "secret",
         "rarity_str": "1 in 2m",
         "location": "Ocean",
-        "image_url": "https://img.youtube.com/vi/ud1i5C2-lH8/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/ud1i5C2-lH8/hqdefault.jpg",
+        "local_image": "fish_images/secret/ghost_shark.jpg"
       },
       "megalodon": {
         "name": "Megalodon",
         "tier": "secret",
         "rarity_str": "1 in 4m",
         "location": "Ocean",
-        "image_url": "https://img.youtube.com/vi/KHoMVazOv_E/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/KHoMVazOv_E/hqdefault.jpg",
+        "local_image": "fish_images/secret/megalodon.jpg"
       },
       "blob shark": {
         "name": "Blob Shark",
         "tier": "secret",
         "rarity_str": "1 in 1.2m",
         "location": "Ocean",
-        "image_url": "https://img.youtube.com/vi/SFZBXjonICQ/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/SFZBXjonICQ/hqdefault.jpg",
+        "local_image": "fish_images/secret/blob_shark.jpg"
       }
     }
   },
@@ -447,35 +461,40 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 5,000)",
         "location": "Kohana",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/bumblebee-grouper-fish-fisherman-island-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/bumblebee-grouper-fish-fisherman-island-fish-it.png",
+        "local_image": "fish_images/legend/bumblebee_grouper.png"
       },
       "lobster": {
         "name": "Lobster",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 25,000)",
         "location": "Kohana",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/tLpyWcIE54I/hqdefault.jpg",
+        "local_image": "fish_images/legend/lobster.jpg"
       },
       "loggerhead turtle": {
         "name": "Loggerhead Turtle",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 55,000)",
         "location": "Kohana",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/QAQmhFcqM6I/hqdefault.jpg",
+        "local_image": "fish_images/mitos/loggerhead_turtle.jpg"
       },
       "prismy seahorse": {
         "name": "Prismy Seahorse",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 88,000)",
         "location": "Kohana",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/prismy-seahorse-fish-kohana-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/prismy-seahorse-fish-kohana-fish-it.png",
+        "local_image": "fish_images/mitos/prismy_seahorse.png"
       },
       "lochness monster": {
         "name": "Lochness Monster",
         "tier": "secret",
         "rarity_str": "1 in 2m",
         "location": "Kohana",
-        "image_url": "https://img.youtube.com/vi/CR79C34pnko/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/CR79C34pnko/hqdefault.jpg",
+        "local_image": "fish_images/secret/lochness_monster.jpg"
       }
     }
   },
@@ -537,21 +556,24 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 9,999)",
         "location": "Kohana Volcano",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/lavafin-tuna-fish-kohana-volcano-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/lavafin-tuna-fish-kohana-volcano-fish-it.png",
+        "local_image": "fish_images/legend/lavafin_tuna.png"
       },
       "blueflame ray": {
         "name": "Blueflame Ray",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 93,000)",
         "location": "Kohana Volcano",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/blueflame-ray-fish-kohana-volcano-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/blueflame-ray-fish-kohana-volcano-fish-it.png",
+        "local_image": "fish_images/mitos/blueflame_ray.png"
       },
       "magma shark": {
         "name": "Magma Shark",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 200,000)",
         "location": "Kohana Volcano",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/ZclBIFi3ZDg/hqdefault.jpg",
+        "local_image": "fish_images/mitos/magma_shark.jpg"
       }
     }
   },
@@ -669,42 +691,48 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 5,000)",
         "location": "Coral Reefs",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/XJPGLt7Gfjc/hqdefault.jpg",
+        "local_image": "fish_images/legend/starjam_tang.jpg"
       },
       "greenbee grouper": {
         "name": "Greenbee Grouper",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 6,000)",
         "location": "Coral Reefs",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/g9NsSVUvK5c/hqdefault.jpg",
+        "local_image": "fish_images/legend/greenbee_grouper.jpg"
       },
       "blue lobster": {
         "name": "Blue Lobster",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 25,000)",
         "location": "Coral Reefs",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/DDqsHbRc498/hqdefault.jpg",
+        "local_image": "fish_images/legend/blue_lobster.jpg"
       },
       "hawks turtle": {
         "name": "Hawks Turtle",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 75,000)",
         "location": "Coral Reefs",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/fKPft96wcok/hqdefault.jpg",
+        "local_image": "fish_images/mitos/hawks_turtle.jpg"
       },
       "monster shark": {
         "name": "Monster Shark",
         "tier": "secret",
         "rarity_str": "1 in 2.5m",
         "location": "Coral Reefs",
-        "image_url": "https://img.youtube.com/vi/evge8PfRB_c/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/evge8PfRB_c/hqdefault.jpg",
+        "local_image": "fish_images/secret/monster_shark.jpg"
       },
       "eerie shark": {
         "name": "Eerie Shark",
         "tier": "secret",
         "rarity_str": "1 in 250k",
         "location": "Coral Reefs",
-        "image_url": "https://img.youtube.com/vi/66B5V5LERdk/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/66B5V5LERdk/hqdefault.jpg",
+        "local_image": "fish_images/secret/eerie_shark.jpg"
       }
     }
   },
@@ -759,35 +787,40 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 5,000)",
         "location": "Esoteric Depths",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/enchant-angelfish-esoteric-depths-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/enchant-angelfish-esoteric-depths-fish-it.png",
+        "local_image": "fish_images/legend/enchanted_angelfish.png"
       },
       "magic tang": {
         "name": "Magic Tang",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 7,500)",
         "location": "Esoteric Depths",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/magic-tang-fish-esoteric-depths-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/magic-tang-fish-esoteric-depths-fish-it.png",
+        "local_image": "fish_images/legend/magic_tang.png"
       },
       "abyss seahorse": {
         "name": "Abyss Seahorse",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 95,000)",
         "location": "Esoteric Depths",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/nN5eCDVPHCg/hqdefault.jpg",
+        "local_image": "fish_images/mitos/abyss_seahorse.jpg"
       },
       "armored shark": {
         "name": "Armored Shark",
         "tier": "secret",
         "rarity_str": "1 in 300k",
         "location": "Esoteric Depths",
-        "image_url": "https://img.youtube.com/vi/G2AhlbWj6f0/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/G2AhlbWj6f0/hqdefault.jpg",
+        "local_image": "fish_images/secret/armored_shark.jpg"
       },
       "scare": {
         "name": "Scare",
         "tier": "secret",
         "rarity_str": "1 in 1m",
         "location": "Esoteric Depths",
-        "image_url": "https://img.youtube.com/vi/mDP6XYAGBUQ/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/mDP6XYAGBUQ/hqdefault.jpg",
+        "local_image": "fish_images/secret/scare.jpg"
       }
     }
   },
@@ -835,14 +868,16 @@
         "tier": "secret",
         "rarity_str": "1 in 800k",
         "location": "Sisyphus Statue",
-        "image_url": "https://img.youtube.com/vi/yJRMldWJjZY/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/yJRMldWJjZY/hqdefault.jpg",
+        "local_image": "fish_images/secret/kraken.jpg"
       },
       "giant squid": {
         "name": "Giant Squid",
         "tier": "secret",
         "rarity_str": "1 in 1.5m",
         "location": "Sisyphus Statue",
-        "image_url": "https://img.youtube.com/vi/DaSWf3XNMGg/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/DaSWf3XNMGg/hqdefault.jpg",
+        "local_image": "fish_images/secret/giant_squid.jpg"
       }
     }
   },
@@ -876,28 +911,32 @@
         "tier": "secret",
         "rarity_str": "1 in 800k",
         "location": "Treasure Room",
-        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg",
+        "local_image": "fish_images/secret/queen_crab.jpg"
       },
       "king crab": {
         "name": "King Crab",
         "tier": "secret",
         "rarity_str": "1 in 1.2m",
         "location": "Treasure Room",
-        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg",
+        "local_image": "fish_images/secret/king_crab.jpg"
       },
       "robot kraken": {
         "name": "Robot Kraken",
         "tier": "secret",
         "rarity_str": "1 in 3.5m",
         "location": "Treasure Room",
-        "image_url": "https://img.youtube.com/vi/NYCynqsYvtQ/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/NYCynqsYvtQ/hqdefault.jpg",
+        "local_image": "fish_images/secret/robot_kraken.jpg"
       },
       "panther eel": {
         "name": "Panther Eel",
         "tier": "secret",
         "rarity_str": "1 in 750k",
         "location": "Treasure Room",
-        "image_url": "https://img.youtube.com/vi/30BqsTFPYYI/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/30BqsTFPYYI/hqdefault.jpg",
+        "local_image": "fish_images/secret/panther_eel.jpg"
       }
     }
   },
@@ -1036,63 +1075,72 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 5,000)",
         "location": "Ancient Jungle",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/temple-spokes-tuna-fish-ancient-jungle-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/temple-spokes-tuna-fish-ancient-jungle-fish-it.png",
+        "local_image": "fish_images/legend/temple_spokes_tuna.png"
       },
       "manoai statue fish": {
         "name": "Manoai Statue Fish",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 5,000)",
         "location": "Ancient Jungle",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/manoai-statue-fish-ancient-jungle-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/manoai-statue-fish-ancient-jungle-fish-it.png",
+        "local_image": "fish_images/legend/manoai_statue_fish.png"
       },
       "grand maja": {
         "name": "Grand Maja",
         "tier": "secret",
         "rarity_str": "1 in 3m",
         "location": "Ancient Jungle",
-        "image_url": "https://img.youtube.com/vi/7Ka5I6xDD4A/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/7Ka5I6xDD4A/hqdefault.jpg",
+        "local_image": "fish_images/secret/grand_maja.jpg"
       },
       "ancient lochness monster": {
         "name": "Ancient Lochness Monster",
         "tier": "secret",
         "rarity_str": "1 in 2.5m",
         "location": "Ancient Jungle",
-        "image_url": "https://img.youtube.com/vi/SN2y7py0xdw/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/SN2y7py0xdw/hqdefault.jpg",
+        "local_image": "fish_images/secret/ancient_lochness_monster.jpg"
       },
       "gladiator shark": {
         "name": "Gladiator Shark",
         "tier": "secret",
         "rarity_str": "1 in 1.5m",
         "location": "Ancient Jungle",
-        "image_url": "https://img.youtube.com/vi/wBarhoMVdTo/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/wBarhoMVdTo/hqdefault.jpg",
+        "local_image": "fish_images/secret/gladiator_shark.jpg"
       },
       "mosasaur shark": {
         "name": "Mosasaur Shark",
         "tier": "secret",
         "rarity_str": "1 in 2m",
         "location": "Ancient Jungle",
-        "image_url": "https://img.youtube.com/vi/q2T2FGeVXCI/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/q2T2FGeVXCI/hqdefault.jpg",
+        "local_image": "fish_images/secret/mosasaur_shark.jpg"
       },
       "talon serpent": {
         "name": "Talon Serpent",
         "tier": "secret",
         "rarity_str": "1 in 2.5m",
         "location": "Ancient Jungle",
-        "image_url": "https://img.youtube.com/vi/y0lcQbfM82k/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/y0lcQbfM82k/hqdefault.jpg",
+        "local_image": "fish_images/secret/talon_serpent.jpg"
       },
       "ancient relic crocodile": {
         "name": "Ancient Relic Crocodile",
         "tier": "secret",
         "rarity_str": "1 in 1.8m",
         "location": "Ancient Jungle",
-        "image_url": "https://img.youtube.com/vi/m7xfRd9arpI/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/m7xfRd9arpI/hqdefault.jpg",
+        "local_image": "fish_images/secret/ancient_relic_crocodile.jpg"
       },
       "big king jelly": {
         "name": "Big King Jelly",
         "tier": "secret",
         "rarity_str": "1 in 1.2m",
         "location": "Ancient Jungle",
-        "image_url": "https://img.youtube.com/vi/two8eru7vdw/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/two8eru7vdw/hqdefault.jpg",
+        "local_image": "fish_images/secret/big_king_jelly.jpg"
       }
     }
   },
@@ -1153,21 +1201,24 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 15,000)",
         "location": "Tropical Grove",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/DfeEDCFwl3k/hqdefault.jpg",
+        "local_image": "fish_images/legend/ruby.jpg"
       },
       "thresher shark": {
         "name": "Thresher Shark",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 95,000)",
         "location": "Tropical Grove",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/3t5EpyW4D2s/hqdefault.jpg",
+        "local_image": "fish_images/mitos/thresher_shark.jpg"
       },
       "great whale": {
         "name": "Great Whale",
         "tier": "secret",
         "rarity_str": "1 in 900k",
         "location": "Tropical Grove",
-        "image_url": "https://img.youtube.com/vi/33ZAGvLRM-o/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/33ZAGvLRM-o/hqdefault.jpg",
+        "local_image": "fish_images/secret/great_whale.jpg"
       }
     }
   },
@@ -1236,14 +1287,16 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 6,500)",
         "location": "Crater Island",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/giwcCQkm_SM/hqdefault.jpg",
+        "local_image": "fish_images/legend/axolotl.jpg"
       },
       "frostborn shark": {
         "name": "Frostborn Shark",
         "tier": "secret",
         "rarity_str": "1 in 1.8m",
         "location": "Crater Island",
-        "image_url": "https://img.youtube.com/vi/WNEd5OsEqts/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/WNEd5OsEqts/hqdefault.jpg",
+        "local_image": "fish_images/secret/frostborn_shark.jpg"
       }
     }
   },
@@ -1277,21 +1330,24 @@
         "tier": "legend",
         "rarity_str": "Legendary (1 in 5,000)",
         "location": "Sisyphus Statue / Treasure Room",
-        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/synodontis-fish-sisyphus-statue-fish-it.png"
+        "image_url": "https://bloxinformer.com/wp-content/uploads/2025/11/synodontis-fish-sisyphus-statue-fish-it.png",
+        "local_image": "fish_images/legend/synodontis.png"
       },
       "deep sea crab": {
         "name": "Deep Sea Crab",
         "tier": "legend",
         "rarity_str": "Legendary (1 in 5,000)",
         "location": "Sisyphus Statue / Treasure Room",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/F6O20AxfDBc/hqdefault.jpg",
+        "local_image": "fish_images/legend/deep_sea_crab.jpg"
       },
       "blob fish": {
         "name": "Blob Fish",
         "tier": "mitos",
         "rarity_str": "Mythic (1 in 50,000)",
         "location": "Sisyphus Statue / Treasure Room",
-        "image_url": ""
+        "image_url": "https://img.youtube.com/vi/Gct5guqK0Y0/hqdefault.jpg",
+        "local_image": "fish_images/mitos/blob_fish.jpg"
       }
     }
   },
@@ -1304,14 +1360,16 @@
         "tier": "secret",
         "rarity_str": "1 in 2.5m",
         "location": "The Coral Reefs",
-        "image_url": "https://img.youtube.com/vi/evge8PfRB_c/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/evge8PfRB_c/hqdefault.jpg",
+        "local_image": "fish_images/secret/monster_shark.jpg"
       },
       "eerie shark": {
         "name": "Eerie Shark",
         "tier": "secret",
         "rarity_str": "1 in 250k",
         "location": "The Coral Reefs",
-        "image_url": "https://img.youtube.com/vi/66B5V5LERdk/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/66B5V5LERdk/hqdefault.jpg",
+        "local_image": "fish_images/secret/eerie_shark.jpg"
       }
     }
   },
@@ -1324,35 +1382,40 @@
         "tier": "secret",
         "rarity_str": "1 in 800k",
         "location": "Sisyphus Statue/Treasure Room",
-        "image_url": "https://img.youtube.com/vi/yJRMldWJjZY/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/yJRMldWJjZY/hqdefault.jpg",
+        "local_image": "fish_images/secret/kraken.jpg"
       },
       "queen crab": {
         "name": "Queen Crab",
         "tier": "secret",
         "rarity_str": "1 in 800k",
         "location": "Sisyphus Statue/Treasure Room",
-        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg",
+        "local_image": "fish_images/secret/queen_crab.jpg"
       },
       "king crab": {
         "name": "King Crab",
         "tier": "secret",
         "rarity_str": "1 in 1.2m",
         "location": "Sisyphus Statue/Treasure Room",
-        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/sVD67ERsW5M/hqdefault.jpg",
+        "local_image": "fish_images/secret/king_crab.jpg"
       },
       "robot kraken": {
         "name": "Robot Kraken",
         "tier": "secret",
         "rarity_str": "1 in 3.5m",
         "location": "Sisyphus Statue/Treasure Room",
-        "image_url": "https://img.youtube.com/vi/NYCynqsYvtQ/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/NYCynqsYvtQ/hqdefault.jpg",
+        "local_image": "fish_images/secret/robot_kraken.jpg"
       },
       "panther eel": {
         "name": "Panther Eel",
         "tier": "secret",
         "rarity_str": "1 in 750k",
         "location": "Sisyphus Statue/Treasure Room",
-        "image_url": "https://img.youtube.com/vi/30BqsTFPYYI/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/30BqsTFPYYI/hqdefault.jpg",
+        "local_image": "fish_images/secret/panther_eel.jpg"
       }
     }
   },
@@ -1365,14 +1428,16 @@
         "tier": "secret",
         "rarity_str": "1 in 2m",
         "location": "Classic Island/Iron Cavern",
-        "image_url": "https://img.youtube.com/vi/Hgpz_kH9_e4/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/Hgpz_kH9_e4/hqdefault.jpg",
+        "local_image": "fish_images/secret/retro_maja.jpg"
       },
       "hacker shark": {
         "name": "Hacker Shark",
         "tier": "secret",
         "rarity_str": "1 in 3m",
         "location": "Classic Island/Iron Cavern",
-        "image_url": "https://img.youtube.com/vi/hoGErR5E634/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/hoGErR5E634/hqdefault.jpg",
+        "local_image": "fish_images/secret/hacker_shark.jpg"
       }
     }
   },
@@ -1385,7 +1450,8 @@
         "tier": "secret",
         "rarity_str": "1 in 3m",
         "location": "Classic Island",
-        "image_url": "https://img.youtube.com/vi/hoGErR5E634/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/hoGErR5E634/hqdefault.jpg",
+        "local_image": "fish_images/secret/hacker_shark.jpg"
       }
     }
   },
@@ -1398,7 +1464,8 @@
         "tier": "forgotten",
         "rarity_str": "1 in 25,000,000",
         "location": "Underwater City",
-        "image_url": "https://img.youtube.com/vi/4sxbz_nrTko/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/4sxbz_nrTko/hqdefault.jpg",
+        "local_image": "fish_images/forgotten/sea_eater.jpg"
       }
     }
   },
@@ -1411,7 +1478,8 @@
         "tier": "forgotten",
         "rarity_str": "1 in 20,000,000",
         "location": "Mariana Trench",
-        "image_url": "https://img.youtube.com/vi/sRclPB0zhIc/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/sRclPB0zhIc/hqdefault.jpg",
+        "local_image": "fish_images/forgotten/trench_warden.jpg"
       }
     }
   },
@@ -1424,7 +1492,8 @@
         "tier": "forgotten",
         "rarity_str": "1 in 30,000,000",
         "location": "The Deep / Ancient Trench",
-        "image_url": "https://img.youtube.com/vi/G4E3vifyMhc/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/G4E3vifyMhc/hqdefault.jpg",
+        "local_image": "fish_images/forgotten/forgotten_hydra.jpg"
       }
     }
   },
@@ -1437,7 +1506,8 @@
         "tier": "forgotten",
         "rarity_str": "1 in 25,000,000",
         "location": "Retro Island",
-        "image_url": "https://img.youtube.com/vi/L-FHFgjRom8/hqdefault.jpg"
+        "image_url": "https://img.youtube.com/vi/L-FHFgjRom8/hqdefault.jpg",
+        "local_image": "fish_images/forgotten/frostbite_leviathan.jpg"
       }
     }
   }
