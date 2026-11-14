@@ -3408,6 +3408,10 @@
             }
           }
         }
+      } else if (msg.type === 'PLAYER_PRESENCE') {
+        if (typeof tanganiPlayerPresence === 'function') {
+          tanganiPlayerPresence(msg);
+        }
       }
     }
 
@@ -8541,6 +8545,82 @@
     }
   }
 
+  // ============================================================
+  // FITUR AUTO ABSEN TURNAMEN (PRESENCE JOIN/LEAVE DETECTOR)
+  // ============================================================
+  function tanganiPlayerPresence(item) {
+    if (!item || (!item.player && !item.username)) return;
+    const targetUname = String(item.player || item.username || '').toLowerCase().replace(/^@+/, '').trim();
+    const targetDisplay = String(item.displayName || '').toLowerCase().trim();
+    const event = String(item.event || 'JOIN').toUpperCase();
+    const s = getSesi();
+    if (!s) return;
+
+    let targetIdx = -1;
+    let targetPemain = null;
+
+    // 1. Cek Kursi 1 sampai 19
+    if (s.players) {
+      for (let i = 0; i < s.players.length; i++) {
+        const p = s.players[i];
+        const ru = (p.robloxUser || '').toLowerCase().replace(/^@+/, '').trim();
+        const rn = (p.nick || '').toLowerCase().trim();
+        const tu = (p.user || '').toLowerCase().replace(/^@+/, '').trim();
+
+        if (ru && (ru === targetUname || ru === targetDisplay)) {
+          targetIdx = i; targetPemain = p; break;
+        } else if (rn && rn !== '-' && (rn === targetUname || rn === targetDisplay)) {
+          targetIdx = i; targetPemain = p; break;
+        } else if (tu && (tu === targetUname || tu === targetDisplay)) {
+          targetIdx = i; targetPemain = p; break;
+        }
+      }
+    }
+
+    // 2. Cek Kursi 20 (Host)
+    if (targetIdx === -1 && s.host) {
+      const hru = (s.host.robloxUser || '').toLowerCase().replace(/^@+/, '').trim();
+      const hrn = (s.host.nick || '').toLowerCase().trim();
+      const htu = (s.host.user || '').toLowerCase().replace(/^@+/, '').trim();
+      if (hru && (hru === targetUname || hru === targetDisplay)) {
+        targetIdx = 19; targetPemain = s.host;
+      } else if (hrn && hrn !== '-' && (hrn === targetUname || hrn === targetDisplay)) {
+        targetIdx = 19; targetPemain = s.host;
+      } else if (htu && (htu === targetUname || htu === targetDisplay)) {
+        targetIdx = 19; targetPemain = s.host;
+      }
+    }
+
+    if (targetIdx !== -1 && targetPemain) {
+      const noKursi = targetIdx === 19 ? "Kursi 20 (Host)" : `Kursi ${targetIdx + 1}`;
+      const namaLabel = targetPemain.nick || targetPemain.robloxUser || targetPemain.user || noKursi;
+
+      if (event === 'JOIN') {
+        targetPemain.isHadir = true;
+        if (!targetPemain.isReady) {
+          targetPemain.isReady = true;
+          simpanDB();
+          renderIsiTabel();
+          siarkanSync({ type: 'SYNC_DB', db: db });
+          tambahLogAktivitas('ABSEN', `✔ @${targetUname} hadir di server! ${noKursi} otomatis READY`, 'success');
+          triggerKedipHijau(`row-kursi-${targetIdx}`);
+          if (typeof putarSuaraNotif === 'function') {
+            putarSuaraNotif('khusus');
+          }
+          if (typeof tampilkanToastModern === 'function') {
+            tampilkanToastModern(`🟢 [AUTO ABSEN] @${targetUname} masuk server (${noKursi} READY)`);
+          }
+        }
+      } else if (event === 'LEAVE') {
+        targetPemain.isHadir = false;
+        tambahLogAktivitas('ABSEN', `⚠️ @${targetUname} (${noKursi}) keluar / terputus dari game`, 'system');
+        if (typeof tampilkanToastModern === 'function') {
+          tampilkanToastModern(`⚠️ @${targetUname} (${noKursi}) terputus dari game`);
+        }
+      }
+    }
+  }
+
   let pollIntervalId = null;
   let cloudEventSource = null;
   const processedCatchIds = new Set();
@@ -8589,7 +8669,10 @@
             processedCatchIds.delete(first);
           }
 
-          if (item.type === 'SYNC_CATCH' || (item.user && item.poin !== undefined)) {
+          if (item.type === 'PLAYER_PRESENCE') {
+            setStatusSystem(true);
+            tanganiPlayerPresence(item);
+          } else if (item.type === 'SYNC_CATCH' || (item.user && item.poin !== undefined)) {
             setStatusSystem(true);
             if (!isMatchSedangJalan) {
               isMatchSedangJalan = true;
@@ -8665,24 +8748,31 @@
         updateSyncBadge(true);
         const list = await res.json();
         if (Array.isArray(list) && list.length > 0) {
-          if (!isMatchSedangJalan) {
-            isMatchSedangJalan = true;
-            isMatchDijeda = false;
-            setModeTampilan('MATCH');
-            perbaruiStatusMatchUI();
-            mulaiIntervalTimer();
-          }
           list.forEach(item => {
             if (!item) return;
             if (item.timestamp && item.timestamp > lastPollTimestamp) {
               lastPollTimestamp = item.timestamp;
             }
+
+            if (item.type === 'PLAYER_PRESENCE') {
+              tanganiPlayerPresence(item);
+              return;
+            }
+
             const eventId = item.id || `${item.user}_${item.ikan || item.fish}_${item.poin}_${item.timestamp || ''}`;
             if (processedCatchIds.has(eventId)) return;
             processedCatchIds.add(eventId);
             if (processedCatchIds.size > 200) {
               const first = processedCatchIds.values().next().value;
               processedCatchIds.delete(first);
+            }
+
+            if (!isMatchSedangJalan) {
+              isMatchSedangJalan = true;
+              isMatchDijeda = false;
+              setModeTampilan('MATCH');
+              perbaruiStatusMatchUI();
+              mulaiIntervalTimer();
             }
 
             const poinMasuk = item.poin !== undefined ? item.poin : 1;
