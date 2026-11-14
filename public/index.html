@@ -8364,12 +8364,16 @@
   }
 
   let isPolling = false;
+  let lastPollTimestamp = 0;
   async function pollPoinFallback() {
     if (isPolling) return;
     if (window.location.protocol === 'https:') return;
     isPolling = true;
     try {
-      const res = await fetch('http://127.0.0.1:5000/ambil-poin-baru', {
+      const pollUrl = lastPollTimestamp > 0
+        ? `http://127.0.0.1:5000/ambil-poin-baru?since=${lastPollTimestamp}`
+        : 'http://127.0.0.1:5000/ambil-poin-baru';
+      const res = await fetch(pollUrl, {
         headers: { 'Cache-Control': 'no-cache' },
         signal: AbortSignal.timeout(900)
       });
@@ -8387,6 +8391,9 @@
           }
           list.forEach(item => {
             if (!item) return;
+            if (item.timestamp && item.timestamp > lastPollTimestamp) {
+              lastPollTimestamp = item.timestamp;
+            }
             const eventId = item.id || `${item.user}_${item.ikan || item.fish}_${item.poin}_${item.timestamp || ''}`;
             if (processedCatchIds.has(eventId)) return;
             processedCatchIds.add(eventId);
