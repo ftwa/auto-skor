@@ -7476,6 +7476,8 @@
     if (e.target.id === 'modalConfirmResetTimer') tutupModalKonfirmasiResetTimer();
     if (e.target.id === 'modalConfirmResetTabel') tutupModalKonfirmasiResetTabel();
     if (e.target.id === 'modalEditMemberStat') tutupModalEditMember();
+    if (e.target.id === 'modalCookieRoblox') tutupModalCookieRoblox();
+    if (e.target.id === 'modalLinkStream') tutupModalLinkStream();
   }
 
   function simpanPoinWarna() {
@@ -8764,7 +8766,7 @@
     tutupSemuaDropdown();
     const modal = document.getElementById('modalCookieRoblox');
     if (!modal) return;
-    modal.classList.add('active');
+    modal.style.display = 'flex';
     
     const inp = document.getElementById('inputKodeCookie');
     if (inp) {
@@ -8777,7 +8779,7 @@
 
   function tutupModalCookieRoblox() {
     const modal = document.getElementById('modalCookieRoblox');
-    if (modal) modal.classList.remove('active');
+    if (modal) modal.style.display = 'none';
     const msg = document.getElementById('msgStatusSimpanCookie');
     if (msg) msg.innerText = '';
   }
