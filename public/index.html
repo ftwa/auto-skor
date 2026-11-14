@@ -2985,6 +2985,7 @@
         try {
           const payload = JSON.parse(e.newValue);
           if (payload && payload._sender !== LOCAL_SENDER_ID) {
+            if (payload._ts && (Date.now() - payload._ts > 15000)) return;
             tanganiPesanSync(payload);
           }
         } catch (_) {}
@@ -3018,6 +3019,7 @@
           try {
             const payload = JSON.parse(msg.payloadString);
             if (payload && payload._sender !== LOCAL_SENDER_ID) {
+              if (payload._ts && (Date.now() - payload._ts > 15000)) return;
               tanganiPesanSync(payload);
             }
           } catch (_) {}
@@ -8137,7 +8139,7 @@
       if (cloudEventSource) {
         try { cloudEventSource.close(); } catch(_) {}
       }
-      cloudEventSource = new EventSource('https://ntfy.sh/galatama_auto_skor_live_bus_v1/sse');
+      cloudEventSource = new EventSource('https://ntfy.sh/galatama_auto_skor_live_bus_v1/sse?since=now');
       
       cloudEventSource.onopen = () => {
         console.log('⚡ [Cloud Bus] Terhubung ke Vercel Live Catch Bus (ntfy.sh)');
@@ -8156,6 +8158,9 @@
 
           if (item._sender && typeof LOCAL_SENDER_ID !== 'undefined' && item._sender === LOCAL_SENDER_ID) {
             return; // Hindari echo pesan lokal sendiri
+          }
+          if (item._ts && (Date.now() - item._ts > 15000)) {
+            return; // Abaikan pesan lama yang tertunda / replay dari server
           }
 
           // Teruskan juga ke handler state sync (Timer, Mode, Score, Winner, DB)
