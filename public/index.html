@@ -3410,6 +3410,7 @@
 
       <button class="btn-action-soft" onclick="bukaModalPoin()">Point</button>
       <button class="btn-action-soft" onclick="bukaModalNotifSuara(event)">Settings</button>
+      <button class="btn-action-soft btn-cookie-roblox" id="btnTopBarCookie" onclick="bukaModalCookieRoblox()" title="Atur Cookie Roblox (.ROBLOSECURITY) untuk fitur Auto Add Friend">🍪 Cookie <span id="topBarCookieDot" style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#94a3b8; margin-left:3px; vertical-align:middle;"></span></button>
       <button class="btn-action-soft btn-stream-link" onclick="bukaModalLinkStream()" title="Salin Link Modular untuk TikTok LIVE Studio & OBS">🔗 Link Stream</button>
       
       <div class="dropdown" id="dropdownReset">
@@ -3863,6 +3864,14 @@
             <span id="modalSearchStatus" style="font-size:11px; font-weight:800; color:#64748b;"></span>
             <button type="button" id="btnPakaiManual" class="btn-pakai-manual-pill" style="display:none;" onclick="pakaiUsernameIniLangsung()">
               Gunakan Nama Ini
+            </button>
+          </div>
+          <div id="rowInfoCookieKursi" style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:11px; padding:4px 10px; border-radius:8px; background:#f0f9ff; border:1px solid #bae6fd;">
+            <span id="labelInfoCookieKursi" style="font-weight:700; color:#0369a1; display:flex; align-items:center; gap:4px;">
+              🍪 Bot Pengirim: <strong id="namaBotCookieKursi" style="color:#0284c7;">Memeriksa...</strong>
+            </span>
+            <button type="button" onclick="bukaModalCookieRoblox()" style="background:none; border:none; color:#0284c7; font-weight:800; cursor:pointer; text-decoration:underline; font-size:11px;">
+              Atur Cookie ⚙️
             </button>
           </div>
         </div>
@@ -4422,6 +4431,71 @@
     </div>
   </div>
 </div>
+
+  <!-- MODAL PENGATURAN COOKIE ROBLOX (.ROBLOSECURITY) -->
+  <div class="modal-overlay" id="modalCookieRoblox" onclick="tutupModalDiLuar(event)">
+    <div class="modal-card modal-stream-card" style="max-width: 560px;">
+      <div class="modal-stream-header">
+        <div class="modal-stream-title">
+          <span>🍪 Pengaturan Cookie Roblox (.ROBLOSECURITY)</span>
+        </div>
+        <button class="btn-close-hud" style="background:#e0f2fe; border:none; color:#0284c7; font-size:16px; font-weight:900; width:30px; height:30px; border-radius:50%; cursor:pointer;" onclick="tutupModalCookieRoblox()" title="Tutup (Esc)">✕</button>
+      </div>
+
+      <p class="stream-desc-txt" style="margin-bottom:12px;">
+        Cookie <code>.ROBLOSECURITY</code> digunakan agar sistem dapat <b>mengirim pertemanan (Friend Request)</b> otomatis ke akun pemain saat Anda menekan tombol <b>+ Add</b> di pengaturan kursi turnamen.
+      </p>
+
+      <!-- KARTU STATUS AKUN BOT TERKONEKSI -->
+      <div id="cardStatusBotRoblox" style="background:#f8fafc; border:1.5px solid #bae6fd; border-radius:14px; padding:12px 14px; margin-bottom:14px; display:flex; align-items:center; gap:12px;">
+        <img id="imgAvatarBotCookie" src="https://ui-avatars.com/api/?name=Bot&background=0284c7&color=fff&size=100" alt="Avatar Bot" style="width:48px; height:48px; border-radius:50%; border:2px solid #38bdf8; object-fit:cover; flex-shrink:0; background:#e0f2fe;">
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="badgeStatusCookie" style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; background:#e2e8f0; color:#64748b;">⚪ MEMERIKSA STATUS...</span>
+            <span id="textUserIdBot" style="font-size:10px; color:#94a3b8; font-weight:700;"></span>
+          </div>
+          <div id="namaDisplayBotCookie" style="font-size:15px; font-weight:900; color:#0f172a; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Belum Ada Akun Terhubung</div>
+          <div id="usernameBotCookie" style="font-size:11.5px; font-weight:700; color:#0284c7;">@belum_diatur</div>
+        </div>
+      </div>
+
+      <!-- FORM INPUT COOKIE -->
+      <div style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label style="font-size:11.5px; font-weight:800; color:#0369a1; text-transform:uppercase; letter-spacing:0.5px;">KODE COOKIE .ROBLOSECURITY</label>
+          <button type="button" onclick="toggleLihatCookie()" id="btnToggleLihatCookie" style="background:none; border:none; color:#0284c7; font-size:11px; font-weight:700; cursor:pointer;">👁️ Tampilkan</button>
+        </div>
+        <textarea id="inputKodeCookie" rows="3" placeholder="Tempel / Paste nilai .ROBLOSECURITY Anda di sini... (Contoh: _|WARNING:-DO-NOT-SHARE-THIS.--...)" style="width:100%; border:1.5px solid #cbd5e1; border-radius:10px; padding:10px; font-size:12px; font-family:Consolas, monospace; color:#0f172a; resize:vertical; outline:none; box-sizing:border-box; background:#ffffff;"></textarea>
+        <div id="msgStatusSimpanCookie" style="font-size:11.5px; font-weight:800; margin-top:6px; min-height:16px;"></div>
+      </div>
+
+      <!-- PANDUAN CARA MENGAMBIL COOKIE -->
+      <details style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:8px 12px; margin-bottom:14px; font-size:12px; color:#0369a1;">
+        <summary style="font-weight:800; cursor:pointer; user-select:none;">📌 Cara mengambil cookie dari browser (Chrome / Edge):</summary>
+        <ol style="margin:8px 0 0 18px; line-height:1.6; font-size:11.5px; color:#334155;">
+          <li>Buka <a href="https://www.roblox.com" target="_blank" style="color:#0284c7; font-weight:700;">Roblox.com</a> di browser dan pastikan login ke akun bot/admin Anda.</li>
+          <li>Tekan <b>F12</b> pada keyboard (atau Klik Kanan &gt; <i>Inspect</i> / Periksa).</li>
+          <li>Pilih tab <b>Application</b> (atau <b>Penyimpanan</b>). Jika tertutup, klik tanda <b>&gt;&gt;</b>.</li>
+          <li>Di menu kiri, buka <b>Storage &gt; Cookies &gt;</b> klik <code>https://www.roblox.com</code>.</li>
+          <li>Cari baris bernama <b><code>.ROBLOSECURITY</code></b>.</li>
+          <li>Klik dua kali pada kolom <b>Value</b>, lalu Salin (Copy) teks panjang yang diawali <code>_|WARNING:-DO-NOT-SHARE-THIS...</code>.</li>
+          <li>Tempelkan ke kotak di atas lalu klik tombol <b>💾 Simpan Cookie</b>.</li>
+        </ol>
+      </details>
+
+      <!-- TOMBOL AKSI -->
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div style="display:flex; gap:6px;">
+          <button type="button" id="btnTesCookie" class="btn-action-soft" onclick="tesValiditasCookieRoblox()" style="border-radius:10px; padding:8px 14px; font-size:12px; background:#f0fdf4; border-color:#86efac; color:#15803d;">🧪 Tes Koneksi</button>
+          <button type="button" id="btnHapusCookie" class="btn-action-soft" onclick="hapusCookieRoblox()" style="border-radius:10px; padding:8px 14px; font-size:12px; background:#fef2f2; border-color:#fca5a5; color:#b91c1c;">🗑️ Hapus</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" onclick="tutupModalCookieRoblox()" class="btn-action-soft" style="border-radius:10px; padding:8px 16px; font-size:12px;">Tutup</button>
+          <button type="button" id="btnSimpanCookie" onclick="simpanCookieRoblox()" style="background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color:#ffffff; border:none; border-radius:10px; padding:8px 18px; font-size:12px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(2,132,199,0.3);">💾 Simpan Cookie</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL LINK TIKTOK LIVE STUDIO & OBS -->
   <div class="modal-overlay" id="modalLinkStream" onclick="tutupModalDiLuar(event)">
@@ -6961,6 +7035,7 @@
     }
 
     document.getElementById('modalInputNama').style.display = 'flex';
+    ambilStatusCookieRoblox();
     setTimeout(() => { document.getElementById('inputUserRoblox').focus(); }, 100);
   }
 
@@ -8539,6 +8614,7 @@
     syncKePython();
     sinkronkanSemuaAvatarRoblox();
     inisialisasiSSE();
+    ambilStatusCookieRoblox();
     tambahLogAktivitas('SISTEM', 'Leaderboard Fish It siap digunakan', 'system');
   });
 
@@ -8594,7 +8670,7 @@
       }
     } catch (_) {}
 
-    // 2. Hubungi endpoint pertemanan (/auto-add-friend)
+    // 2. Hubungi endpoint pertemanan (/auto-add-friend) dengan menyertakan cookie aktif jika ada
     const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
     const endpoints = [
       isLokal ? '/auto-add-friend' : 'http://127.0.0.1:5000/auto-add-friend',
@@ -8610,8 +8686,8 @@
         const res = await fetch(ep, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: uname }),
-          signal: AbortSignal.timeout(3000)
+          body: JSON.stringify({ username: uname, cookie: cookieRobloxAktif || '' }),
+          signal: AbortSignal.timeout(3500)
         });
         if (res.ok) {
           responseData = await res.json();
@@ -8630,22 +8706,31 @@
       if (statusRelasi === "FRIENDS" || pesanServer.includes("sudah berteman") || pesanServer.includes("already a friend")) {
         btnAdd.innerText = "✔ Berteman";
         btnAdd.style.background = "#0b1928";
-        btnAdd.style.color = "#94a3b8";
-        btnAdd.style.borderColor = "#28354f";
+        btnAdd.style.color = "#38bdf8";
+        btnAdd.style.borderColor = "#38bdf8";
         if (statusEl) {
           statusEl.style.color = '#38bdf8';
-          statusEl.innerHTML = `@${uname} sudah berteman di Roblox. Klik <b>💾 Simpan Data</b> untuk menyimpan ke kursi!`;
+          statusEl.innerHTML = `@${uname} (${dname}) sudah berteman dengan bot di Roblox. Klik <b>💾 Simpan Data</b>!`;
         }
-      } else if (responseData.sukses && statusRelasi === "SENT_SUCCESS") {
+      } else if (statusRelasi === "SENT_SUCCESS") {
+        btnAdd.innerText = "⏳ Terkirim";
+        btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
+        btnAdd.style.color = "#22c55e";
+        btnAdd.style.borderColor = "#22c55e";
+        if (statusEl) {
+          statusEl.style.color = '#4ade80';
+          statusEl.innerHTML = `Permintaan pertemanan terkirim ke <b>@${uname}</b>! Klik <b>💾 Simpan Data</b>.`;
+        }
+        tambahLogAktivitas('ROBLOX', `Permintaan pertemanan dikirim ke ${uname}`, 'system');
+      } else if (statusRelasi === "PENDING_SENT") {
         btnAdd.innerText = "⏳ Pending";
         btnAdd.style.background = "rgba(245, 158, 11, 0.15)";
         btnAdd.style.color = "#f59e0b";
         btnAdd.style.borderColor = "#f59e0b";
         if (statusEl) {
-          statusEl.style.color = '#4ade80';
-          statusEl.innerHTML = `Permintaan pertemanan terkirim ke <b>@${uname}</b>! Klik <b>💾 Simpan Data</b>.`;
+          statusEl.style.color = '#f59e0b';
+          statusEl.innerHTML = `Permintaan pertemanan ke <b>@${uname}</b> sudah pernah dikirim (Pending). Klik <b>💾 Simpan Data</b>.`;
         }
-        tambahLogAktivitas('ROBLOX', `Berhasil mengirim permintaan ke ${uname} (Pending)`, 'system');
       } else {
         btnAdd.innerText = "✔ Terpasang";
         btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
@@ -8666,6 +8751,267 @@
         statusEl.innerHTML = `Akun terverifikasi: <b>@${uname}</b> (${dname}) ✔ Klik <b>💾 Simpan Data</b> untuk mengunci kursi!`;
       }
     }
+  }
+
+  // ========================================================
+  // PENGATURAN COOKIE ROBLOX (.ROBLOSECURITY)
+  // ========================================================
+  let cookieRobloxAktif = localStorage.getItem('roblox_cookie') || '';
+  let cookieLihatMode = false;
+  let botRobloxInfo = null;
+
+  function bukaModalCookieRoblox() {
+    tutupSemuaDropdown();
+    const modal = document.getElementById('modalCookieRoblox');
+    if (!modal) return;
+    modal.classList.add('active');
+    
+    const inp = document.getElementById('inputKodeCookie');
+    if (inp) {
+      inp.value = cookieRobloxAktif;
+      inp.style.webkitTextSecurity = cookieLihatMode ? 'none' : 'disc';
+    }
+    
+    ambilStatusCookieRoblox();
+  }
+
+  function tutupModalCookieRoblox() {
+    const modal = document.getElementById('modalCookieRoblox');
+    if (modal) modal.classList.remove('active');
+    const msg = document.getElementById('msgStatusSimpanCookie');
+    if (msg) msg.innerText = '';
+  }
+
+  function toggleLihatCookie() {
+    cookieLihatMode = !cookieLihatMode;
+    const inp = document.getElementById('inputKodeCookie');
+    const btn = document.getElementById('btnToggleLihatCookie');
+    if (inp) {
+      inp.style.webkitTextSecurity = cookieLihatMode ? 'none' : 'disc';
+    }
+    if (btn) {
+      btn.innerText = cookieLihatMode ? '🔒 Sembunyikan' : '👁️ Tampilkan';
+    }
+  }
+
+  async function ambilStatusCookieRoblox() {
+    const badge = document.getElementById('badgeStatusCookie');
+    const dot = document.getElementById('topBarCookieDot');
+    const namaDisp = document.getElementById('namaDisplayBotCookie');
+    const uname = document.getElementById('usernameBotCookie');
+    const uidEl = document.getElementById('textUserIdBot');
+    const imgAv = document.getElementById('imgAvatarBotCookie');
+    const labelKursi = document.getElementById('namaBotCookieKursi');
+
+    const endpoints = [
+      'http://127.0.0.1:5000/api/cookie-roblox',
+      '/api/cookie-roblox',
+      'https://auto-skor.vercel.app/api/cookie-roblox'
+    ];
+
+    let data = null;
+    for (const ep of endpoints) {
+      try {
+        const url = (cookieRobloxAktif && ep.includes('vercel.app')) 
+          ? `${ep}?cookie=${encodeURIComponent(cookieRobloxAktif)}`
+          : ep;
+        const res = await fetch(url, { signal: AbortSignal.timeout(2500) });
+        if (res.ok) {
+          data = await res.json();
+          break;
+        }
+      } catch (_) {}
+    }
+
+    if (data && data.isValid) {
+      botRobloxInfo = data;
+      if (data.cookie && !cookieRobloxAktif) {
+        cookieRobloxAktif = data.cookie;
+        localStorage.setItem('roblox_cookie', data.cookie);
+        const inp = document.getElementById('inputKodeCookie');
+        if (inp && !inp.value) inp.value = data.cookie;
+      }
+
+      if (badge) {
+        badge.innerText = '🟢 AKTIF & TERVERIFIKASI';
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
+      }
+      if (dot) dot.style.background = '#22c55e';
+      if (namaDisp) namaDisp.innerText = data.displayName || data.username;
+      if (uname) uname.innerText = `@${data.username}`;
+      if (uidEl) uidEl.innerText = `ID: ${data.userId}`;
+      if (imgAv && data.avatarUrl) imgAv.src = data.avatarUrl;
+      if (labelKursi) {
+        labelKursi.innerHTML = `<span style="color:#15803d;">@${data.username}</span> (${data.displayName})`;
+      }
+    } else {
+      if (badge) {
+        badge.innerText = (data && data.hasCookie) ? '🔴 COOKIE KADALUARSA' : '⚪ BELUM DIATUR';
+        badge.style.background = (data && data.hasCookie) ? '#fee2e2' : '#f1f5f9';
+        badge.style.color = (data && data.hasCookie) ? '#b91c1c' : '#64748b';
+      }
+      if (dot) dot.style.background = (data && data.hasCookie) ? '#ef4444' : '#94a3b8';
+      if (namaDisp) namaDisp.innerText = (data && data.hasCookie) ? 'Cookie Tidak Valid / Kadaluarsa' : 'Belum Ada Akun Terhubung';
+      if (uname) uname.innerText = '@belum_diatur';
+      if (uidEl) uidEl.innerText = '';
+      if (labelKursi) labelKursi.innerText = 'Belum Diatur';
+    }
+  }
+
+  async function tesValiditasCookieRoblox() {
+    const rawVal = document.getElementById('inputKodeCookie').value.trim();
+    const msg = document.getElementById('msgStatusSimpanCookie');
+    const btnTes = document.getElementById('btnTesCookie');
+
+    if (!rawVal) {
+      if (msg) {
+        msg.style.color = '#ef4444';
+        msg.innerText = 'Tempelkan kode cookie terlebih dahulu!';
+      }
+      return;
+    }
+
+    if (btnTes) { btnTes.disabled = true; btnTes.innerText = '⏳ Menguji...'; }
+    if (msg) { msg.style.color = '#0284c7'; msg.innerText = 'Menghubungkan ke Roblox...'; }
+
+    const endpoints = [
+      'http://127.0.0.1:5000/api/cookie-roblox',
+      '/api/cookie-roblox',
+      'https://auto-skor.vercel.app/api/cookie-roblox'
+    ];
+
+    let hasil = null;
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cookie: rawVal }),
+          signal: AbortSignal.timeout(4000)
+        });
+        hasil = await res.json();
+        if (res.ok && hasil && hasil.isValid) break;
+      } catch (_) {}
+    }
+
+    if (btnTes) { btnTes.disabled = false; btnTes.innerText = '🧪 Tes Koneksi'; }
+
+    if (hasil && hasil.isValid) {
+      if (msg) {
+        msg.style.color = '#15803d';
+        msg.innerText = `✔ Valid! Terhubung ke bot @${hasil.username} (${hasil.displayName}). Klik Simpan Cookie.`;
+      }
+      const namaDisp = document.getElementById('namaDisplayBotCookie');
+      const uname = document.getElementById('usernameBotCookie');
+      const uidEl = document.getElementById('textUserIdBot');
+      const imgAv = document.getElementById('imgAvatarBotCookie');
+      if (namaDisp) namaDisp.innerText = hasil.displayName || hasil.username;
+      if (uname) uname.innerText = `@${hasil.username}`;
+      if (uidEl) uidEl.innerText = `ID: ${hasil.userId}`;
+      if (imgAv && hasil.avatarUrl) imgAv.src = hasil.avatarUrl;
+    } else {
+      if (msg) {
+        msg.style.color = '#ef4444';
+        msg.innerText = (hasil && hasil.pesan) ? `✖ ${hasil.pesan}` : '✖ Cookie tidak valid atau tidak dapat terhubung ke Roblox.';
+      }
+    }
+  }
+
+  async function simpanCookieRoblox() {
+    const rawVal = document.getElementById('inputKodeCookie').value.trim();
+    const msg = document.getElementById('msgStatusSimpanCookie');
+    const btnSimpan = document.getElementById('btnSimpanCookie');
+
+    if (!rawVal) {
+      if (msg) {
+        msg.style.color = '#ef4444';
+        msg.innerText = 'Tempelkan kode cookie terlebih dahulu!';
+      }
+      return;
+    }
+
+    if (btnSimpan) { btnSimpan.disabled = true; btnSimpan.innerText = '⏳ Menyimpan...'; }
+    if (msg) { msg.style.color = '#0284c7'; msg.innerText = 'Menyimpan cookie...'; }
+
+    // Simpan ke localStorage terlebih dahulu
+    cookieRobloxAktif = rawVal;
+    localStorage.setItem('roblox_cookie', rawVal);
+
+    // Kirim ke backend lokal dan cloud
+    const endpoints = [
+      'http://127.0.0.1:5000/api/cookie-roblox',
+      '/api/cookie-roblox',
+      'https://auto-skor.vercel.app/api/cookie-roblox'
+    ];
+
+    let hasil = null;
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cookie: rawVal }),
+          signal: AbortSignal.timeout(4000)
+        });
+        hasil = await res.json();
+        if (res.ok && hasil && hasil.isValid) break;
+      } catch (_) {}
+    }
+
+    if (btnSimpan) { btnSimpan.disabled = false; btnSimpan.innerText = '💾 Simpan Cookie'; }
+
+    if (hasil && hasil.isValid) {
+      botRobloxInfo = hasil;
+      if (msg) {
+        msg.style.color = '#15803d';
+        msg.innerText = `✔ Cookie berhasil disimpan & aktif untuk @${hasil.username}!`;
+      }
+      tambahLogAktivitas('ROBLOX', `Cookie bot @${hasil.username} berhasil diaktifkan.`, 'success');
+      ambilStatusCookieRoblox();
+      setTimeout(() => {
+        tutupModalCookieRoblox();
+      }, 1200);
+    } else {
+      if (msg) {
+        msg.style.color = '#f59e0b';
+        msg.innerText = `Cookie disimpan di browser! (Respon verifikasi: ${(hasil && hasil.pesan) || 'Tersimpan'})`;
+      }
+      ambilStatusCookieRoblox();
+    }
+  }
+
+  async function hapusCookieRoblox() {
+    if (!confirm('Apakah Anda yakin ingin menghapus cookie Roblox?')) return;
+    cookieRobloxAktif = '';
+    localStorage.removeItem('roblox_cookie');
+    const inp = document.getElementById('inputKodeCookie');
+    if (inp) inp.value = '';
+
+    const endpoints = [
+      'http://127.0.0.1:5000/api/cookie-roblox',
+      '/api/cookie-roblox',
+      'https://auto-skor.vercel.app/api/cookie-roblox'
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        await fetch(ep, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cookie: '' }),
+          signal: AbortSignal.timeout(2000)
+        });
+      } catch (_) {}
+    }
+
+    const msg = document.getElementById('msgStatusSimpanCookie');
+    if (msg) {
+      msg.style.color = '#15803d';
+      msg.innerText = '✔ Cookie berhasil dihapus.';
+    }
+    tambahLogAktivitas('ROBLOX', 'Cookie Roblox dihapus.', 'info');
+    ambilStatusCookieRoblox();
   }
 
 
