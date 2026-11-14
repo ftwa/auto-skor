@@ -27,7 +27,7 @@ local TARGET_MODE = "AUTO"
 
 local ENABLE_ANTI_LAG_BOOST  = true   -- TRUE: Mengoptimalkan FPS Roblox (Shadows & effects off)
 local ENABLE_WEATHER_SCANNER = false  -- Set TRUE jika ingin deteksi cuaca/potion (Default FALSE agar 100% BEBAS LAG)
-local ENABLE_PLAYER_PRESENCE = false  -- Set TRUE jika butuh tracking join/leave (Default FALSE agar koneksi ringan)
+local ENABLE_PLAYER_PRESENCE = true   -- TRUE: AUTO ABSEN AKTIF (Deteksi pemain hadir/masuk server)
 local HTTP_TIMEOUT_SEC       = 4      -- Batas waktu timeout 4 detik agar memory Roblox tidak tertahan
 
 local LOCAL_URL = "http://127.0.0.1:5000"
@@ -278,7 +278,7 @@ local function sendToPython(player, fish, variant, tier)
     end)
 end
 
-local function sendPlayerEvent(playerName, eventType)
+local function sendPlayerEvent(playerName, eventType, displayName, userId)
     if not httpRequest or not ENABLE_PLAYER_PRESENCE then return end
 
     task.spawn(function()
@@ -290,7 +290,12 @@ local function sendPlayerEvent(playerName, eventType)
                 Timeout = HTTP_TIMEOUT_SEC,
                 Body = HttpService:JSONEncode({
                     player = playerName,
-                    event = eventType
+                    username = playerName,
+                    displayName = displayName or playerName,
+                    userId = userId or 0,
+                    event = eventType,
+                    jobid = tostring(game.JobId),
+                    timestamp = os.time()
                 })
             })
         end)
@@ -493,15 +498,29 @@ pcall(function()
     end
 end)
 
--- Presence listener (hanya jika diaktifkan)
+-- ============================================================
+-- 6.5. FITUR AUTO ABSEN / PRESENCE LISTENER
+-- ============================================================
 if ENABLE_PLAYER_PRESENCE then
+    -- Scan semua pemain yang sudah berada di server saat script di-inject
+    task.spawn(function()
+        task.wait(1.2)
+        for _, p in ipairs(Players:GetPlayers()) do
+            pcall(function()
+                sendPlayerEvent(p.Name, "JOIN", p.DisplayName, p.UserId)
+            end)
+            task.wait(0.12)
+        end
+        print("📋 [AUTO ABSEN] Pemain aktif di server berhasil dipindai!")
+    end)
+
     local cAdd = Players.PlayerAdded:Connect(cclosure(function(player)
-        sendPlayerEvent(player.Name, "JOIN")
+        sendPlayerEvent(player.Name, "JOIN", player.DisplayName, player.UserId)
     end))
     table.insert(activeConnections, cAdd)
 
     local cRem = Players.PlayerRemoving:Connect(cclosure(function(player)
-        sendPlayerEvent(player.Name, "LEAVE")
+        sendPlayerEvent(player.Name, "LEAVE", player.DisplayName, player.UserId)
     end))
     table.insert(activeConnections, cRem)
 end
