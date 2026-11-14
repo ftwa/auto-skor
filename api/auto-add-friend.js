@@ -73,7 +73,7 @@ export default async function handler(req, res) {
               username: userName,
               displayName: displayName,
               profileUrl: profileUrl,
-              pesan: `@${userName} adalah akun bot Anda sendiri.`
+              pesan: `@${userName} adalah akun Anda sendiri.`
             });
           }
 
@@ -96,7 +96,7 @@ export default async function handler(req, res) {
                   username: userName,
                   displayName: displayName,
                   profileUrl: profileUrl,
-                  pesan: `@${userName} sudah berteman dengan bot @${botName} di Roblox.`
+                  pesan: `@${userName} sudah berteman dengan akun @${botName} di Roblox.`
                 });
               } else if (rel === 'RequestSent') {
                 return res.status(200).json({
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
               username: userName,
               displayName: displayName,
               profileUrl: profileUrl,
-              pesan: `Permintaan pertemanan berhasil dikirim ke @${userName} dari bot @${botName}!`
+              pesan: `Permintaan pertemanan berhasil dikirim ke @${userName} dari akun @${botName}!`
             });
           }
         }
