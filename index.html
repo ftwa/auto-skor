@@ -133,6 +133,22 @@
       border-bottom: 1.5px solid #f1f5f9;
       gap: 10px; flex-wrap: wrap; position: relative; z-index: 500;
     }
+    @media (max-width: 1080px) {
+      .top-bar {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding-bottom: 8px !important;
+        scrollbar-width: none !important;
+      }
+      .top-bar::-webkit-scrollbar { display: none; }
+      .top-left {
+        flex-wrap: nowrap !important;
+        flex-shrink: 0 !important;
+      }
+      .btn-action-soft, .btn-mode-tab {
+        white-space: nowrap !important;
+      }
+    }
     .top-left, .top-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .status-badge {
@@ -3041,7 +3057,7 @@
         try {
           const payload = JSON.parse(e.newValue);
           if (payload && payload._sender !== LOCAL_SENDER_ID) {
-            if (payload._ts && (Date.now() - payload._ts > 15000)) return;
+            if (payload._ts && (Date.now() - payload._ts > 120000)) return;
             tanganiPesanSync(payload);
           }
         } catch (_) {}
@@ -3075,7 +3091,7 @@
           try {
             const payload = JSON.parse(msg.payloadString);
             if (payload && payload._sender !== LOCAL_SENDER_ID) {
-              if (payload._ts && (Date.now() - payload._ts > 15000)) return;
+              if (payload._ts && (Date.now() - payload._ts > 120000)) return;
               tanganiPesanSync(payload);
             }
           } catch (_) {}
@@ -7063,6 +7079,29 @@
       } catch (_) {}
     }
 
+    // 2b. Coba Cloud Serverless API Vercel (CORS Resmi & Full Response untuk GitHub Pages)
+    try {
+      const rCloud = await fetch(`https://auto-skor.vercel.app/api/cari-roblox?username=${encodeURIComponent(cleanUser)}`, {
+        signal: AbortSignal.timeout(3500)
+      });
+      if (rCloud.ok) {
+        const d = await rCloud.json();
+        if (d && (d.sukses || d.success) && (d.userName || d.username || d.displayName)) {
+          const finalUname = d.userName || d.username || cleanUser;
+          const finalDname = d.displayName || finalUname;
+          return {
+            sukses: true,
+            userId: d.userId || 0,
+            userName: finalUname,
+            username: finalUname,
+            displayName: finalDname,
+            avatarUrl: d.avatarUrl || '',
+            avatar3dUrl: d.avatar3dUrl || d.avatarUrl || ''
+          };
+        }
+      }
+    } catch (_) {}
+
     // 3. Fallback langsung dari browser via Roproxy (CORS Header didukung penuh)
     try {
       let uid = null;
@@ -7689,7 +7728,7 @@
   // Fungsi ambil Foto Profil Roblox Resmi (Headshot Circular untuk Tampilan Match)
   function dapatkanFotoProfilRoblox(pData) {
     if (!pData) return '';
-    if (pData.avatar && !pData.avatar.includes('ui-avatars.com')) {
+    if (pData.avatar && !pData.avatar.includes('ui-avatars.com') && pData.avatar.startsWith('http')) {
       if (pData.avatar.includes('/Avatar/')) {
         return pData.avatar.replace('/Avatar/', '/AvatarHeadshot/').replace('352/352', '150/150').replace('420/420', '150/150');
       }
@@ -7698,13 +7737,10 @@
     const u = (pData.robloxUser || pData.user || '').replace(/^@+/, '').trim();
     if (u && typeof avatarRobloxCache !== 'undefined') {
       const cached = avatarRobloxCache[u] || avatarRobloxCache[u.toLowerCase()];
-      if (cached && cached !== 'FAILED') return cached;
-    }
-    if (pData.userId) {
-      return 'https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=' + pData.userId + '&size=150x150&format=Png&isCircular=true';
+      if (cached && cached !== 'FAILED' && cached.startsWith('http')) return cached;
     }
     if (u) {
-      return 'https://www.roblox.com/headshot-thumbnail/image?userName=' + encodeURIComponent(u) + '&width=150&height=150&format=png';
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(u)}&background=0284c7&color=ffffff&bold=true&size=150`;
     }
     return pData.avatar || '';
   }
@@ -8346,8 +8382,8 @@
           if (item._sender && typeof LOCAL_SENDER_ID !== 'undefined' && item._sender === LOCAL_SENDER_ID) {
             return; // Hindari echo pesan lokal sendiri
           }
-          if (item._ts && (Date.now() - item._ts > 15000)) {
-            return; // Abaikan pesan lama yang tertunda / replay dari server
+          if (item._ts && (Date.now() - item._ts > 120000)) {
+            return; // Abaikan pesan lama yang tertunda / replay dari server (> 2 menit)
           }
 
           // Teruskan juga ke handler state sync (Timer, Mode, Score, Winner, DB)
@@ -8943,6 +8979,24 @@
     } catch (_) {}
 
     const allFish = getDaftarSemuaIkanTurnamen();
+    try {
+      const cAll = allFish.length;
+      const cForg = allFish.filter(f => f.tier === 'forgotten').length;
+      const cSec = allFish.filter(f => f.tier === 'secret').length;
+      const cMit = allFish.filter(f => f.tier === 'mitos').length;
+      const cLeg = allFish.filter(f => f.tier === 'legend').length;
+      const pAll = document.querySelector("#tierFilterContainer button[onclick*=\"'all'\"]");
+      if (pAll) pAll.innerText = `Semua (${cAll})`;
+      const pForg = document.querySelector("#tierFilterContainer button[onclick*=\"'forgotten'\"]");
+      if (pForg) pForg.innerText = `🌌 Forgotten (${cForg})`;
+      const pSec = document.querySelector("#tierFilterContainer button[onclick*=\"'secret'\"]");
+      if (pSec) pSec.innerText = `🟢 Secret (${cSec})`;
+      const pMit = document.querySelector("#tierFilterContainer button[onclick*=\"'mitos'\"]");
+      if (pMit) pMit.innerText = `🔴 Mitos (${cMit})`;
+      const pLeg = document.querySelector("#tierFilterContainer button[onclick*=\"'legend'\"]");
+      if (pLeg) pLeg.innerText = `🟡 Legend (${cLeg})`;
+    } catch (_) {}
+
     const filtered = allFish.filter(f => {
       const matchTier = (filterTierAktifIkan === 'all') || (f.tier === filterTierAktifIkan);
       const matchQuery = !filterQuery || f.name.toLowerCase().includes(filterQuery) || f.location.toLowerCase().includes(filterQuery);
@@ -8984,7 +9038,7 @@
         <div class="fish-manage-card">
           <div style="display:flex; align-items:center; gap:12px; min-width:0;">
             <div class="fish-thumb-stage">
-              <img id="thumb_fish_${safeKey}" src="${currentImg}" alt="${f.name}">
+              <img id="thumb_fish_${safeKey}" src="${currentImg}" alt="${f.name}" onerror="this.onerror=null; this.src=dapatkanTierCrestSvg('${f.tier}');">
             </div>
             <div style="min-width:0;">
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
