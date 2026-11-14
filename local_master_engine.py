@@ -997,9 +997,55 @@ def route_player_event():
     if request.method == 'OPTIONS':
         return jsonify({"status": "ok"})
     data = request.get_json(silent=True) or {}
-    player = (data.get("player") or "").strip()
-    event = (data.get("event") or "").strip().upper()
-    return jsonify({"status": "ok", "player": player, "event": event})
+    player = str(data.get("player") or data.get("username") or "").strip()
+    event = str(data.get("event") or "JOIN").strip().upper()
+    display_name = str(data.get("displayName") or player).strip()
+    user_id = data.get("userId") or 0
+
+    if not player:
+        return jsonify({"status": "error", "pesan": "Player wajib diisi"}), 400
+
+    payload = {
+        "id": f"presence_{int(time.time()*1000)}_{os.urandom(3).hex()}",
+        "type": "PLAYER_PRESENCE",
+        "player": player,
+        "username": player,
+        "displayName": display_name,
+        "userId": user_id,
+        "event": event,
+        "timestamp": int(time.time() * 1000)
+    }
+
+    # Distribusikan ke antrean lokal
+    with data_lock:
+        antrean_tangkapan.append(payload)
+        antrean_tangkapan_history.append(payload)
+        if len(antrean_tangkapan) > 50:
+            del antrean_tangkapan[:-50]
+        for q in list(sse_listeners):
+            try:
+                q.put_nowait(payload)
+            except Exception:
+                pass
+
+    # Distribusikan ke Cloud Bus (ntfy.sh) secara background
+    def sync_presence_cloud():
+        try:
+            req = urllib.request.Request(
+                'https://ntfy.sh/galatama_auto_skor_live_bus_v1',
+                data=json.dumps(payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json', 'Priority': 'urgent'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=3):
+                pass
+        except Exception:
+            pass
+
+    threading.Thread(target=sync_presence_cloud, daemon=True).start()
+
+    print(f"📋 [AUTO ABSEN] Event {event}: @{player} ({display_name})")
+    return jsonify({"status": "ok", "sukses": True, "data": payload})
 
 def unduh_gambar_ke_folder_hasil(data):
     try:
