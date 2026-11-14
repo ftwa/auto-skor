@@ -3125,7 +3125,7 @@
             timerSec: (typeof timerSec !== 'undefined') ? timerSec : 900,
             isMatchSedangJalan: !!isMatchSedangJalan,
             isMatchDijeda: !!isMatchDijeda,
-            modeTampilan: (typeof modeTampilanAktif !== 'undefined') ? modeTampilanAktif : 'MATCH',
+            modeTampilan: (typeof modeTampilanSaatIni !== 'undefined' && modeTampilanSaatIni) ? modeTampilanSaatIni : 'MATCH',
             winnerActive: document.getElementById('winnerOverlay')?.classList.contains('active')
           });
         }
@@ -3327,7 +3327,7 @@
 
       <!-- SEGMENTED MODE SWITCHER (1-KLIK) -->
       <div class="mode-switcher-group" id="modeSwitcherGroup">
-        <button type="button" class="btn-mode-tab active" id="btnModePrepare" onclick="setModeTampilanDirect('SETUP')">PREPARE</button>
+        <button type="button" class="btn-mode-tab active" id="btnModePrepare" onclick="setModeTampilanDirect('PREPARE')">PREPARE</button>
         <button type="button" class="btn-mode-tab" id="btnModeMatch" onclick="setModeTampilanDirect('MATCH')">MATCH</button>
         <button type="button" class="btn-mode-tab" id="btnModeMember" onclick="setModeTampilanDirect('MEMBER')">MEMBER</button>
       </div>
@@ -4201,33 +4201,6 @@
     <div id="settingsTabContentIkan" style="display: none; margin-bottom: 18px;">
       <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 11.5px; color: #166534; line-height: 1.4;">
         💡 <strong>Kustomisasi Visual Turnamen:</strong> Anda dapat mengunggah screenshot foto asli ikan dari Fish It Roblox atau paste URL gambar. Jika belum diisi, sistem otomatis menggunakan <strong>Emblem Kristal Tier Resmi</strong> beranimasi mewah!
-      </div>
-
-      
-      <!-- SECTION REVIEW PRATINJAU HASIL EKSTRAKSI -->
-      <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <div style="font-weight: 900; font-size: 13px; color: #1e40af;">
-            📥 Pratinjau Ekstraksi Roblox (Review Sebelum Diterapkan)
-          </div>
-          <div style="display: flex; gap: 6px;">
-            <button type="button" class="btn-action-soft" style="font-size: 11px; padding: 4px 10px; font-weight: 800; background: #ffffff; color: #0284c7;" onclick="muatPreviewEkstraksiDariServer()">🔄 Muat dari Game</button>
-            <button type="button" class="btn-action-soft" style="font-size: 11px; padding: 4px 10px; font-weight: 800; background: #ffffff; color: #475569;" onclick="tempelJsonEkstraksi()">📋 Tempel JSON</button>
-          </div>
-        </div>
-        <div style="font-size: 11px; color: #475569; line-height: 1.4;">
-          Periksa dan review gambar hasil ekstrak dari game di sini sebelum diterapkan ke notifikasi turnamen. Anda dapat menguji tampilan notif (⚡ Tes) per ikan sebelum memutuskan menerapkannya.
-        </div>
-
-        <div id="containerPreviewEkstraksi" style="display: none; margin-top: 10px; border-top: 1px dashed #bfdbfe; padding-top: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span id="badgeTotalPreviewEkstrak" style="font-size: 11px; font-weight: 800; color: #1e3a8a;">0 Ikan Ditemukan</span>
-            <button type="button" class="btn-point-studio-save" style="padding: 4px 12px; font-size: 11px; font-weight: 800;" onclick="terapkanSemuaHasilEkstraksi()">✅ Terapkan Semua yang Sesuai</button>
-          </div>
-          <div id="listPreviewEkstraksiCards" style="display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
-            <!-- Kartu diisi oleh renderReviewEkstraksiUI() -->
-          </div>
-        </div>
       </div>
 
       <!-- FILTER TIER & SEARCH -->
@@ -5155,8 +5128,8 @@
     }
   }
 
-  function setModeTampilanDirect(mode) {
-    setModeTampilan(mode);
+  function setModeTampilanDirect(mode, broadcast = true) {
+    setModeTampilan(mode, broadcast);
   }
 
   function toggleDropdownView(e) {
@@ -5167,13 +5140,15 @@
     setModeTampilan(mode);
   }
 
-  let modeTampilanSaatIni = '';
+  let modeTampilanSaatIni = 'PREPARE';
   function setModeTampilan(mode, broadcast = true) {
-    if (mode === modeTampilanSaatIni && !broadcast) return;
-    const isBerubah = (mode !== modeTampilanSaatIni);
-    modeTampilanSaatIni = mode;
+    const raw = String(mode || 'PREPARE').trim().toUpperCase();
+    const m = (raw === 'SETUP') ? 'PREPARE' : raw;
+    if (m === modeTampilanSaatIni && !broadcast) return;
+    const isBerubah = (m !== modeTampilanSaatIni);
+    modeTampilanSaatIni = m;
 
-    if (broadcast) siarkanSync({ type: "SYNC_MODE", mode: mode });
+    if (broadcast) siarkanSync({ type: "SYNC_MODE", mode: m });
     const btnPrep = document.getElementById('btnModePrepare');
     const btnMatch = document.getElementById('btnModeMatch');
     const btnMember = document.getElementById('btnModeMember');
@@ -5184,12 +5159,12 @@
 
     document.body.classList.remove('view-setup', 'view-match', 'view-member');
 
-    if (mode === 'MATCH') {
+    if (m === 'MATCH') {
       document.body.classList.add('view-match');
       if (btnMatch) btnMatch.classList.add('active');
       renderIsiTabel(); 
       if (isBerubah) tambahLogAktivitas('TAMPILAN', 'Mode Match aktif (Papan Skor Poin tampil)', 'system');
-    } else if (mode === 'MEMBER') {
+    } else if (m === 'MEMBER') {
       document.body.classList.add('view-member');
       if (btnMember) btnMember.classList.add('active');
       renderTabelMemberHall();
@@ -5325,7 +5300,10 @@
   }
 
   function kirimStatusMatchKePython(status) {
-    fetch('http://127.0.0.1:5000/set-mode', {
+    if (window.location.protocol === 'https:') return;
+    const isLokalHost = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
+    const endpoint = isLokalHost ? '/set-mode' : 'http://127.0.0.1:5000/set-mode';
+    fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode: status })
@@ -5487,16 +5465,9 @@
   function updateNilaiLinkStream() {
     let base = '';
     if (streamLinkMode === 'local') {
-      base = (window.location.protocol === 'file:') ? 'http://127.0.0.1:5000/' : `${window.location.origin}/`;
-      if (!base.includes('5000')) base = 'http://127.0.0.1:5000/';
+      base = 'http://127.0.0.1:5000/';
     } else {
-      // Tautan Web HTTPS resmi untuk TikTok LIVE Studio & OBS
-      if (window.location.hostname.includes('github.io')) {
-        base = `${window.location.origin}${window.location.pathname}`;
-      } else {
-        base = 'https://ftwa.github.io/auto-skor/';
-      }
-      if (!base.endsWith('/')) base += '/';
+      base = 'https://ftwa.github.io/auto-skor/';
     }
 
     const urlTabel = `${base}?view=tabel`;
@@ -8313,7 +8284,14 @@
     inisialisasiStrukturTabel();
     inisialisasiResizeKolomDanContainer();
     renderIsiTabel(); 
-    setModeTampilan('SETUP');
+    const isOverlayMode = document.documentElement.classList.contains('mode-overlay') || 
+                          document.documentElement.classList.contains('mode-podium') || 
+                          document.documentElement.classList.contains('mode-timer');
+    if (isOverlayMode) {
+      setModeTampilan('MATCH', false);
+    } else {
+      setModeTampilan('PREPARE', false);
+    }
     isMatchSedangJalan = false;
     isMatchDijeda = false;
     isWaitingWinnerAfterQueue = false;
@@ -8412,7 +8390,7 @@
 
   const audioCachePool = {};
   let dynamicPillTimer = null;
-  function tampilkanDynamicPill(displayName, rincian, poinDelta, tierKey = 'secret', avatarUrl = '', namaIkan = '', siar = true, duration = 2000, overrideImg = '') {
+  function tampilkanDynamicPill(displayName, rincian, poinDelta, tierKey = 'secret', avatarUrl = '', namaIkan = '', siar = true, duration = 2000) {
     const pill = document.getElementById('dynamicPillBanner');
     if (!pill) return;
 
@@ -8471,7 +8449,7 @@
 
     const img = document.getElementById('dynamicPillImg');
     const init = document.getElementById('dynamicPillInitial');
-    const targetImg = overrideImg || dapatkanGambarIkan(namaIkan, tierKey) || avatarUrl;
+    const targetImg = dapatkanGambarIkan(namaIkan, tierKey) || avatarUrl;
     if (targetImg && img) {
       img.src = targetImg;
       img.style.display = 'block';
@@ -8583,154 +8561,6 @@
 
   // --- KELOLA GAMBAR IKAN UI HANDLERS ---
   let filterTierAktifIkan = 'all';
-
-  
-  // --- PRATINJAU EKSTRAKSI IKAN (REVIEW SEBELUM DITERAPKAN) ---
-  let dataPreviewEkstraksi = null;
-
-  function muatPreviewEkstraksiDariServer() {
-    fetch('/api/get_extracted_preview')
-      .then(r => r.json())
-      .then(data => {
-        if (data && Object.keys(data).length > 0) {
-          dataPreviewEkstraksi = data;
-          renderReviewEkstraksiUI(data);
-          if (typeof tampilkanToastModern === 'function') {
-            tampilkanToastModern(`Berhasil memuat ${Object.keys(data).length} gambar untuk direview!`);
-          }
-        } else {
-          alert('Belum ada data pratinjau dari server lokal.\n\nSilakan jalankan skrip di Roblox terlebih dahulu atau klik tombol "Tempel JSON" jika Anda sudah menyalinnya ke Clipboard.');
-        }
-      })
-      .catch(() => {
-        alert('Gagal menghubungi server lokal. Pastikan MasterAutoSkor_Lokal.exe sedang aktif, atau gunakan tombol "Tempel JSON" untuk mereview.');
-      });
-  }
-
-  function tempelJsonEkstraksi() {
-    const jsonInput = prompt('Tempelkan (Paste) hasil JSON ekstraksi dari Roblox ke sini (Ctrl + V):');
-    if (!jsonInput) return;
-    try {
-      const parsed = JSON.parse(jsonInput);
-      if (parsed && typeof parsed === 'object') {
-        dataPreviewEkstraksi = parsed;
-        renderReviewEkstraksiUI(parsed);
-        if (typeof tampilkanToastModern === 'function') {
-          tampilkanToastModern('Data ekstraksi berhasil dimuat! Silakan review di bawah.');
-        }
-      } else {
-        alert('Format JSON tidak valid.');
-      }
-    } catch (e) {
-      alert('Gagal membaca JSON: ' + e.message);
-    }
-  }
-
-  function renderReviewEkstraksiUI(dataObj) {
-    const container = document.getElementById('containerPreviewEkstraksi');
-    const listEl = document.getElementById('listPreviewEkstraksiCards');
-    const badgeTotal = document.getElementById('badgeTotalPreviewEkstrak');
-    if (!container || !listEl) return;
-
-    const entries = Object.entries(dataObj);
-    if (entries.length === 0) {
-      container.style.display = 'none';
-      return;
-    }
-
-    container.style.display = 'block';
-    if (badgeTotal) badgeTotal.innerText = `Ditemukan ${entries.length} Gambar dari Game`;
-
-    let html = '';
-    entries.forEach(([key, item]) => {
-      const fishName = item.fish_name || key;
-      const tier = (item.tier || 'secret').toLowerCase();
-      const imgUrl = item.web_png_url || (`https://www.roblox.com/asset-thumbnail/image?assetId=${item.asset_id}&width=420&height=420&format=png`);
-      
-      let tierColor = '#ca8a04';
-      let tierLabel = '🟡 LEGEND';
-      if (tier === 'forgotten') {
-        tierColor = '#9333ea';
-        tierLabel = '🌌 FORGOTTEN';
-      } else if (tier === 'secret') {
-        tierColor = '#16a34a';
-        tierLabel = '🟢 SECRET';
-      } else if (tier === 'mitos') {
-        tierColor = '#dc2626';
-        tierLabel = '🔴 MYTHIC';
-      }
-
-      html += `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #ffffff; border-radius: 10px; border: 1px solid #bfdbfe; gap: 8px;">
-          <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-            <div style="width: 38px; height: 38px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
-              <img src="${imgUrl}" alt="${fishName}" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.src=dapatkanTierCrestSvg('${tier}')">
-            </div>
-            <div style="min-width: 0;">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-weight: 900; font-size: 12px; color: #0f172a;">${fishName}</span>
-                <span style="font-size: 9px; font-weight: 800; color: ${tierColor};">${tierLabel}</span>
-              </div>
-              <div style="font-size: 10px; color: #64748b;">Asset ID: ${item.asset_id} (${item.source || 'Roblox'})</div>
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 4px; flex-shrink: 0;">
-            <button type="button" class="btn-action-soft" style="padding: 3px 8px; font-size: 10px; font-weight: 800; color: #0284c7; background: #e0f2fe;" onclick="tesNotifIkanPreview('${fishName}', '${tier}', '${imgUrl}')" title="Tes Tampilkan Notif Live">⚡ Tes</button>
-            <button type="button" class="btn-action-soft" style="padding: 3px 8px; font-size: 10px; font-weight: 800; color: #16a34a; background: #dcfce7;" onclick="terapkanSatuGambarEkstraksi('${fishName}', '${imgUrl}')" title="Gunakan Gambar Ini">✅ Terapkan</button>
-          </div>
-        </div>
-      `;
-    });
-
-    listEl.innerHTML = html;
-  }
-
-  function tesNotifIkanPreview(namaIkan, tier, imgUrl) {
-    let pts = 10;
-    if (tier === 'forgotten') pts = 40;
-    else if (tier === 'secret') pts = 30;
-    else if (tier === 'mitos') pts = 20;
-
-    tampilkanDynamicPill('Peserta 1', 'Pratinjau Hasil Ekstrak', pts, tier, '', namaIkan, false, 3000, imgUrl);
-  }
-
-  function terapkanSatuGambarEkstraksi(fishName, imgUrl) {
-    const cleanName = String(fishName).toLowerCase().trim();
-    let customMap = {};
-    try {
-      customMap = JSON.parse(localStorage.getItem('CUSTOM_FISH_IMAGES') || '{}');
-    } catch (_) {}
-    customMap[cleanName] = imgUrl;
-    localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap));
-    renderDaftarIkanSettings();
-    if (typeof tampilkanToastModern === 'function') {
-      tampilkanToastModern(`Gambar asli "${fishName.toUpperCase()}" berhasil diterapkan!`);
-    }
-  }
-
-  function terapkanSemuaHasilEkstraksi() {
-    if (!dataPreviewEkstraksi) return;
-    const count = Object.keys(dataPreviewEkstraksi).length;
-    if (!confirm(`Terapkan ${count} gambar ikan hasil ekstraksi ini ke pengaturan?`)) return;
-
-    let customMap = {};
-    try {
-      customMap = JSON.parse(localStorage.getItem('CUSTOM_FISH_IMAGES') || '{}');
-    } catch (_) {}
-
-    for (const [key, item] of Object.entries(dataPreviewEkstraksi)) {
-      const cleanName = (item.fish_name || key).toLowerCase().trim();
-      const imgUrl = item.web_png_url || (`https://www.roblox.com/asset-thumbnail/image?assetId=${item.asset_id}&width=420&height=420&format=png`);
-      customMap[cleanName] = imgUrl;
-    }
-
-    localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap));
-    renderDaftarIkanSettings();
-    if (typeof tampilkanToastModern === 'function') {
-      tampilkanToastModern(`Berhasil menerapkan ${count} gambar ikan hasil ekstraksi!`);
-    }
-  }
 
   function switchSettingsTab(tab) {
     const btnAudio = document.getElementById('tabBtnSettingsAudio');
