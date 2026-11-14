@@ -14,6 +14,8 @@
         document.documentElement.classList.add('mode-podium');
       } else if (['notif', 'toast', 'alert'].includes(raw)) {
         document.documentElement.classList.add('mode-notif');
+      } else if (['timer', 'countdown', 'waktu', 'clock'].includes(raw)) {
+        document.documentElement.classList.add('mode-timer');
       } else {
         document.documentElement.classList.add('mode-admin');
       }
@@ -2722,6 +2724,90 @@
       display: none !important;
     }
 
+    /* 4. Mode Timer Countdown Saja (?view=timer) */
+    html.mode-timer, html.mode-timer body {
+      background: transparent !important;
+      background-image: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      scrollbar-width: none !important;
+    }
+    html.mode-timer::-webkit-scrollbar, html.mode-timer body::-webkit-scrollbar {
+      display: none !important;
+    }
+    html.mode-timer .container {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: auto !important;
+      max-width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    html.mode-timer .container-resizer-right,
+    html.mode-timer .top-bar,
+    html.mode-timer #podiumHeroStage,
+    html.mode-timer .table-wrapper,
+    html.mode-timer .total-points-card,
+    html.mode-timer .log-panel,
+    html.mode-timer .modal-overlay,
+    html.mode-timer .quick-point-popover,
+    html.mode-timer .color-picker-mini,
+    html.mode-timer #winnerOverlay,
+    html.mode-timer #notifDynamicPill,
+    html.mode-timer #esportsToastHud,
+    html.mode-timer .btn-stadium-ctrl {
+      display: none !important;
+    }
+    html.mode-timer .middle-strip {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    html.mode-timer .stadium-chronometer-capsule {
+      background: linear-gradient(180deg, rgba(6, 25, 51, 0.94) 0%, rgba(2, 12, 26, 0.98) 100%) !important;
+      border: 3px solid #00d2ff !important;
+      box-shadow: 0 0 35px rgba(0, 210, 255, 0.65), inset 0 0 16px rgba(0, 210, 255, 0.25) !important;
+      border-radius: 999px !important;
+      padding: 8px 30px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 12px !important;
+      transform: scale(1.15) !important;
+      transform-origin: center center !important;
+    }
+    html.mode-timer .stadium-chronometer-capsule::before {
+      content: '⏱️';
+      font-size: 26px;
+      line-height: 1;
+      filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.8));
+    }
+    html.mode-timer .stadium-timer-display {
+      font-size: 38px !important;
+      font-family: 'Consolas', 'JetBrains Mono', 'Orbitron', monospace !important;
+      font-weight: 900 !important;
+      color: #00f0ff !important;
+      letter-spacing: 3px !important;
+      text-shadow: 0 0 16px rgba(0, 240, 255, 0.85) !important;
+      cursor: default !important;
+      pointer-events: none !important;
+      padding: 0 4px !important;
+      user-select: none !important;
+    }
+
     /* Indikator Sinkronisasi Real-Time */
     .sync-live-pill {
       display: inline-flex;
@@ -2854,7 +2940,8 @@
           // Jika halaman dibuka sebagai Overlay di TikTok LIVE Studio, segera minta state terbaru
           if (document.documentElement.classList.contains('mode-overlay') || 
               document.documentElement.classList.contains('mode-podium') ||
-              document.documentElement.classList.contains('mode-notif')) {
+              document.documentElement.classList.contains('mode-notif') ||
+              document.documentElement.classList.contains('mode-timer')) {
             siarkanSync({ type: 'REQUEST_STATE' });
           }
         },
@@ -2926,7 +3013,8 @@
         // Hanya mode master/admin yang merespon dan membagikan state penuh
         if (!document.documentElement.classList.contains('mode-overlay') && 
             !document.documentElement.classList.contains('mode-podium') &&
-            !document.documentElement.classList.contains('mode-notif')) {
+            !document.documentElement.classList.contains('mode-notif') &&
+            !document.documentElement.classList.contains('mode-timer')) {
           siarkanSync({
             type: 'SYNC_FULL_STATE',
             db: db,
@@ -2952,12 +3040,21 @@
           timerSec = msg.timerSec;
           isMatchSedangJalan = !!msg.isMatchSedangJalan;
           isMatchDijeda = !!msg.isMatchDijeda;
-          if (typeof updateTampilanTimerDisplay === 'function') updateTampilanTimerDisplay();
-          if (isMatchSedangJalan && !timerInterval) {
-            timerInterval = setInterval(updateTimer, 1000);
-          } else if (!isMatchSedangJalan && timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
+          if (typeof updateTimer === 'function') updateTimer();
+          if (isMatchSedangJalan) {
+            if (!timerInterval) {
+              timerInterval = setInterval(() => {
+                if (timerSec > 0) {
+                  timerSec--;
+                  updateTimer();
+                }
+              }, 1000);
+            }
+          } else {
+            if (timerInterval) {
+              clearInterval(timerInterval);
+              timerInterval = null;
+            }
           }
         }
         if (msg.modeTampilan && typeof setModeTampilanDirect === 'function') {
@@ -2985,12 +3082,21 @@
           timerSec = msg.timerSec;
           isMatchSedangJalan = !!msg.isMatchSedangJalan;
           isMatchDijeda = !!msg.isMatchDijeda;
-          if (typeof updateTampilanTimerDisplay === 'function') updateTampilanTimerDisplay();
-          if (isMatchSedangJalan && !timerInterval) {
-            timerInterval = setInterval(updateTimer, 1000);
-          } else if (!isMatchSedangJalan && timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
+          if (typeof updateTimer === 'function') updateTimer();
+          if (isMatchSedangJalan) {
+            if (!timerInterval) {
+              timerInterval = setInterval(() => {
+                if (timerSec > 0) {
+                  timerSec--;
+                  updateTimer();
+                }
+              }, 1000);
+            }
+          } else {
+            if (timerInterval) {
+              clearInterval(timerInterval);
+              timerInterval = null;
+            }
           }
         }
       } else if (msg.type === 'SYNC_MODE') {
@@ -4134,6 +4240,22 @@
         </div>
       </div>
 
+      <!-- CARD 4: TIMER PERTANDINGAN -->
+      <div class="stream-link-row">
+        <div class="stream-header-row">
+          <div class="stream-row-title">
+            <span>⏱️ Overlay Timer Pertandingan (Countdown)</span>
+          </div>
+          <span class="stream-badge-res">480 × 160 px</span>
+        </div>
+        <div class="stream-desc-txt">Capsule chronometer futuristik transparan. Menampilkan sisa waktu turnamen yang tersinkron otomatis.</div>
+        <div class="stream-input-group">
+          <input type="text" readonly id="linkOverlayTimer" class="stream-url-field" onclick="this.select()">
+          <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayTimer', this)">📋 Salin Link</button>
+          <a id="previewOverlayTimer" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
+        </div>
+      </div>
+
       <!-- PANDUAN CEPAT PASANG DI TIKTOK STUDIO -->
       <div class="stream-guide-box">
         <div class="stream-guide-heading">💡 Langkah Pasang di TikTok LIVE Studio:</div>
@@ -4948,12 +5070,14 @@
       isMatchDijeda = true;
       perbaruiStatusMatchUI();
       tambahLogAktivitas('SISTEM', 'Pertandingan DIJEDA', 'system');
+      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true });
     } else if (isMatchDijeda) {
       isMatchSedangJalan = true;
       isMatchDijeda = false;
       perbaruiStatusMatchUI();
       mulaiIntervalTimer();
       tambahLogAktivitas('SISTEM', 'Pertandingan DILANJUTKAN', 'system');
+      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
     } else {
       if (timerSec <= 0) {
         timerSec = (db.durasiMenitDefault || 15) * 60;
@@ -4978,6 +5102,7 @@
         perbaruiStatusMatchUI();
         mulaiIntervalTimer();
         tambahLogAktivitas('SISTEM', 'PERTANDINGAN DIMULAI!', 'system');
+        siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
       });
     }
   }
@@ -4995,6 +5120,7 @@
     extraTimerSec = 0;
     perbaruiStatusMatchUI();
     tambahLogAktivitas('SISTEM', 'Pertandingan DIHENTIKAN', 'system');
+    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false });
   }
 
   function toggleTimerManual(broadcast = true) {
@@ -5184,14 +5310,22 @@
       base = (window.location.protocol === 'file:') ? 'http://127.0.0.1:5000/' : `${window.location.origin}/`;
       if (!base.includes('5000')) base = 'http://127.0.0.1:5000/';
     } else {
-      base = 'https://auto-skor.vercel.app/';
+      // Tautan Web HTTPS resmi untuk TikTok LIVE Studio & OBS
+      if (window.location.hostname.includes('github.io')) {
+        base = `${window.location.origin}${window.location.pathname}`;
+      } else {
+        base = 'https://ftwa.github.io/auto-skor/';
+      }
+      if (!base.endsWith('/')) base += '/';
     }
 
     const urlTabel = `${base}?view=tabel`;
+    const urlTimer = `${base}?view=timer`;
     const urlPodium = `${base}?view=podium`;
     const urlNotif = `${base}?view=notif`;
 
     const elTabel = document.getElementById('linkOverlayTabel');
+    const elTimer = document.getElementById('linkOverlayTimer');
     const elPodium = document.getElementById('linkOverlayPodium');
     const elNotif = document.getElementById('linkOverlayNotif');
 
@@ -5199,6 +5333,11 @@
       elTabel.value = urlTabel;
       const prev = document.getElementById('previewOverlayTabel');
       if (prev) prev.href = urlTabel;
+    }
+    if (elTimer) {
+      elTimer.value = urlTimer;
+      const prev = document.getElementById('previewOverlayTimer');
+      if (prev) prev.href = urlTimer;
     }
     if (elPodium) {
       elPodium.value = urlPodium;
@@ -5666,6 +5805,7 @@
     return `${h}:${m}:${sec}`;
   }
 
+  function updateTampilanTimerDisplay() { updateTimer(); }
   function updateTimer() {
     const el = document.getElementById('dispTimer');
     el.innerText = formatTime(timerSec);
@@ -5709,6 +5849,7 @@
       extraTimerSec = 0;
       perbaruiStatusMatchUI();
       tambahLogAktivitas('TIMER', `Waktu timer diatur ke ${formatTime(totalDetik)}`, 'system');
+      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false });
       tutupModalEditTimer();
     } else {
       alert("Durasi waktu tidak boleh 0 detik!");
@@ -5736,6 +5877,7 @@
     perbaruiStatusMatchUI();
     updateTimer(); 
     tambahLogAktivitas('TIMER', 'Timer berhasil di-reset', 'system');
+    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false });
     tutupModalKonfirmasiResetTimer();
   }
 
@@ -5774,6 +5916,10 @@
         if (timerSec > 0) {
           timerSec--;
           updateTimer();
+
+          if (timerSec % 5 === 0) {
+            siarkanSync({ type: 'SYNC_TIMER', timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
+          }
 
           if (timerSec === 600) {
             putarSuaraPengingatWaktu('10m');
