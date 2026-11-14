@@ -626,6 +626,168 @@ def route_cari_roblox():
         }
         return jsonify(fallback)
 
+def update_env_file_key(key, val):
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        env_path = os.path.join(base_dir, '.env')
+        lines = []
+        found = False
+        if os.path.exists(env_path):
+            with open(env_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        new_lines = []
+        for line in lines:
+            if line.strip().startswith(f"{key}="):
+                new_lines.append(f"{key}={val}\n")
+                found = True
+            else:
+                new_lines.append(line)
+        if not found:
+            if new_lines and not new_lines[-1].endswith('\n'):
+                new_lines[-1] += '\n'
+            new_lines.append(f"{key}={val}\n")
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.writelines(new_lines)
+        return True
+    except Exception as e:
+        log_local_error(f"Gagal update .env: {e}")
+        return False
+
+def verifikasi_roblox_cookie(cookie_str):
+    if not cookie_str:
+        return {"isValid": False, "pesan": "Cookie belum diatur."}
+    clean_cookie = cookie_str.strip().strip('"').strip("'")
+    if clean_cookie.startswith(".ROBLOSECURITY="):
+        clean_cookie = clean_cookie.split("=", 1)[1].strip()
+    
+    if "MASUKKAN_" in clean_cookie or "KODE_COOKIE" in clean_cookie:
+        return {"isValid": False, "pesan": "Cookie masih berupa teks placeholder."}
+
+    try:
+        req = urllib.request.Request(
+            'https://users.roblox.com/v1/users/authenticated',
+            headers={
+                'Cookie': f'.ROBLOSECURITY={clean_cookie}',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode())
+            uid = data.get('id')
+            uname = data.get('name')
+            dname = data.get('displayName') or uname
+            avatar_url = ""
+            try:
+                av_req = urllib.request.Request(
+                    f'https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={uid}&size=150x150&format=Png&isCircular=true',
+                    headers={'User-Agent': 'Mozilla/5.0'}
+                )
+                with urllib.request.urlopen(av_req, timeout=4) as av_resp:
+                    av_data = json.loads(av_resp.read().decode())
+                    if av_data.get('data') and len(av_data['data']) > 0:
+                        avatar_url = av_data['data'][0].get('imageUrl', '')
+            except Exception:
+                pass
+            masked = clean_cookie[:18] + "..." + clean_cookie[-8:] if len(clean_cookie) > 26 else "***"
+            return {
+                "isValid": True,
+                "userId": uid,
+                "username": uname,
+                "displayName": dname,
+                "avatarUrl": avatar_url,
+                "masked": masked,
+                "cookie": clean_cookie,
+                "pesan": f"Akun @{uname} ({dname}) aktif terhubung!"
+            }
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            return {"isValid": False, "pesan": "Cookie kadaluarsa atau tidak valid (HTTP 401). Silakan ambil ulang dari browser."}
+        return {"isValid": False, "pesan": f"Gagal verifikasi ke Roblox (HTTP {e.code})"}
+    except Exception as e:
+        return {"isValid": False, "pesan": f"Gagal terhubung ke Roblox: {e}"}
+
+@app.route('/cookie-roblox', methods=['GET', 'POST', 'DELETE', 'OPTIONS'])
+@app.route('/api/cookie-roblox', methods=['GET', 'POST', 'DELETE', 'OPTIONS'])
+def route_cookie_roblox():
+    if request.method == 'OPTIONS':
+        return jsonify({"status": "ok"})
+    
+    if request.method == 'GET':
+        c = os.environ.get("ROBLOX_COOKIE", "").strip()
+        if not c:
+            try:
+                import config
+                c = getattr(config, 'ROBLOX_COOKIE', '')
+            except Exception:
+                pass
+        if not c:
+            return jsonify({
+                "hasCookie": False,
+                "isValid": False,
+                "pesan": "Cookie Roblox belum diatur. Klik tombol Cookie untuk menghubungkan akun Roblox."
+            })
+        res = verifikasi_roblox_cookie(c)
+        res["hasCookie"] = bool(c)
+        return jsonify(res)
+
+    elif request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        new_cookie = str(data.get("cookie") or "").strip().strip('"').strip("'")
+        if new_cookie.startswith(".ROBLOSECURITY="):
+            new_cookie = new_cookie.split("=", 1)[1].strip()
+
+        if not new_cookie:
+            # Hapus cookie jika dikosongkan
+            os.environ["ROBLOX_COOKIE"] = ""
+            update_env_file_key("ROBLOX_COOKIE", "")
+            try:
+                import config
+                config.ROBLOX_COOKIE = ""
+            except Exception:
+                pass
+            return jsonify({
+                "sukses": True,
+                "hasCookie": False,
+                "isValid": False,
+                "pesan": "Cookie Roblox berhasil dihapus."
+            })
+
+        val_res = verifikasi_roblox_cookie(new_cookie)
+        if not val_res.get("isValid"):
+            return jsonify({
+                "sukses": False,
+                "isValid": False,
+                "pesan": val_res.get("pesan", "Cookie tidak valid")
+            }), 400
+
+        # Jika valid, simpan ke environment dan file .env
+        os.environ["ROBLOX_COOKIE"] = new_cookie
+        update_env_file_key("ROBLOX_COOKIE", new_cookie)
+        try:
+            import config
+            config.ROBLOX_COOKIE = new_cookie
+        except Exception:
+            pass
+
+        val_res["sukses"] = True
+        val_res["hasCookie"] = True
+        return jsonify(val_res), 200
+
+    elif request.method == 'DELETE':
+        os.environ["ROBLOX_COOKIE"] = ""
+        update_env_file_key("ROBLOX_COOKIE", "")
+        try:
+            import config
+            config.ROBLOX_COOKIE = ""
+        except Exception:
+            pass
+        return jsonify({
+            "sukses": True,
+            "hasCookie": False,
+            "isValid": False,
+            "pesan": "Cookie Roblox berhasil dihapus."
+        })
+
 @app.route('/auto-add-friend', methods=['POST', 'OPTIONS'])
 @app.route('/api/auto-add-friend', methods=['POST', 'OPTIONS'])
 def route_auto_add_friend():
@@ -669,8 +831,12 @@ def route_auto_add_friend():
 
     profile_url = f"https://www.roblox.com/users/{user_id}/profile"
 
-    # 2. Cek apakah ada cookie ROBLOSECURITY di environment atau config
-    roblox_cookie = os.environ.get("ROBLOX_COOKIE", "").strip()
+    # 2. Cek apakah ada cookie ROBLOSECURITY di payload JSON atau environment
+    roblox_cookie = str(data.get("cookie") or "").strip().strip('"').strip("'")
+    if roblox_cookie.startswith(".ROBLOSECURITY="):
+        roblox_cookie = roblox_cookie.split("=", 1)[1].strip()
+    if not roblox_cookie:
+        roblox_cookie = os.environ.get("ROBLOX_COOKIE", "").strip()
     if not roblox_cookie:
         try:
             import config
@@ -686,71 +852,12 @@ def route_auto_add_friend():
             "username": user_name,
             "displayName": display_name,
             "profileUrl": profile_url,
-            "pesan": f"Akun @{user_name} ({display_name}) ditemukan! Siap dipasang ke kursi."
+            "pesan": f"Akun @{user_name} ({display_name}) ditemukan! (Cookie belum diatur, silakan atur di tombol Cookie)"
         })
 
-    # 3. Jika cookie tersedia, kirim permintaan pertemanan via API Roblox resmi
-    try:
-        import requests
-        session = requests.Session()
-        session.cookies.update({".ROBLOSECURITY": roblox_cookie})
-        session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        })
-
-        rel_res = session.get(f"https://friends.roblox.com/v1/users/{user_id}/relation", timeout=5)
-        if rel_res.status_code == 200:
-            rel_status = rel_res.json().get("status")
-            if rel_status == "Friends":
-                return jsonify({
-                    "sukses": True,
-                    "status": "FRIENDS",
-                    "userId": user_id,
-                    "username": user_name,
-                    "profileUrl": profile_url,
-                    "pesan": f"@{user_name} sudah berteman dengan Anda di Roblox."
-                })
-            elif rel_status == "RequestSent":
-                return jsonify({
-                    "sukses": True,
-                    "status": "PENDING_SENT",
-                    "userId": user_id,
-                    "username": user_name,
-                    "profileUrl": profile_url,
-                    "pesan": f"Permintaan pertemanan ke @{user_name} sudah dikirim (Pending)."
-                })
-
-        csrf_res = session.post("https://auth.roblox.com/v1/logout", timeout=5)
-        csrf_token = csrf_res.headers.get("x-csrf-token")
-        headers = {"Content-Type": "application/json"}
-        if csrf_token:
-            headers["X-CSRF-TOKEN"] = csrf_token
-
-        friend_res = session.post(
-            f"https://friends.roblox.com/v1/users/{user_id}/request-friendship",
-            headers=headers,
-            timeout=5
-        )
-        if friend_res.status_code == 200:
-            return jsonify({
-                "sukses": True,
-                "status": "SENT_SUCCESS",
-                "userId": user_id,
-                "username": user_name,
-                "profileUrl": profile_url,
-                "pesan": f"Permintaan pertemanan berhasil dikirim ke @{user_name}!"
-            })
-        else:
-            return jsonify({
-                "sukses": True,
-                "status": "USER_FOUND",
-                "userId": user_id,
-                "username": user_name,
-                "displayName": display_name,
-                "profileUrl": profile_url,
-                "pesan": f"Akun @{user_name} ditemukan."
-            })
-    except Exception:
+    # 3. Verifikasi bot akun
+    bot_res = verifikasi_roblox_cookie(roblox_cookie)
+    if not bot_res.get("isValid"):
         return jsonify({
             "sukses": True,
             "status": "USER_FOUND",
@@ -758,7 +865,120 @@ def route_auto_add_friend():
             "username": user_name,
             "displayName": display_name,
             "profileUrl": profile_url,
-            "pesan": f"Akun @{user_name} ditemukan."
+            "pesan": f"Akun @{user_name} ({display_name}) ditemukan! (Cookie tersimpan tidak valid/kadaluarsa)"
+        })
+
+    bot_id = bot_res.get("userId")
+    bot_name = bot_res.get("username")
+
+    if bot_id == user_id:
+        return jsonify({
+            "sukses": True,
+            "status": "SELF",
+            "userId": user_id,
+            "username": user_name,
+            "displayName": display_name,
+            "profileUrl": profile_url,
+            "pesan": f"@{user_name} adalah akun bot Anda sendiri."
+        })
+
+    # 4. Periksa relasi pertemanan via friends/statuses
+    try:
+        status_req = urllib.request.Request(
+            f'https://friends.roblox.com/v1/users/{bot_id}/friends/statuses?userIds={user_id}',
+            headers={'Cookie': f'.ROBLOSECURITY={roblox_cookie}', 'User-Agent': 'Mozilla/5.0'}
+        )
+        with urllib.request.urlopen(status_req, timeout=5) as st_resp:
+            st_data = json.loads(st_resp.read().decode())
+            status_list = st_data.get('data', [])
+            if status_list:
+                rel_status = status_list[0].get('status')
+                if rel_status == "Friends":
+                    return jsonify({
+                        "sukses": True,
+                        "status": "FRIENDS",
+                        "userId": user_id,
+                        "username": user_name,
+                        "displayName": display_name,
+                        "profileUrl": profile_url,
+                        "pesan": f"@{user_name} sudah berteman dengan bot @{bot_name} di Roblox."
+                    })
+                elif rel_status == "RequestSent":
+                    return jsonify({
+                        "sukses": True,
+                        "status": "PENDING_SENT",
+                        "userId": user_id,
+                        "username": user_name,
+                        "displayName": display_name,
+                        "profileUrl": profile_url,
+                        "pesan": f"Permintaan pertemanan ke @{user_name} sudah terkirim (Pending)."
+                    })
+                elif rel_status == "RequestReceived":
+                    return jsonify({
+                        "sukses": True,
+                        "status": "REQUEST_RECEIVED",
+                        "userId": user_id,
+                        "username": user_name,
+                        "displayName": display_name,
+                        "profileUrl": profile_url,
+                        "pesan": f"@{user_name} telah mengirim permintaan pertemanan ke bot @{bot_name}."
+                    })
+    except Exception:
+        pass
+
+    # 5. Jika NotFriends, coba kirim permintaan pertemanan
+    try:
+        csrf_req = urllib.request.Request(
+            'https://auth.roblox.com/v1/logout',
+            data=b'',
+            headers={'Cookie': f'.ROBLOSECURITY={roblox_cookie}', 'User-Agent': 'Mozilla/5.0'}
+        )
+        csrf_token = None
+        try:
+            urllib.request.urlopen(csrf_req)
+        except urllib.error.HTTPError as e:
+            csrf_token = e.headers.get('x-csrf-token')
+
+        friend_req = urllib.request.Request(
+            f'https://friends.roblox.com/v1/users/{user_id}/request-friendship',
+            data=b'{}',
+            headers={
+                'Cookie': f'.ROBLOSECURITY={roblox_cookie}',
+                'X-CSRF-TOKEN': csrf_token or '',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0'
+            }
+        )
+        with urllib.request.urlopen(friend_req, timeout=5) as fr_resp:
+            return jsonify({
+                "sukses": True,
+                "status": "SENT_SUCCESS",
+                "userId": user_id,
+                "username": user_name,
+                "displayName": display_name,
+                "profileUrl": profile_url,
+                "pesan": f"Permintaan pertemanan berhasil dikirim ke @{user_name} dari bot @{bot_name}!"
+            })
+    except urllib.error.HTTPError as e:
+        pesan_err = "perlu verifikasi keamanan Roblox" if e.code == 403 else f"HTTP {e.code}"
+        return jsonify({
+            "sukses": True,
+            "status": "CHALLENGE_REQUIRED",
+            "userId": user_id,
+            "username": user_name,
+            "displayName": display_name,
+            "profileUrl": profile_url,
+            "pesan": f"Akun @{user_name} terdaftar! ({pesan_err}, kirim pertemanan di: {profile_url})"
+        })
+    except Exception as e:
+        return jsonify({
+            "sukses": True,
+            "status": "USER_FOUND",
+            "userId": user_id,
+            "username": user_name,
+            "displayName": display_name,
+            "profileUrl": profile_url,
+            "pesan": f"Akun @{user_name} ({display_name}) siap dipasang ke kursi."
         })
 
 @app.route('/weather', methods=['POST', 'OPTIONS'])
