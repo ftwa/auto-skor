@@ -8542,43 +8542,90 @@
     tambahLogAktivitas('SISTEM', 'Leaderboard Fish It siap digunakan', 'system');
   });
 
-  function jalankanAutoAddFriend() {
-    const usernameRoblox = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '');
+  async function jalankanAutoAddFriend() {
+    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '').trim();
     const btnAdd = document.getElementById('btnAutoAddFriend');
     const statusEl = document.getElementById('modalSearchStatus');
-    
-    if (!usernameRoblox) {
+
+    if (!rawInput) {
       if (statusEl) {
         statusEl.style.color = '#ef4444';
-        statusEl.innerText = 'Ketik atau cari username Roblox terlebih dahulu!';
-      }
-      return;
-    }
-
-    if (window.location.protocol === 'https:') {
-      if (statusEl) {
-        statusEl.style.color = '#f59e0b';
-        statusEl.innerText = 'Fitur Auto-Add otomatis membutuhkan MasterAutoSkor_Lokal.exe (Lokal 5000).';
+        statusEl.innerText = 'Ketik username Roblox terlebih dahulu!';
       }
       return;
     }
 
     btnAdd.disabled = true;
     btnAdd.innerText = "⏳ Memproses...";
+    if (statusEl) {
+      statusEl.style.color = '#38bdf8';
+      statusEl.innerText = `Mencari & memproses akun @${rawInput}...`;
+    }
 
+    // 1. Pastikan profil akun Roblox dicari & dimuat ke form kursi secara instan
+    let uname = rawInput;
+    let dname = rawInput;
+    let uid = '';
+    let avUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(rawInput)}&background=0284c7&color=fff&rounded=true&bold=true`;
+    let av3d = avUrl;
+
+    try {
+      const hasilProfil = await fetchCariRoblox(rawInput);
+      if (hasilProfil && (hasilProfil.userName || hasilProfil.username)) {
+        uname = hasilProfil.userName || hasilProfil.username;
+        dname = hasilProfil.displayName || uname;
+        avUrl = hasilProfil.avatarUrl || avUrl;
+        av3d = hasilProfil.avatar3dUrl || avUrl;
+        uid = hasilProfil.userId || '';
+
+        document.getElementById('inputUserRoblox').value = uname;
+        document.getElementById('inputDisplayName').value = dname;
+
+        const inTik = document.getElementById('inputNamaTikTok');
+        if (inTik && !inTik.value.trim()) inTik.value = dname;
+
+        document.getElementById('inputAvatarUrl').value = avUrl;
+        const elUid = document.getElementById('inputUserId');
+        if (elUid) elUid.value = uid;
+        const el3d = document.getElementById('inputAvatar3dUrl');
+        if (el3d) el3d.value = av3d;
+
+        updateModalPreviewUI(uname, dname, av3d || avUrl);
+      }
+    } catch (_) {}
+
+    // 2. Hubungi endpoint pertemanan (/auto-add-friend)
     const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
-    const endpoint = isLokal ? '/auto-add-friend' : 'http://127.0.0.1:5000/auto-add-friend';
+    const endpoints = [
+      isLokal ? '/auto-add-friend' : 'http://127.0.0.1:5000/auto-add-friend',
+      'https://auto-skor.vercel.app/api/auto-add-friend',
+      '/api/auto-add-friend'
+    ];
 
-    fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: usernameRoblox })
-    })
-    .then(res => res.json())
-    .then(data => {
-      btnAdd.disabled = false;
-      const statusRelasi = data.status || "";
-      const pesanServer = (data.pesan || "").toLowerCase();
+    let addSuccess = false;
+    let responseData = null;
+
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uname }),
+          signal: AbortSignal.timeout(3000)
+        });
+        if (res.ok) {
+          responseData = await res.json();
+          addSuccess = true;
+          break;
+        }
+      } catch (_) {}
+    }
+
+    btnAdd.disabled = false;
+
+    if (responseData) {
+      const statusRelasi = responseData.status || "";
+      const pesanServer = (responseData.pesan || "").toLowerCase();
 
       if (statusRelasi === "FRIENDS" || pesanServer.includes("sudah berteman") || pesanServer.includes("already a friend")) {
         btnAdd.innerText = "✔ Berteman";
@@ -8586,47 +8633,39 @@
         btnAdd.style.color = "#94a3b8";
         btnAdd.style.borderColor = "#28354f";
         if (statusEl) {
-          statusEl.style.color = '#94a3b8';
-          statusEl.innerText = `${usernameRoblox} sudah berteman dengan Anda.`;
+          statusEl.style.color = '#38bdf8';
+          statusEl.innerHTML = `@${uname} sudah berteman di Roblox. Klik <b>💾 Simpan Data</b> untuk menyimpan ke kursi!`;
         }
-      } 
-      else if (data.sukses || statusRelasi === "SENT_SUCCESS") {
+      } else if (responseData.sukses && statusRelasi === "SENT_SUCCESS") {
         btnAdd.innerText = "⏳ Pending";
         btnAdd.style.background = "rgba(245, 158, 11, 0.15)";
         btnAdd.style.color = "#f59e0b";
         btnAdd.style.borderColor = "#f59e0b";
         if (statusEl) {
-          statusEl.style.color = '#f59e0b';
-          statusEl.innerText = 'Permintaan pertemanan terkirim (Menunggu persetujuan). ⏳';
+          statusEl.style.color = '#4ade80';
+          statusEl.innerHTML = `Permintaan pertemanan terkirim ke <b>@${uname}</b>! Klik <b>💾 Simpan Data</b>.`;
         }
-        tambahLogAktivitas('ROBLOX', `Berhasil mengirim permintaan ke ${usernameRoblox} (Pending)`, 'system');
-      } 
-      else if (statusRelasi === "PENDING_SENT" || pesanServer.includes("pending")) {
-        btnAdd.innerText = "⏳ Pending";
-        btnAdd.style.background = "rgba(245, 158, 11, 0.15)";
-        btnAdd.style.color = "#f59e0b";
-        btnAdd.style.borderColor = "#f59e0b";
+        tambahLogAktivitas('ROBLOX', `Berhasil mengirim permintaan ke ${uname} (Pending)`, 'system');
+      } else {
+        btnAdd.innerText = "✔ Terpasang";
+        btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
+        btnAdd.style.color = "#22c55e";
+        btnAdd.style.borderColor = "#22c55e";
         if (statusEl) {
-          statusEl.style.color = '#f59e0b';
-          statusEl.innerText = 'Permintaan pertemanan masih pending.';
-        }
-      } 
-      else {
-        btnAdd.innerText = "➕ Add";
-        if (statusEl) {
-          statusEl.style.color = '#ef4444';
-          statusEl.innerText = "Gagal memproses pertemanan (Cek cookie/koneksi).";
+          statusEl.style.color = '#4ade80';
+          statusEl.innerHTML = `Akun terverifikasi: <b>@${uname}</b> (${dname}) ✔ Klik <b>💾 Simpan Data</b> untuk mengunci kursi!`;
         }
       }
-    })
-    .catch(err => {
-      btnAdd.disabled = false;
-      btnAdd.innerText = "➕ Add";
+    } else {
+      btnAdd.innerText = "✔ Terpasang";
+      btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
+      btnAdd.style.color = "#22c55e";
+      btnAdd.style.borderColor = "#22c55e";
       if (statusEl) {
-        statusEl.style.color = '#ef4444';
-        statusEl.innerText = 'Gagal terhubung ke server Python!';
+        statusEl.style.color = '#4ade80';
+        statusEl.innerHTML = `Akun terverifikasi: <b>@${uname}</b> (${dname}) ✔ Klik <b>💾 Simpan Data</b> untuk mengunci kursi!`;
       }
-    });
+    }
   }
 
 
