@@ -10,6 +10,8 @@
       const raw = (urlParams.get('view') || urlParams.get('overlay') || 'admin').toLowerCase();
       if (['overlay', 'stream', 'live', 'tiktok', 'obs', 'match', 'tabel', 'table'].includes(raw)) {
         document.documentElement.classList.add('mode-overlay');
+      } else if (['top3', '3besar', 'tigabesar', 'top-3', '3-besar'].includes(raw)) {
+        document.documentElement.classList.add('mode-top3');
       } else if (['podium', 'winner', 'champions', 'juara'].includes(raw)) {
         document.documentElement.classList.add('mode-podium');
       } else if (['notif', 'toast', 'alert'].includes(raw)) {
@@ -2710,6 +2712,59 @@
       display: none !important;
     }
 
+    /* 2.5. Mode Overlay 3 Besar Live (?view=top3 atau ?view=3besar) */
+    html.mode-top3, html.mode-top3 body {
+      background: transparent !important;
+      background-image: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      scrollbar-width: none !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    html.mode-top3::-webkit-scrollbar, html.mode-top3 body::-webkit-scrollbar {
+      display: none !important;
+    }
+    html.mode-top3 .top-bar,
+    html.mode-top3 .middle-strip,
+    html.mode-top3 .table-container,
+    html.mode-top3 .tables-wrapper,
+    html.mode-top3 .log-panel,
+    html.mode-top3 .modal-overlay,
+    html.mode-top3 .quick-point-popover,
+    html.mode-top3 .color-picker-mini,
+    html.mode-top3 #winnerOverlay,
+    html.mode-top3 #notifDynamicPill,
+    html.mode-top3 .btn-close-winner,
+    html.mode-top3 .footer-brand,
+    html.mode-top3 #bigScreenAlertOverlay {
+      display: none !important;
+    }
+    html.mode-top3 .container {
+      background: transparent !important;
+      background-image: none !important;
+      box-shadow: none !important;
+      border: none !important;
+      padding: 10px !important;
+      margin: 0 auto !important;
+      max-width: 100% !important;
+      width: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    html.mode-top3 #podiumHeroStage {
+      display: grid !important;
+      margin: 0 !important;
+      transform: scale(1.0);
+      transform-origin: center center;
+    }
+
     /* 3. Mode Notif Saja (?view=notif) */
     html.mode-notif, html.mode-notif body {
       background: transparent !important;
@@ -3046,6 +3101,7 @@
 
           // Jika halaman dibuka sebagai Overlay di TikTok LIVE Studio, segera minta state terbaru
           if (document.documentElement.classList.contains('mode-overlay') || 
+              document.documentElement.classList.contains('mode-top3') ||
               document.documentElement.classList.contains('mode-podium') ||
               document.documentElement.classList.contains('mode-notif') ||
               document.documentElement.classList.contains('mode-timer')) {
@@ -3119,6 +3175,7 @@
       if (msg.type === 'REQUEST_STATE') {
         // Hanya mode master/admin yang merespon dan membagikan state penuh
         if (!document.documentElement.classList.contains('mode-overlay') && 
+            !document.documentElement.classList.contains('mode-top3') &&
             !document.documentElement.classList.contains('mode-podium') &&
             !document.documentElement.classList.contains('mode-notif') &&
             !document.documentElement.classList.contains('mode-timer')) {
@@ -4391,7 +4448,23 @@
         </div>
       </div>
 
-      <!-- CARD 2: PODIUM JUARA -->
+      <!-- CARD 2: OVERLAY 3 BESAR LIVE -->
+      <div class="stream-link-row highlight-cyan" style="border-color: #38bdf8; background: rgba(56, 189, 248, 0.05);">
+        <div class="stream-header-row">
+          <div class="stream-row-title">
+            <span style="color:#0284c7; font-weight:900;">🥉 Overlay 3 Besar Live (Top 3 Realtime)</span>
+          </div>
+          <span class="stream-badge-res" style="background:#0284c7; color:#fff;">880 × 320 px</span>
+        </div>
+        <div class="stream-desc-txt">Panggung live transparan khusus 3 Besar (Peringkat 1, 2, dan 3) dengan cincin gyro holografik, avatar 3D, dan poin realtime selama pertandingan. Sangat ringkas dan cocok ditaruh di layar siaran!</div>
+        <div class="stream-input-group">
+          <input type="text" readonly id="linkOverlayTop3" class="stream-url-field" onclick="this.select()">
+          <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayTop3', this)">📋 Salin Link</button>
+          <a id="previewOverlayTop3" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
+        </div>
+      </div>
+
+      <!-- CARD 3: PODIUM JUARA -->
       <div class="stream-link-row highlight-gold">
         <div class="stream-header-row">
           <div class="stream-row-title">
@@ -5513,14 +5586,22 @@
     }
 
     const urlTabel = `${base}?view=tabel`;
+    const urlTop3 = `${base}?view=top3`;
     const urlTimer = `${base}?view=timer`;
     const urlPodium = `${base}?view=podium`;
     const urlNotif = `${base}?view=notif`;
 
     const elTabel = document.getElementById('linkOverlayTabel');
+    const elTop3 = document.getElementById('linkOverlayTop3');
     const elTimer = document.getElementById('linkOverlayTimer');
     const elPodium = document.getElementById('linkOverlayPodium');
     const elNotif = document.getElementById('linkOverlayNotif');
+
+    if (elTop3) {
+      elTop3.value = urlTop3;
+      const prev = document.getElementById('previewOverlayTop3');
+      if (prev) prev.href = urlTop3;
+    }
 
     if (elTabel) {
       elTabel.value = urlTabel;
@@ -8340,6 +8421,7 @@
     inisialisasiResizeKolomDanContainer();
     renderIsiTabel(); 
     const isOverlayMode = document.documentElement.classList.contains('mode-overlay') || 
+                          document.documentElement.classList.contains('mode-top3') || 
                           document.documentElement.classList.contains('mode-podium') || 
                           document.documentElement.classList.contains('mode-timer');
     if (isOverlayMode) {
@@ -8518,35 +8600,38 @@
     
     // Resolusi Gambar Ikan Tangkapan (Prioritaskan Foto Ikan Resmi)
     const fishInfo = dapatkanInfoGambarIkan(namaIkan, tierKey);
-    const targetImg = fishInfo.primary || avatarUrl;
+    const candidateUrls = [
+      fishInfo.primary,
+      fishInfo.fallbackPerpulau,
+      fishInfo.fallbackIkan,
+      fishInfo.robloxUrl,
+      avatarUrl
+    ].filter(url => url && typeof url === 'string' && url.trim().length > 0);
 
-    if (targetImg && img) {
-      let step = 0;
+    if (candidateUrls.length > 0 && img) {
+      let candidateIdx = 0;
       img.onerror = function() {
-        step++;
-        if (step === 1 && fishInfo.fallbackPerpulau) {
-          this.src = fishInfo.fallbackPerpulau;
-        } else if (step === 2 && fishInfo.fallbackIkan) {
-          this.src = fishInfo.fallbackIkan;
-        } else if (step === 3 && fishInfo.robloxUrl) {
-          this.src = fishInfo.robloxUrl;
-        } else if (step === 4 && avatarUrl) {
-          this.src = avatarUrl;
+        candidateIdx++;
+        if (candidateIdx < candidateUrls.length) {
+          this.src = candidateUrls[candidateIdx];
         } else {
           this.onerror = null;
           this.src = dapatkanTierCrestSvg(tierKey);
         }
       };
-      img.src = targetImg;
+      img.src = candidateUrls[0];
       img.style.display = 'block';
       img.style.objectFit = 'contain';
       if (init) init.style.display = 'none';
-    } else {
-      if (img) img.style.display = 'none';
-      if (init) {
-        init.style.display = 'inline';
-        init.innerText = displayName ? displayName.charAt(0).toUpperCase() : '🎣';
-      }
+    } else if (img) {
+      img.onerror = null;
+      img.src = dapatkanTierCrestSvg(tierKey);
+      img.style.display = 'block';
+      img.style.objectFit = 'contain';
+      if (init) init.style.display = 'none';
+    } else if (init) {
+      init.style.display = 'inline';
+      init.innerText = displayName ? displayName.charAt(0).toUpperCase() : '🎣';
     }
 
     // Audio Playback dari Audio Pool (Zero Latency)
@@ -8620,7 +8705,7 @@
   function bersihkanNamaIkanDasar(nama) {
     if (!nama) return '';
     let teks = String(nama).trim();
-    const regexVarian = /^\s*(big|shiny|mutasi|mutation|sparkling|rainbow|albino|radioactive|translucent|dark|electric|tiny|golden|ghostly|cosmic)\b/gi;
+    const regexVarian = /^\s*(big|shiny|mutasi|mutation|sparkling|rainbow|albino|radioactive|translucent|dark|electric|tiny|golden|ghostly|cosmic|ikan)\b/gi;
     for (let i = 0; i < 3; i++) {
       teks = teks.replace(regexVarian, '').trim();
     }
@@ -8666,7 +8751,7 @@
         name: entry.name,
         filename: fn,
         primary: `fish_images/${encFn}`,
-        fallbackPerpulau: entry.perpulau_path || '',
+        fallbackPerpulau: entry.perpulau_path ? encodeURI(entry.perpulau_path) : '',
         fallbackIkan: `ikan/${encFn}`,
         robloxUrl: assetId ? `https://assetdelivery.roblox.com/v1/asset/?id=${assetId}` : '',
         tier: entry.tier || tierKey
