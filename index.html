@@ -2630,7 +2630,8 @@
     html.mode-overlay .btn-pt-ctrl,
     html.mode-overlay .color-picker-mini,
     html.mode-overlay .quick-point-popover,
-    html.mode-overlay .col-resizer {
+    html.mode-overlay .col-resizer,
+    html.mode-overlay .container-resizer-right {
       display: none !important;
     }
     html.mode-overlay .container {
@@ -2701,7 +2702,10 @@
     html.mode-podium .modal-overlay,
     html.mode-podium .quick-point-popover,
     html.mode-podium .color-picker-mini,
-    html.mode-podium #notifDynamicPill {
+    html.mode-podium #notifDynamicPill,
+    html.mode-podium #dynamicPillBanner,
+    html.mode-podium .esports-toast-hud,
+    html.mode-podium .btn-close-winner {
       display: none !important;
     }
 
@@ -2720,7 +2724,8 @@
     html.mode-notif .container,
     html.mode-notif .modal-overlay,
     html.mode-notif .quick-point-popover,
-    html.mode-notif #winnerOverlay {
+    html.mode-notif #winnerOverlay,
+    html.mode-notif .hud-btn-close {
       display: none !important;
     }
 
@@ -2766,7 +2771,8 @@
     html.mode-timer .color-picker-mini,
     html.mode-timer #winnerOverlay,
     html.mode-timer #notifDynamicPill,
-    html.mode-timer #esportsToastHud,
+    html.mode-timer #dynamicPillBanner,
+    html.mode-timer .esports-toast-hud,
     html.mode-timer .log-panel,
     html.mode-timer .btn-stadium-ctrl {
       display: none !important;
@@ -5454,6 +5460,9 @@
   function batalPengaturanNotifSuara() {
     document.getElementById('modalNotifSuara').style.display = 'none';
   }
+  function tutupModalNotifSuara() {
+    batalPengaturanNotifSuara();
+  }
 
   function tesMunculkanNotifBg(tierTes = 'khusus') {
     tutupSemuaDropdown();
@@ -7441,6 +7450,10 @@
     perbaruiPodiumCard(1, p1, 'Belum Ada');
     perbaruiPodiumCard(2, p2, 'Belum Ada');
     perbaruiPodiumCard(3, p3, 'Belum Ada');
+  }
+
+  function perbaruiPodiumTop3Hero() {
+    renderHeroPodium();
   }
 
   function renderTop3LiveWidget() {
