@@ -2728,6 +2728,7 @@
     html.mode-timer, html.mode-timer body {
       background: transparent !important;
       background-image: none !important;
+      background-color: transparent !important;
       padding: 0 !important;
       margin: 0 !important;
       overflow: hidden !important;
@@ -2743,6 +2744,8 @@
     }
     html.mode-timer .container {
       background: transparent !important;
+      background-color: transparent !important;
+      background-image: none !important;
       border: none !important;
       box-shadow: none !important;
       padding: 0 !important;
@@ -2753,18 +2756,18 @@
       align-items: center !important;
       justify-content: center !important;
     }
-    html.mode-timer .container-resizer-right,
-    html.mode-timer .top-bar,
-    html.mode-timer #podiumHeroStage,
-    html.mode-timer .table-wrapper,
-    html.mode-timer .total-points-card,
-    html.mode-timer .log-panel,
+    /* Sembunyikan SEMUA elemen anak di dalam .container KECUALI .middle-strip */
+    html.mode-timer .container > *:not(.middle-strip) {
+      display: none !important;
+    }
+    /* Sembunyikan juga modal, toast, dan popover luar */
     html.mode-timer .modal-overlay,
     html.mode-timer .quick-point-popover,
     html.mode-timer .color-picker-mini,
     html.mode-timer #winnerOverlay,
     html.mode-timer #notifDynamicPill,
     html.mode-timer #esportsToastHud,
+    html.mode-timer .log-panel,
     html.mode-timer .btn-stadium-ctrl {
       display: none !important;
     }
@@ -2775,13 +2778,14 @@
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
+      background: transparent !important;
     }
     html.mode-timer .stadium-chronometer-capsule {
       background: linear-gradient(180deg, rgba(6, 25, 51, 0.94) 0%, rgba(2, 12, 26, 0.98) 100%) !important;
       border: 3px solid #00d2ff !important;
       box-shadow: 0 0 35px rgba(0, 210, 255, 0.65), inset 0 0 16px rgba(0, 210, 255, 0.25) !important;
       border-radius: 999px !important;
-      padding: 8px 30px !important;
+      padding: 10px 32px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
