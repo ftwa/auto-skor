@@ -296,7 +296,7 @@ def route_catch():
         return jsonify({"status": "ok", "mode": mode_sistem, "catches": catches})
 
     data = request.get_json(silent=True) or {}
-    nama_pemain = str(data.get("player") or data.get("username") or "").strip()
+    nama_pemain = str(data.get("player") or data.get("username") or data.get("user") or "").strip()
     nama_ikan = str(data.get("fish") or data.get("ikan") or "").strip()
     varian = str(data.get("variant") or data.get("varian") or "").strip()
     tier = str(data.get("tier") or "").strip()
