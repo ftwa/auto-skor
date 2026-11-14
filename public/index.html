@@ -23,7 +23,7 @@
   </script>
   <!-- Paho MQTT WebSocket Client (Offline First / Local Asset) -->
   <script src="mqttws31.min.js" defer></script>
-  <script src="fish_database.js" defer></script>
+  <script src="fish_database.js"></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auto Skor Esports - TikTok LIVE Studio & OBS Overlay</title>
@@ -5653,32 +5653,32 @@
 
     let deltaVal = 5;
     let rincianStr = "ikan khusus +5";
-    let namaIkanTes = "Megalodon";
+    let namaIkanTes = "Leviathan";
 
     if (tierKey === 'forgotten') {
       const matF = db.warnaPoin?.matrix?.forgotten || DEFAULT_MATRIKS_TIER.forgotten;
       const basePts = matF?.base ?? 4;
       rincianStr = `forgotten +${basePts}, mutasi +3`;
       deltaVal = basePts + 3;
-      namaIkanTes = "Sea Eater";
+      namaIkanTes = "Everbloom";
     } else if (tierKey === 'khusus') {
       const matK = db.warnaPoin?.matrix?.khusus || DEFAULT_MATRIKS_TIER.khusus;
       const basePts = matK?.base ?? 5;
       rincianStr = `ikan khusus +${basePts}, shiny +2`;
       deltaVal = basePts + 2;
-      namaIkanTes = matK?.nama || "Megalodon Khusus";
+      namaIkanTes = matK?.nama || "Leviathan";
     } else if (tierKey === 'secret') {
       rincianStr = "secret +3, mutasi +3";
       deltaVal = 6;
-      namaIkanTes = "Megalodon";
+      namaIkanTes = "Leviathan";
     } else if (tierKey === 'mitos') {
       rincianStr = "mitos +2, shiny +2";
       deltaVal = 4;
-      namaIkanTes = "Manta Ray";
+      namaIkanTes = "Starlight Manta Ray";
     } else {
       rincianStr = "legend +1, rare +1";
       deltaVal = 2;
-      namaIkanTes = "Yellowfin Tuna";
+      namaIkanTes = "Dotted Stingray";
     }
 
     const s = getSesi();
@@ -8515,14 +8515,31 @@
 
     const img = document.getElementById('dynamicPillImg');
     const init = document.getElementById('dynamicPillInitial');
-    const targetImg = dapatkanGambarIkan(namaIkan, tierKey) || avatarUrl;
+    
+    // Resolusi Gambar Ikan Tangkapan (Prioritaskan Foto Ikan Resmi)
+    const fishInfo = dapatkanInfoGambarIkan(namaIkan, tierKey);
+    const targetImg = fishInfo.primary || avatarUrl;
+
     if (targetImg && img) {
+      let step = 0;
       img.onerror = function() {
-        this.onerror = null;
-        this.src = dapatkanTierCrestSvg(tierKey);
+        step++;
+        if (step === 1 && fishInfo.fallbackPerpulau) {
+          this.src = fishInfo.fallbackPerpulau;
+        } else if (step === 2 && fishInfo.fallbackIkan) {
+          this.src = fishInfo.fallbackIkan;
+        } else if (step === 3 && fishInfo.robloxUrl) {
+          this.src = fishInfo.robloxUrl;
+        } else if (step === 4 && avatarUrl) {
+          this.src = avatarUrl;
+        } else {
+          this.onerror = null;
+          this.src = dapatkanTierCrestSvg(tierKey);
+        }
       };
       img.src = targetImg;
       img.style.display = 'block';
+      img.style.objectFit = 'contain';
       if (init) init.style.display = 'none';
     } else {
       if (img) img.style.display = 'none';
@@ -8610,8 +8627,8 @@
     return teks;
   }
 
-  function dapatkanGambarIkan(namaIkan, tierKey = '') {
-    if (!namaIkan) return dapatkanTierCrestSvg(tierKey || 'legend');
+  function dapatkanInfoGambarIkan(namaIkan, tierKey = '') {
+    if (!namaIkan) return { primary: '', tier: tierKey };
     const rawClean = String(namaIkan).trim();
     const cleanLower = rawClean.toLowerCase();
     const cleanCanon = cleanLower.replace(/[^a-z0-9]/g, '');
@@ -8619,15 +8636,15 @@
     // 1. Cek Custom Upload / Override User di LocalStorage
     try {
       const customMap = JSON.parse(localStorage.getItem('CUSTOM_FISH_IMAGES') || '{}');
-      if (customMap[cleanLower]) return customMap[cleanLower];
-      if (customMap[cleanCanon]) return customMap[cleanCanon];
+      if (customMap[cleanLower]) return { primary: customMap[cleanLower], tier: tierKey };
+      if (customMap[cleanCanon]) return { primary: customMap[cleanCanon], tier: tierKey };
     } catch (_) {}
 
-    // 2. Cek Fast Lookup Database Terpadu (1,270+ Ikan) - Exact Match Dahulu
+    // 2. Cek Fast Lookup Database Terpadu (246 Ikan Turnamen)
     const lookup = window.FISH_FAST_LOOKUP || {};
     let entry = lookup[cleanLower] || lookup[cleanCanon];
 
-    // 3. Jika belum ketemu, bersihkan prefix varian (Big, Shiny, Mutasi)
+    // 3. Bersihkan prefix varian (Big, Shiny, Mutasi)
     let baseName = rawClean;
     if (!entry) {
       baseName = bersihkanNamaIkanDasar(rawClean);
@@ -8635,46 +8652,43 @@
       const baseCanon = baseLower.replace(/[^a-z0-9]/g, '');
       try {
         const customMap = JSON.parse(localStorage.getItem('CUSTOM_FISH_IMAGES') || '{}');
-        if (customMap[baseLower]) return customMap[baseLower];
-        if (customMap[baseCanon]) return customMap[baseCanon];
+        if (customMap[baseLower]) return { primary: customMap[baseLower], tier: tierKey };
+        if (customMap[baseCanon]) return { primary: customMap[baseCanon], tier: tierKey };
       } catch (_) {}
       entry = lookup[baseLower] || lookup[baseCanon];
     }
 
     if (entry) {
-      if (entry.filename) {
-        return `fish_images/${encodeURIComponent(entry.filename)}`;
-      }
-      if (entry.local_image) return entry.local_image;
-      if (entry.image_url) return entry.image_url;
+      const fn = entry.filename || `${entry.name}.png`;
+      const encFn = encodeURIComponent(fn);
+      const assetId = entry.assetId || '';
+      return {
+        name: entry.name,
+        filename: fn,
+        primary: `fish_images/${encFn}`,
+        fallbackPerpulau: entry.perpulau_path || '',
+        fallbackIkan: `ikan/${encFn}`,
+        robloxUrl: assetId ? `https://assetdelivery.roblox.com/v1/asset/?id=${assetId}` : '',
+        tier: entry.tier || tierKey
+      };
     }
 
-    // 4. Cek Database Pulau Lama / FISH_DATABASE
-    const dbIkan = window.FISH_DATABASE || {};
-    let matchedTier = tierKey;
-    const searchKeys = [cleanLower, cleanCanon, baseName.toLowerCase(), baseName.toLowerCase().replace(/[^a-z0-9]/g, '')];
-    for (const locKey in dbIkan) {
-      const daftar = dbIkan[locKey]?.daftar_ikan || {};
-      for (const fKey in daftar) {
-        const item = daftar[fKey];
-        const fKeyClean = fKey.toLowerCase();
-        const fKeyCanon = fKeyClean.replace(/[^a-z0-9]/g, '');
-        if (searchKeys.includes(fKeyClean) || searchKeys.includes(fKeyCanon) || fKeyClean.includes(baseName.toLowerCase()) || baseName.toLowerCase().includes(fKeyClean)) {
-          if (item?.tier) matchedTier = item.tier;
-          if (item?.local_image) return item.local_image;
-          if (item?.image_url) return item.image_url;
-          break;
-        }
-      }
-    }
+    // 4. Fallback nama bersih langsung
+    const encBase = encodeURIComponent(baseName);
+    return {
+      name: baseName,
+      filename: `${baseName}.png`,
+      primary: `fish_images/${encBase}.png`,
+      fallbackPerpulau: `Hasil_Ikan_Per_Pulau/_Ikon_Baru_Tambahan/${encBase}.png`,
+      fallbackIkan: `ikan/${encBase}.png`,
+      robloxUrl: '',
+      tier: tierKey
+    };
+  }
 
-    // 5. Cek langsung file image jika ada
-    if (baseName) {
-      return `fish_images/${encodeURIComponent(baseName)}.png`;
-    }
-
-    // 6. Fallback: Official Esport SVG Tier Crest
-    return dapatkanTierCrestSvg(matchedTier || tierKey || 'legend');
+  function dapatkanGambarIkan(namaIkan, tierKey = '') {
+    const info = dapatkanInfoGambarIkan(namaIkan, tierKey);
+    return info.primary || dapatkanTierCrestSvg(tierKey || 'legend');
   }
 
   // --- KELOLA GAMBAR IKAN UI HANDLERS ---
