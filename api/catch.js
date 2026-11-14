@@ -158,7 +158,7 @@ export default async function handler(req, res) {
       CONFIG_KHUSUS.mutasiVal = Number(k.mutasiVal) || 3;
     }
 
-    const player = String(body.player || body.username || '').trim();
+    const player = String(body.player || body.username || body.user || '').trim();
     const rawFish = String(body.fish || body.ikan || '').trim();
     const rawVariant = String(body.variant || body.varian || '').trim();
     const rawTier = String(body.tier || '').trim();
