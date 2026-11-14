@@ -23,6 +23,7 @@
   </script>
   <!-- Paho MQTT WebSocket Client (Offline First / Local Asset) -->
   <script src="mqttws31.min.js" defer></script>
+  <script src="fish_database.js" defer></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auto Skor Esports - TikTok LIVE Studio & OBS Overlay</title>
@@ -8516,6 +8517,10 @@
     const init = document.getElementById('dynamicPillInitial');
     const targetImg = dapatkanGambarIkan(namaIkan, tierKey) || avatarUrl;
     if (targetImg && img) {
+      img.onerror = function() {
+        this.onerror = null;
+        this.src = dapatkanTierCrestSvg(tierKey);
+      };
       img.src = targetImg;
       img.style.display = 'block';
       if (init) init.style.display = 'none';
@@ -8595,33 +8600,81 @@
     }
   }
 
+  function bersihkanNamaIkanDasar(nama) {
+    if (!nama) return '';
+    let teks = String(nama).trim();
+    const regexVarian = /^\s*(big|shiny|mutasi|mutation|sparkling|rainbow|albino|radioactive|translucent|dark|electric|tiny|golden|ghostly|cosmic)\b/gi;
+    for (let i = 0; i < 3; i++) {
+      teks = teks.replace(regexVarian, '').trim();
+    }
+    return teks;
+  }
+
   function dapatkanGambarIkan(namaIkan, tierKey = '') {
     if (!namaIkan) return dapatkanTierCrestSvg(tierKey || 'legend');
-    const clean = String(namaIkan).toLowerCase().trim();
+    const rawClean = String(namaIkan).trim();
+    const cleanLower = rawClean.toLowerCase();
+    const cleanCanon = cleanLower.replace(/[^a-z0-9]/g, '');
 
-    // 1. Cek Custom Upload / URL User di LocalStorage
+    // 1. Cek Custom Upload / Override User di LocalStorage
     try {
       const customMap = JSON.parse(localStorage.getItem('CUSTOM_FISH_IMAGES') || '{}');
-      if (customMap[clean]) return customMap[clean];
+      if (customMap[cleanLower]) return customMap[cleanLower];
+      if (customMap[cleanCanon]) return customMap[cleanCanon];
     } catch (_) {}
 
-    // 2. Cek Database Ikan (Hanya yang otentik Fish It!)
+    // 2. Cek Fast Lookup Database Terpadu (1,270+ Ikan) - Exact Match Dahulu
+    const lookup = window.FISH_FAST_LOOKUP || {};
+    let entry = lookup[cleanLower] || lookup[cleanCanon];
+
+    // 3. Jika belum ketemu, bersihkan prefix varian (Big, Shiny, Mutasi)
+    let baseName = rawClean;
+    if (!entry) {
+      baseName = bersihkanNamaIkanDasar(rawClean);
+      const baseLower = baseName.toLowerCase();
+      const baseCanon = baseLower.replace(/[^a-z0-9]/g, '');
+      try {
+        const customMap = JSON.parse(localStorage.getItem('CUSTOM_FISH_IMAGES') || '{}');
+        if (customMap[baseLower]) return customMap[baseLower];
+        if (customMap[baseCanon]) return customMap[baseCanon];
+      } catch (_) {}
+      entry = lookup[baseLower] || lookup[baseCanon];
+    }
+
+    if (entry) {
+      if (entry.filename) {
+        return `fish_images/${encodeURIComponent(entry.filename)}`;
+      }
+      if (entry.local_image) return entry.local_image;
+      if (entry.image_url) return entry.image_url;
+    }
+
+    // 4. Cek Database Pulau Lama / FISH_DATABASE
     const dbIkan = window.FISH_DATABASE || {};
     let matchedTier = tierKey;
+    const searchKeys = [cleanLower, cleanCanon, baseName.toLowerCase(), baseName.toLowerCase().replace(/[^a-z0-9]/g, '')];
     for (const locKey in dbIkan) {
       const daftar = dbIkan[locKey]?.daftar_ikan || {};
       for (const fKey in daftar) {
-        if (clean === fKey || clean === daftar[fKey]?.name?.toLowerCase() || clean.includes(fKey) || fKey.includes(clean)) {
-          if (daftar[fKey]?.tier) matchedTier = daftar[fKey].tier;
-          if (daftar[fKey]?.local_image) return daftar[fKey].local_image;
-          if (daftar[fKey]?.image_url) return daftar[fKey].image_url;
+        const item = daftar[fKey];
+        const fKeyClean = fKey.toLowerCase();
+        const fKeyCanon = fKeyClean.replace(/[^a-z0-9]/g, '');
+        if (searchKeys.includes(fKeyClean) || searchKeys.includes(fKeyCanon) || fKeyClean.includes(baseName.toLowerCase()) || baseName.toLowerCase().includes(fKeyClean)) {
+          if (item?.tier) matchedTier = item.tier;
+          if (item?.local_image) return item.local_image;
+          if (item?.image_url) return item.image_url;
           break;
         }
       }
     }
 
-    // 3. Fallback: Official Esport SVG Tier Crest (Standar Siaran TV & Turnamen)
-    return dapatkanTierCrestSvg(matchedTier || 'legend');
+    // 5. Cek langsung file image jika ada
+    if (baseName) {
+      return `fish_images/${encodeURIComponent(baseName)}.png`;
+    }
+
+    // 6. Fallback: Official Esport SVG Tier Crest
+    return dapatkanTierCrestSvg(matchedTier || tierKey || 'legend');
   }
 
   // --- KELOLA GAMBAR IKAN UI HANDLERS ---
@@ -8659,11 +8712,33 @@
   }
 
   function getDaftarSemuaIkanTurnamen() {
-    const dbIkan = window.FISH_DATABASE || {};
     const list = [];
     const tierOrder = { 'forgotten': 1, 'secret': 2, 'mitos': 3, 'legend': 4 };
     const seen = new Set();
 
+    // 1. Ambil dari FISH_DATABASE_UNIFIED (1,270+ Database Ikan Terpadu)
+    const unified = window.FISH_DATABASE_UNIFIED || {};
+    for (const name in unified) {
+      const item = unified[name];
+      const tier = (item.tier || '').toLowerCase();
+      if (tierOrder[tier]) {
+        const cleanName = name.toLowerCase().trim();
+        if (!seen.has(cleanName)) {
+          seen.add(cleanName);
+          list.push({
+            key: cleanName,
+            name: item.name || name,
+            tier: tier,
+            location: item.location || 'Semua Wilayah',
+            order: tierOrder[tier],
+            official_image: item.local_image || (item.filename ? `fish_images/${encodeURIComponent(item.filename)}` : '')
+          });
+        }
+      }
+    }
+
+    // 2. Tambahkan dari FISH_DATABASE jika ada yang belum tercakup
+    const dbIkan = window.FISH_DATABASE || {};
     for (const locKey in dbIkan) {
       const locData = dbIkan[locKey];
       const daftar = locData?.daftar_ikan || {};
