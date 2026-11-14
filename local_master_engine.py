@@ -879,7 +879,7 @@ def route_auto_add_friend():
             "username": user_name,
             "displayName": display_name,
             "profileUrl": profile_url,
-            "pesan": f"@{user_name} adalah akun bot Anda sendiri."
+            "pesan": f"@{user_name} adalah akun Anda sendiri."
         })
 
     # 4. Periksa relasi pertemanan via friends/statuses
@@ -901,7 +901,7 @@ def route_auto_add_friend():
                         "username": user_name,
                         "displayName": display_name,
                         "profileUrl": profile_url,
-                        "pesan": f"@{user_name} sudah berteman dengan bot @{bot_name} di Roblox."
+                        "pesan": f"@{user_name} sudah berteman dengan akun @{bot_name} di Roblox."
                     })
                 elif rel_status == "RequestSent":
                     return jsonify({
@@ -921,7 +921,7 @@ def route_auto_add_friend():
                         "username": user_name,
                         "displayName": display_name,
                         "profileUrl": profile_url,
-                        "pesan": f"@{user_name} telah mengirim permintaan pertemanan ke bot @{bot_name}."
+                        "pesan": f"@{user_name} telah mengirim permintaan pertemanan ke akun @{bot_name}."
                     })
     except Exception:
         pass
@@ -957,7 +957,7 @@ def route_auto_add_friend():
                 "username": user_name,
                 "displayName": display_name,
                 "profileUrl": profile_url,
-                "pesan": f"Permintaan pertemanan berhasil dikirim ke @{user_name} dari bot @{bot_name}!"
+                "pesan": f"Permintaan pertemanan berhasil dikirim ke @{user_name} dari akun @{bot_name}!"
             })
     except urllib.error.HTTPError as e:
         pesan_err = "perlu verifikasi keamanan Roblox" if e.code == 403 else f"HTTP {e.code}"
