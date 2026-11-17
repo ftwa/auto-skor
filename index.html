@@ -308,139 +308,191 @@
        MODERN BROADCAST ESPORTS TOAST HUD (BIGGER & MODERN)
        ======================================================== */
     .esports-toast-hud {
-      position: fixed; top: 16px; left: 50%;
-      transform: translateX(-50%) translateY(-140px) scale(0.92);
-      width: 580px; max-width: 94vw; min-height: 76px;
-      background: linear-gradient(135deg, rgba(8, 28, 54, 0.97) 0%, rgba(3, 14, 28, 0.98) 100%);
-      border: 2.5px solid #00d2ff;
-      border-radius: 22px;
-      padding: 10px 16px 10px 14px;
-      display: flex; align-items: center; gap: 14px;
-      box-shadow: 0 16px 45px rgba(0, 180, 216, 0.45), 0 0 30px rgba(0, 210, 255, 0.3);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      --aura-c1: #00f0ff;
+      --aura-c2: #0284c7;
+      --aura-glow: rgba(0, 240, 255, 0.65);
+      position: fixed; top: 24px; left: 50%;
+      transform: translateX(-50%) translateY(-160px) scale(0.92);
+      width: 590px; max-width: 94vw; min-height: 82px;
+      padding: 10px 26px 10px 22px;
+      display: flex; align-items: center; gap: 16px;
       z-index: 99999;
       opacity: 0; pointer-events: none;
-      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+      transition: transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.24s ease;
       cursor: pointer;
+      overflow: visible;
       will-change: transform, opacity;
-      backface-visibility: hidden;
-      transform-style: preserve-3d;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      filter: drop-shadow(0 0 18px var(--aura-glow));
+    }
+    /* Bingkai Outer Hexa Polygon Glowing */
+    .esports-toast-hud::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(26px 0%, calc(100% - 26px) 0%, 100% 50%, calc(100% - 26px) 100%, 26px 100%, 0% 50%);
+      background: linear-gradient(90deg, var(--aura-c1) 0%, var(--aura-c2) 50%, var(--aura-c1) 100%);
+      z-index: -2;
+      pointer-events: none;
+      animation: hexaBorderPulse 2.2s ease-in-out infinite alternate;
+    }
+    /* Background Inner Dark Navy & Pola Sirkuit Cyber */
+    .esports-toast-hud::after {
+      content: '';
+      position: absolute;
+      inset: 2.5px;
+      clip-path: polygon(25px 0%, calc(100% - 25px) 0%, 100% 50%, calc(100% - 25px) 100%, 25px 100%, 0% 50%);
+      background:
+        radial-gradient(circle at 50% 100%, var(--aura-glow) 0%, transparent 55%),
+        linear-gradient(135deg, rgba(6, 18, 40, 0.96) 0%, rgba(3, 10, 24, 0.99) 100%),
+        repeating-linear-gradient(90deg, rgba(0, 240, 255, 0.04) 0px, rgba(0, 240, 255, 0.04) 1px, transparent 1px, transparent 28px);
+      z-index: -1;
+      pointer-events: none;
+    }
+    @keyframes hexaBorderPulse {
+      0% { opacity: 0.85; filter: brightness(0.95); }
+      100% { opacity: 1; filter: brightness(1.25); }
     }
     .esports-toast-hud.show {
       transform: translateX(-50%) translateY(0) scale(1);
       opacity: 1; pointer-events: auto;
     }
     .esports-toast-hud.pulse-pop {
-      animation: hudPulsePop 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: hudPulsePop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes hudPulsePop {
-      0% { transform: translateX(-50%) translateY(0) scale(0.94); }
-      50% { transform: translateX(-50%) translateY(0) scale(1.04); }
+      0% { transform: translateX(-50%) translateY(0) scale(0.92); }
+      55% { transform: translateX(-50%) translateY(0) scale(1.05); }
       100% { transform: translateX(-50%) translateY(0) scale(1.0); }
     }
 
-    /* Tier Glow Variants */
+    /* Warna Aura Neon Cyber Hexa Sesuai Tier Ikan */
+    .esports-toast-hud.tier-forgotten {
+      --aura-c1: #d946ef;
+      --aura-c2: #7e22ce;
+      --aura-glow: rgba(217, 70, 239, 0.78);
+    }
     .esports-toast-hud.tier-khusus {
-      border-color: #d946ef;
-      box-shadow: 0 16px 50px rgba(217, 70, 239, 0.6), 0 0 35px rgba(168, 85, 247, 0.5);
+      --aura-c1: #ec4899;
+      --aura-c2: #00f0ff;
+      --aura-glow: rgba(236, 72, 153, 0.75);
     }
-    .esports-toast-hud.tier-khusus .hud-avatar-circle { border-color: #d946ef; box-shadow: 0 0 18px rgba(217, 70, 239, 0.8); }
-    .esports-toast-hud.tier-khusus .hud-tier-badge {
-      background: rgba(217, 70, 239, 0.25); border: 1px solid #d946ef; color: #f5d0fe;
+    .esports-toast-hud.tier-secret {
+      --aura-c1: #facc15;
+      --aura-c2: #10b981;
+      --aura-glow: rgba(250, 204, 21, 0.75);
     }
+    .esports-toast-hud.tier-mythic {
+      --aura-c1: #ef4444;
+      --aura-c2: #f97316;
+      --aura-glow: rgba(239, 68, 68, 0.75);
+    }
+    .esports-toast-hud.tier-legend {
+      --aura-c1: #00f0ff;
+      --aura-c2: #3b82f6;
+      --aura-glow: rgba(0, 240, 255, 0.72);
+    }
+
     .log-item.tier-khusus { border-left-color: #a855f7 !important; background: rgba(168, 85, 247, 0.08) !important; }
     .badge-khusus { background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%) !important; color: #fff !important; }
 
-    .esports-toast-hud.tier-secret {
-      border-color: #facc15;
-      box-shadow: 0 16px 50px rgba(250, 204, 21, 0.5), 0 0 30px rgba(34, 197, 94, 0.4);
-    }
-    .esports-toast-hud.tier-secret .hud-avatar-circle { border-color: #facc15; box-shadow: 0 0 16px rgba(250, 204, 21, 0.7); }
-    .esports-toast-hud.tier-secret .hud-tier-badge {
-      background: rgba(250, 204, 21, 0.2); border: 1px solid #facc15; color: #fde047;
-    }
-
-    .esports-toast-hud.tier-mythic {
-      border-color: #ef4444;
-      box-shadow: 0 16px 50px rgba(239, 68, 68, 0.55), 0 0 30px rgba(168, 85, 247, 0.4);
-    }
-    .esports-toast-hud.tier-mythic .hud-avatar-circle { border-color: #ef4444; box-shadow: 0 0 16px rgba(239, 68, 68, 0.7); }
-    .esports-toast-hud.tier-mythic .hud-tier-badge {
-      background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5;
-    }
-
-    .esports-toast-hud.tier-legend {
-      border-color: #38bdf8;
-      box-shadow: 0 16px 50px rgba(56, 189, 248, 0.5), 0 0 30px rgba(2, 132, 199, 0.35);
-    }
-    .esports-toast-hud.tier-legend .hud-avatar-circle { border-color: #38bdf8; box-shadow: 0 0 16px rgba(56, 189, 248, 0.7); }
-    .esports-toast-hud.tier-legend .hud-tier-badge {
-      background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #bae6fd;
-    }
-
-    /* Avatar Stage */
+    /* Avatar Stage Heksagonal (Kiri) */
     .hud-avatar-stage {
-      position: relative; width: 54px; height: 54px; flex-shrink: 0;
+      position: relative; width: 60px; height: 64px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      filter: drop-shadow(0 0 10px var(--aura-glow));
     }
     .hud-avatar-circle {
-      width: 100%; height: 100%; border-radius: 50%;
-      border: 3px solid #00d2ff; overflow: hidden;
+      width: 58px; height: 64px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      background: var(--aura-c1);
+      padding: 2.5px;
       display: flex; align-items: center; justify-content: center;
-      background: #07192f; color: #fff; font-size: 22px; font-weight: 900;
-      box-shadow: 0 0 14px rgba(0, 210, 255, 0.6);
+      color: #fff; font-size: 22px; font-weight: 900;
+      position: relative;
+    }
+    .hud-avatar-circle img {
+      width: 100%; height: 100%;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      object-fit: cover;
+      background: #07192f;
     }
     .hud-crown-icon {
-      position: absolute; top: -6px; right: -4px;
-      font-size: 16px; filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.8));
+      position: absolute; top: -8px; right: -2px;
+      font-size: 16px; filter: drop-shadow(0 0 8px var(--aura-c1));
+      z-index: 5;
     }
 
-    /* Body Info */
-    .hud-body-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    /* Body Info (Tengah: Hanya Tier Badge & Nama Pemain, Tanpa Teks Nama Ikan) */
+    .hud-body-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
     .hud-tag-row { display: flex; align-items: center; gap: 8px; }
     .hud-tier-badge {
       font-size: 10px; font-weight: 900; letter-spacing: 1px;
-      text-transform: uppercase; padding: 2px 8px; border-radius: 999px;
+      text-transform: uppercase; padding: 2px 10px; border-radius: 6px;
       display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--aura-c1);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--aura-glow);
     }
-    .hud-catch-time { font-size: 9.5px; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
+    .hud-catch-time { display: none; }
 
     .hud-player-row {
       display: flex; align-items: center; gap: 6px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .hud-player-name {
-      font-size: 15.5px; font-weight: 900; color: #ffffff; letter-spacing: 0.3px;
-    }
-    .hud-dot-sep { color: #38bdf8; font-weight: 900; }
-    .hud-fish-name {
-      font-size: 14px; font-weight: 800; color: #38bdf8;
+      font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: 0.4px;
+      text-shadow: 0 0 14px var(--aura-glow);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .hud-desc-sub {
-      font-size: 11px; font-weight: 700; color: #94a3b8;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .hud-dot-sep, .hud-fish-name, .hud-desc-sub { display: none !important; }
+
+    /* Showcase Gambar Ikan 3D Pop-Out (Kanan) */
+    .hud-fish-showcase {
+      position: relative;
+      width: 92px; height: 84px;
+      margin: -22px -6px -14px 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      z-index: 4;
+    }
+    .hud-fish-showcase img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 14px var(--aura-c1)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+      animation: fishPopOutFloat 2.4s ease-in-out infinite alternate;
+    }
+    @keyframes fishPopOutFloat {
+      0% { transform: translateY(2px) scale(1); }
+      100% { transform: translateY(-5px) scale(1.08); }
     }
 
-    /* Score Stadium */
+    /* Score Stadium Lingkaran (Kanan) */
     .hud-score-stadium {
-      background: linear-gradient(135deg, rgba(250, 204, 21, 0.25) 0%, rgba(234, 179, 8, 0.15) 100%);
-      border: 2px solid #facc15;
-      border-radius: 16px;
-      padding: 6px 14px;
+      width: 62px; height: 62px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18) 0%, rgba(4, 16, 36, 0.95) 85%);
+      border: 2.5px solid var(--aura-c1);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center;
-      box-shadow: 0 0 16px rgba(250, 204, 21, 0.45);
+      box-shadow: 0 0 18px var(--aura-glow), inset 0 0 12px var(--aura-glow);
       flex-shrink: 0;
+      z-index: 5;
+      line-height: 1.05;
     }
     .hud-pts-val {
       font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-      font-size: 22px; font-weight: 900; color: #fde047;
-      letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+      font-size: 16px; font-weight: 900; color: #ffffff;
+      letter-spacing: 0.3px; text-shadow: 0 0 10px var(--aura-c1);
     }
 
     .hud-btn-close {
       background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #94a3b8; width: 28px; height: 28px; border-radius: 50%;
-      font-size: 13px; font-weight: 800; cursor: pointer;
+      color: #94a3b8; width: 24px; height: 24px; border-radius: 50%;
+      font-size: 11px; font-weight: 800; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s; flex-shrink: 0; margin-left: 2px;
     }
@@ -3650,7 +3702,12 @@
     <div class="hud-desc-sub" id="dynamicPillDesc">-</div>
   </div>
 
-  <!-- Right Glowing Points Stadium Badge -->
+  <!-- Showcase Gambar Ikan 3D Pop-Out (Tanpa Teks Nama Ikan) -->
+  <div class="hud-fish-showcase" id="hudFishShowcase">
+    <img id="dynamicPillFishImg" src="" alt="Ikan" style="display:none;">
+  </div>
+
+  <!-- Right Glowing Circular Points Stadium Badge -->
   <div class="hud-score-stadium">
     <span class="hud-pts-val" id="dynamicPillPts">+0 PTS</span>
   </div>
@@ -9451,7 +9508,7 @@
     const descEl = document.getElementById('dynamicPillDesc');
     if (descEl) descEl.innerText = `${rincian || 'Tangkapan Langka'}`;
     const ptsEl = document.getElementById('dynamicPillPts');
-    if (ptsEl) ptsEl.innerText = `+${poinDelta} PTS`;
+    if (ptsEl) ptsEl.innerHTML = `+${poinDelta}<br><span style="font-size:10px;opacity:0.9;">PTS</span>`;
 
     const tierBadge = document.getElementById('hudTierBadge');
     const crownIcon = document.getElementById('hudCrownIcon');
@@ -9483,43 +9540,57 @@
     void pill.offsetWidth;
     pill.classList.add('show', 'pulse-pop');
 
-    const img = document.getElementById('dynamicPillImg');
-    const init = document.getElementById('dynamicPillInitial');
-    
-    // Resolusi Gambar Ikan Tangkapan (Prioritaskan Foto Ikan Resmi)
+    // 1. Tampilkan Foto Avatar Pemain di Heksagon Kiri
+    const imgAvatar = document.getElementById('dynamicPillImg');
+    const initAvatar = document.getElementById('dynamicPillInitial');
+    if (avatarUrl && imgAvatar) {
+      imgAvatar.onerror = function() {
+        this.style.display = 'none';
+        if (initAvatar) {
+          initAvatar.style.display = 'inline';
+          initAvatar.innerText = displayName ? displayName.charAt(0).toUpperCase() : '🎣';
+        }
+      };
+      imgAvatar.src = avatarUrl;
+      imgAvatar.style.display = 'block';
+      imgAvatar.style.objectFit = 'cover';
+      if (initAvatar) initAvatar.style.display = 'none';
+    } else {
+      if (imgAvatar) imgAvatar.style.display = 'none';
+      if (initAvatar) {
+        initAvatar.style.display = 'inline';
+        initAvatar.innerText = displayName ? displayName.charAt(0).toUpperCase() : '🎣';
+      }
+    }
+
+    // 2. Tampilkan Gambar Ikan 3D Pop-Out di Kanan (Tanpa Teks Nama Ikan)
+    const fishImgEl = document.getElementById('dynamicPillFishImg');
     const fishInfo = dapatkanInfoGambarIkan(namaIkan, tierKey);
-    const candidateUrls = [
+    const fishCandidates = [
       fishInfo.primary,
       fishInfo.fallbackPerpulau,
       fishInfo.fallbackIkan,
-      fishInfo.robloxUrl,
-      avatarUrl
+      fishInfo.robloxUrl
     ].filter(url => url && typeof url === 'string' && url.trim().length > 0);
 
-    if (candidateUrls.length > 0 && img) {
-      let candidateIdx = 0;
-      img.onerror = function() {
-        candidateIdx++;
-        if (candidateIdx < candidateUrls.length) {
-          this.src = candidateUrls[candidateIdx];
-        } else {
-          this.onerror = null;
-          this.src = dapatkanTierCrestSvg(tierKey);
-        }
-      };
-      img.src = candidateUrls[0];
-      img.style.display = 'block';
-      img.style.objectFit = 'contain';
-      if (init) init.style.display = 'none';
-    } else if (img) {
-      img.onerror = null;
-      img.src = dapatkanTierCrestSvg(tierKey);
-      img.style.display = 'block';
-      img.style.objectFit = 'contain';
-      if (init) init.style.display = 'none';
-    } else if (init) {
-      init.style.display = 'inline';
-      init.innerText = displayName ? displayName.charAt(0).toUpperCase() : '🎣';
+    if (fishImgEl) {
+      if (fishCandidates.length > 0) {
+        let fIdx = 0;
+        fishImgEl.onerror = function() {
+          fIdx++;
+          if (fIdx < fishCandidates.length) {
+            this.src = fishCandidates[fIdx];
+          } else {
+            this.onerror = null;
+            this.src = dapatkanTierCrestSvg(tierKey);
+          }
+        };
+        fishImgEl.src = fishCandidates[0];
+      } else {
+        fishImgEl.onerror = null;
+        fishImgEl.src = dapatkanTierCrestSvg(tierKey);
+      }
+      fishImgEl.style.display = 'block';
     }
 
     // Audio Playback dari Audio Pool (Zero Latency)
