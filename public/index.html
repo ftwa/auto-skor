@@ -4729,7 +4729,7 @@
         🖼️ Gambar Ikan
       </button>
       <button type="button" id="tabBtnSettingsVideo" class="settings-tab-btn" onclick="switchSettingsTab('video')">
-        🎬 Video Animasi
+        🎙️ TTS & Musik
       </button>
     </div>
 
@@ -4914,6 +4914,126 @@
         <!-- Diisi dinamis oleh renderDaftarIkanSettings() -->
       </div>
     </div> <!-- END TAB CONTENT IKAN -->
+
+    <!-- TAB CONTENT 3: TTS & MUSIK LATAR -->
+    <div id="settingsTabContentVideo" style="display: none; margin-bottom: 18px;">
+
+      <!-- === TTS SECTION === -->
+      <div style="margin-bottom: 16px;">
+        <span style="font-size: 11.5px; font-weight: 900; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">🎙️ Text-to-Speech (TTS)</span>
+
+        <div class="audio-cyber-card" style="border-left: 3.5px solid #6366f1; margin-top: 8px;">
+          <div class="audio-cyber-top" style="margin-bottom: 8px;">
+            <span style="font-size: 12px; font-weight: 900; color: #4f46e5;">Aktifkan TTS Notifikasi</span>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" id="toggleTtsEnabled" style="width:18px;height:18px;accent-color:#4f46e5;cursor:pointer;">
+              <span id="labelTtsStatus" style="font-size:10px;font-weight:800;color:#64748b;">OFF</span>
+            </label>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;font-weight:800;color:#475569;min-width:60px;">Volume:</span>
+              <input type="range" id="sliderTtsVolume" min="0" max="100" value="80" style="flex:1;accent-color:#4f46e5;">
+              <span id="labelTtsVolume" style="font-size:10px;font-weight:800;color:#4f46e5;min-width:30px;">80%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;font-weight:800;color:#475569;min-width:60px;">Kecepatan:</span>
+              <input type="range" id="sliderTtsRate" min="50" max="200" value="100" step="10" style="flex:1;accent-color:#4f46e5;">
+              <span id="labelTtsRate" style="font-size:10px;font-weight:800;color:#4f46e5;min-width:30px;">1.0x</span>
+            </div>
+            <button type="button" class="btn-action-soft" style="padding:5px 12px;font-size:11px;font-weight:800;align-self:flex-start;" onclick="tesTtsSuara()">🔊 Tes TTS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- === BGM SECTION === -->
+      <div>
+        <span style="font-size: 11.5px; font-weight: 900; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">🎵 Musik Latar (BGM)</span>
+
+        <div class="audio-cyber-card" style="border-left: 3.5px solid #0ea5e9; margin-top: 8px; margin-bottom: 8px;">
+          <div class="audio-cyber-top" style="margin-bottom: 8px;">
+            <span style="font-size: 12px; font-weight: 900; color: #0284c7;">Aktifkan BGM</span>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" id="toggleBgmEnabled" style="width:18px;height:18px;accent-color:#0284c7;cursor:pointer;">
+              <span id="labelBgmStatus" style="font-size:10px;font-weight:800;color:#64748b;">OFF</span>
+            </label>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;font-weight:800;color:#475569;min-width:80px;">Master Vol:</span>
+            <input type="range" id="sliderBgmVolume" min="0" max="100" value="50" style="flex:1;accent-color:#0284c7;">
+            <span id="labelBgmVolume" style="font-size:10px;font-weight:800;color:#0284c7;min-width:30px;">50%</span>
+          </div>
+        </div>
+
+        <!-- BGM Normal -->
+        <div class="audio-cyber-card" style="border-left: 3.5px solid #22c55e; margin-bottom: 6px;">
+          <div class="audio-cyber-top">
+            <span style="font-size:12px;font-weight:900;color:#16a34a;">🎶 BGM Normal (> 10 mnt)</span>
+            <span id="statusBgm_normal" style="font-size:10px;color:#64748b;font-weight:800;background:#f1f5f9;padding:2px 8px;border-radius:999px;">Belum Diisi</span>
+          </div>
+          <div class="audio-cyber-actions">
+            <input type="file" id="bgmInput_normal" accept="audio/mp3,audio/wav,audio/mpeg,audio/*" style="font-size:10.5px;max-width:220px;" onchange="unggahBgmFile('normal', event)">
+            <div style="display:flex;gap:4px;">
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;" onclick="tesBgmFile('normal')">🔊 Tes</button>
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;color:#ef4444;" onclick="resetBgmFile('normal')">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BGM Tegang -->
+        <div class="audio-cyber-card" style="border-left: 3.5px solid #f97316; margin-bottom: 6px;">
+          <div class="audio-cyber-top">
+            <span style="font-size:12px;font-weight:900;color:#ea580c;">⚡ BGM Tegang (≤ 10 mnt)</span>
+            <span id="statusBgm_tegang" style="font-size:10px;color:#64748b;font-weight:800;background:#f1f5f9;padding:2px 8px;border-radius:999px;">Belum Diisi</span>
+          </div>
+          <div class="audio-cyber-actions">
+            <input type="file" id="bgmInput_tegang" accept="audio/mp3,audio/wav,audio/mpeg,audio/*" style="font-size:10.5px;max-width:220px;" onchange="unggahBgmFile('tegang', event)">
+            <div style="display:flex;gap:4px;">
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;" onclick="tesBgmFile('tegang')">🔊 Tes</button>
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;color:#ef4444;" onclick="resetBgmFile('tegang')">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BGM Kritis -->
+        <div class="audio-cyber-card" style="border-left: 3.5px solid #ef4444; margin-bottom: 6px;">
+          <div class="audio-cyber-top">
+            <span style="font-size:12px;font-weight:900;color:#dc2626;">🚨 BGM Kritis (≤ 1 mnt)</span>
+            <span id="statusBgm_kritis" style="font-size:10px;color:#64748b;font-weight:800;background:#f1f5f9;padding:2px 8px;border-radius:999px;">Belum Diisi</span>
+          </div>
+          <div class="audio-cyber-actions">
+            <input type="file" id="bgmInput_kritis" accept="audio/mp3,audio/wav,audio/mpeg,audio/*" style="font-size:10.5px;max-width:220px;" onchange="unggahBgmFile('kritis', event)">
+            <div style="display:flex;gap:4px;">
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;" onclick="tesBgmFile('kritis')">🔊 Tes</button>
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;color:#ef4444;" onclick="resetBgmFile('kritis')">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BGM Victory -->
+        <div class="audio-cyber-card" style="border-left: 3.5px solid #eab308; margin-bottom: 6px;">
+          <div class="audio-cyber-top">
+            <span style="font-size:12px;font-weight:900;color:#ca8a04;">🏆 BGM Victory (Pemenang)</span>
+            <span id="statusBgm_victory" style="font-size:10px;color:#64748b;font-weight:800;background:#f1f5f9;padding:2px 8px;border-radius:999px;">Belum Diisi</span>
+          </div>
+          <div class="audio-cyber-actions">
+            <input type="file" id="bgmInput_victory" accept="audio/mp3,audio/wav,audio/mpeg,audio/*" style="font-size:10.5px;max-width:220px;" onchange="unggahBgmFile('victory', event)">
+            <div style="display:flex;gap:4px;">
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;" onclick="tesBgmFile('victory')">🔊 Tes</button>
+              <button type="button" class="btn-action-soft" style="padding:3px 9px;font-size:10.5px;font-weight:800;color:#ef4444;" onclick="resetBgmFile('victory')">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:8px 12px;margin-top:8px;">
+          <div style="font-size:10.5px;color:#475569;line-height:1.4;">
+            💡 <strong>Auto-Ducking:</strong> Volume BGM otomatis turun saat TTS berbicara, lalu kembali normal setelahnya.
+            <br>🔄 <strong>Auto-Switch:</strong> BGM otomatis berganti sesuai sisa waktu pertandingan.
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- END TAB CONTENT TTS & MUSIK -->
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
       <button type="button" class="btn-action-soft" style="padding: 10px; border-radius: 12px; font-weight: 800; font-size: 12.5px;" onclick="batalPengaturanNotifSuara()">Batal</button>
@@ -6086,6 +6206,7 @@
       isMatchDijeda = true;
       perbaruiStatusMatchUI();
       tutupGyro10DetikTerakhir();
+      if (typeof bgmPause === 'function') bgmPause();
       tambahLogAktivitas('SISTEM', 'Pertandingan DIJEDA', 'system');
       siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true, isAction: true });
     } else if (isMatchDijeda) {
@@ -6094,6 +6215,7 @@
       setModeTampilan('MATCH');
       perbaruiStatusMatchUI();
       mulaiIntervalTimer();
+      if (typeof bgmResume === 'function') bgmResume();
       tambahLogAktivitas('SISTEM', 'Pertandingan DILANJUTKAN', 'system');
       siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false, isAction: true });
     } else {
@@ -6121,6 +6243,7 @@
         mulaiIntervalTimer();
         tambahLogAktivitas('SISTEM', 'PERTANDINGAN DIMULAI!', 'system');
         siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
+        if (typeof bgmStartMatch === 'function') bgmStartMatch();
       });
     }
   }
@@ -6138,6 +6261,7 @@
     setModeTampilan('PREPARE');
     perbaruiStatusMatchUI();
     tutupGyro10DetikTerakhir();
+    if (typeof bgmStopAll === 'function') bgmStopAll();
     tambahLogAktivitas('SISTEM', 'Pertandingan DIHENTIKAN', 'system');
     siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false, isAction: true });
   }
@@ -6154,6 +6278,7 @@
       isMatchDijeda = true;
       perbaruiStatusMatchUI();
       tutupGyro10DetikTerakhir();
+      if (typeof bgmPause === 'function') bgmPause();
       tambahLogAktivitas('TIMER', 'Timer dijeda', 'system');
       if (broadcast) siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true, isAction: true });
     } else {
@@ -6163,6 +6288,7 @@
       setModeTampilan('MATCH');
       perbaruiStatusMatchUI();
       mulaiIntervalTimer();
+      if (typeof bgmResume === 'function') bgmResume();
       tambahLogAktivitas('TIMER', 'Timer dijalankan', 'system');
       if (broadcast) siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false, isAction: true });
     }
@@ -6470,6 +6596,9 @@
     const elAutoReg = document.getElementById('toggleBetaAutoRegister');
     if (elAutoReg) isBetaAutoRegisterAktif = elAutoReg.checked;
     try { localStorage.setItem(BETA_AUTO_REG_KEY, JSON.stringify(isBetaAutoRegisterAktif)); } catch(_) {}
+
+    // Simpan pengaturan TTS & BGM
+    if (typeof simpanTtsBgmSettings === 'function') simpanTtsBgmSettings();
 
     terapkanBackgroundNotif();
     renderIsiTabel(); 
@@ -7164,10 +7293,12 @@
           if (timerSec === 600) {
             putarSuaraPengingatWaktu('10m');
             tambahLogAktivitas('TIMER', '⏰ Waktu tersisa 10 Menit!', 'system');
+            if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
           }
           else if (timerSec === 60) {
             putarSuaraPengingatWaktu('1m');
             tambahLogAktivitas('TIMER', '🚨 PERINGATAN: Waktu tersisa 1 Menit Terakhir!', 'mitos');
+            if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
           }
           if (timerSec <= 10 && timerSec >= 1) {
             putarSuaraMenegangkan10Detik(timerSec);
@@ -7708,10 +7839,12 @@
 
     putarSuaraWinnerCustom();
     mulaiAnimasiPetasan();
+    if (typeof bgmPlayVictory === 'function') bgmPlayVictory();
   }
 
   function tutupLayarPemenang(broadcast = true) {
     if (broadcast) siarkanSync({ type: "CLOSE_WINNER" });
+    if (typeof bgmStopAll === 'function') bgmStopAll();
     const winOvl = document.getElementById('winnerOverlay');
     if (winOvl) winOvl.classList.remove('active');
     if (fireworksInterval) { clearInterval(fireworksInterval); fireworksInterval = null; }
@@ -9077,6 +9210,11 @@
     // Tampilkan Dynamic Island Pill di atas dengan durasi tersinkronisasi
     tampilkanDynamicPill(item.displayName, item.rincianKategori, item.delta, item.tierKey, item.avatarUrl || '', item.namaIkan, true, displayDuration);
 
+    // TTS: Ucapkan notifikasi (fire-and-forget)
+    if (typeof ttsSpeakNotif === 'function') {
+      ttsSpeakNotif(item.displayName, item.namaIkan, item.delta, item.tierKey);
+    }
+
     setTimeout(() => {
       prosesAntreanNotif();
     }, displayDuration);
@@ -10232,6 +10370,7 @@
       if (btnVideo) btnVideo.classList.add('active');
       if (contentVideo) contentVideo.style.display = 'block';
       if (modalBox) modalBox.style.width = '540px';
+      if (typeof isiUiTtsBgm === 'function') isiUiTtsBgm();
     } else {
       if (btnAudio) btnAudio.classList.add('active');
       if (contentAudio) contentAudio.style.display = 'block';
@@ -10472,6 +10611,515 @@
     tampilkanDynamicPill('Peserta 1', 'Tangkapan Turnamen', pts, tier, '', namaIkan, false, 2500);
   }
   
+
+  // ===================================================================
+  // =================== TTS & BGM ENGINE (START) ======================
+  // ===================================================================
+
+  // --- TTS Global State ---
+  let ttsEnabled = false;
+  let ttsVolume = 0.8;
+  let ttsRate = 1.0;
+  try {
+    const _te = localStorage.getItem('tts_enabled');
+    if (_te !== null) ttsEnabled = (_te === 'true');
+  } catch(_) {}
+  try {
+    const _tv = localStorage.getItem('tts_volume');
+    if (_tv !== null) ttsVolume = Math.max(0, Math.min(1, parseFloat(_tv)));
+  } catch(_) {}
+  try {
+    const _tr = localStorage.getItem('tts_rate');
+    if (_tr !== null) ttsRate = Math.max(0.5, Math.min(2, parseFloat(_tr)));
+  } catch(_) {}
+
+  // --- BGM Global State ---
+  let bgmEnabled = false;
+  let bgmMasterVolume = 0.5;
+  let bgmCurrentZone = '';
+  let bgmAudioCurrent = null;
+  let bgmAudioNext = null;
+  let bgmFadeInterval = null;
+  let bgmIsDucked = false;
+  let bgmPreDuckVolume = 0.5;
+  let bgmTestAudio = null;
+
+  try {
+    const _be = localStorage.getItem('bgm_enabled');
+    if (_be !== null) bgmEnabled = (_be === 'true');
+  } catch(_) {}
+  try {
+    const _bv = localStorage.getItem('bgm_volume');
+    if (_bv !== null) bgmMasterVolume = Math.max(0, Math.min(1, parseFloat(_bv)));
+  } catch(_) {}
+
+  // --- TTS Templates ---
+  const TTS_TEMPLATES = {
+    khusus:   '{nama} menangkap {ikan}! Plus {poin} poin!',
+    secret:   'SECRET CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
+    mitos:    'MYTHIC CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
+    mythic:   'MYTHIC CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
+    forgotten:'EPIC FORGOTTEN CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
+    legend:   '{nama} menangkap {ikan}! Plus {poin} poin!'
+  };
+
+  // --- TTS: Speak function ---
+  function ttsSpeak(text) {
+    if (!ttsEnabled) return;
+    if (!window.speechSynthesis) return;
+    try {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'id-ID';
+      utter.volume = ttsVolume;
+      utter.rate = ttsRate;
+
+      utter.onstart = function() {
+        bgmDuck(true);
+      };
+      utter.onend = function() {
+        bgmDuck(false);
+      };
+      utter.onerror = function() {
+        bgmDuck(false);
+      };
+
+      window.speechSynthesis.speak(utter);
+    } catch(_) {}
+  }
+
+  function ttsSpeakNotif(nama, ikan, poin, tierKey) {
+    if (!ttsEnabled) return;
+    const tpl = TTS_TEMPLATES[tierKey] || TTS_TEMPLATES.legend;
+    const text = tpl
+      .replace('{nama}', nama || 'Pemain')
+      .replace('{ikan}', ikan || 'Ikan')
+      .replace('{poin}', poin || '0');
+    ttsSpeak(text);
+  }
+
+  function tesTtsSuara() {
+    const wasEnabled = ttsEnabled;
+    ttsEnabled = true;
+    muatTtsBgmDariUi();
+    ttsSpeak('Tes suara Text to Speech. Selamat bermain!');
+    ttsEnabled = wasEnabled;
+  }
+
+  // --- TTS & BGM: Load settings from UI ---
+  function muatTtsBgmDariUi() {
+    const elTtsOn = document.getElementById('toggleTtsEnabled');
+    if (elTtsOn) ttsEnabled = elTtsOn.checked;
+
+    const elTtsVol = document.getElementById('sliderTtsVolume');
+    if (elTtsVol) ttsVolume = parseInt(elTtsVol.value, 10) / 100;
+
+    const elTtsRate = document.getElementById('sliderTtsRate');
+    if (elTtsRate) ttsRate = parseInt(elTtsRate.value, 10) / 100;
+
+    const elBgmOn = document.getElementById('toggleBgmEnabled');
+    if (elBgmOn) bgmEnabled = elBgmOn.checked;
+
+    const elBgmVol = document.getElementById('sliderBgmVolume');
+    if (elBgmVol) bgmMasterVolume = parseInt(elBgmVol.value, 10) / 100;
+  }
+
+  // --- TTS & BGM: Populate UI from state ---
+  function isiUiTtsBgm() {
+    const elTtsOn = document.getElementById('toggleTtsEnabled');
+    if (elTtsOn) elTtsOn.checked = ttsEnabled;
+    const elTtsLabel = document.getElementById('labelTtsStatus');
+    if (elTtsLabel) elTtsLabel.textContent = ttsEnabled ? 'ON' : 'OFF';
+
+    const elTtsVol = document.getElementById('sliderTtsVolume');
+    if (elTtsVol) elTtsVol.value = Math.round(ttsVolume * 100);
+    const elTtsVolLabel = document.getElementById('labelTtsVolume');
+    if (elTtsVolLabel) elTtsVolLabel.textContent = Math.round(ttsVolume * 100) + '%';
+
+    const elTtsRate = document.getElementById('sliderTtsRate');
+    if (elTtsRate) elTtsRate.value = Math.round(ttsRate * 100);
+    const elTtsRateLabel = document.getElementById('labelTtsRate');
+    if (elTtsRateLabel) elTtsRateLabel.textContent = ttsRate.toFixed(1) + 'x';
+
+    const elBgmOn = document.getElementById('toggleBgmEnabled');
+    if (elBgmOn) elBgmOn.checked = bgmEnabled;
+    const elBgmLabel = document.getElementById('labelBgmStatus');
+    if (elBgmLabel) elBgmLabel.textContent = bgmEnabled ? 'ON' : 'OFF';
+
+    const elBgmVol = document.getElementById('sliderBgmVolume');
+    if (elBgmVol) elBgmVol.value = Math.round(bgmMasterVolume * 100);
+    const elBgmVolLabel = document.getElementById('labelBgmVolume');
+    if (elBgmVolLabel) elBgmVolLabel.textContent = Math.round(bgmMasterVolume * 100) + '%';
+
+    // Update BGM status badges
+    ['normal', 'tegang', 'kritis', 'victory'].forEach(function(zone) {
+      const badge = document.getElementById('statusBgm_' + zone);
+      if (badge) {
+        try {
+          const data = localStorage.getItem('bgm_' + zone);
+          if (data) {
+            badge.textContent = 'Sudah Diisi ✓';
+            badge.style.color = '#16a34a';
+            badge.style.background = '#dcfce7';
+          } else {
+            badge.textContent = 'Belum Diisi';
+            badge.style.color = '#64748b';
+            badge.style.background = '#f1f5f9';
+          }
+        } catch(_) {}
+      }
+    });
+  }
+
+  // --- TTS & BGM: Save to localStorage ---
+  function simpanTtsBgmSettings() {
+    muatTtsBgmDariUi();
+    try { localStorage.setItem('tts_enabled', String(ttsEnabled)); } catch(_) {}
+    try { localStorage.setItem('tts_volume', String(ttsVolume)); } catch(_) {}
+    try { localStorage.setItem('tts_rate', String(ttsRate)); } catch(_) {}
+    try { localStorage.setItem('bgm_enabled', String(bgmEnabled)); } catch(_) {}
+    try { localStorage.setItem('bgm_volume', String(bgmMasterVolume)); } catch(_) {}
+  }
+
+  // --- TTS & BGM: Bind UI sliders live update ---
+  function bindTtsBgmSliders() {
+    const elTtsVol = document.getElementById('sliderTtsVolume');
+    if (elTtsVol) {
+      elTtsVol.addEventListener('input', function() {
+        const lbl = document.getElementById('labelTtsVolume');
+        if (lbl) lbl.textContent = elTtsVol.value + '%';
+      });
+    }
+    const elTtsRate = document.getElementById('sliderTtsRate');
+    if (elTtsRate) {
+      elTtsRate.addEventListener('input', function() {
+        const lbl = document.getElementById('labelTtsRate');
+        if (lbl) lbl.textContent = (parseInt(elTtsRate.value, 10) / 100).toFixed(1) + 'x';
+      });
+    }
+    const elBgmVol = document.getElementById('sliderBgmVolume');
+    if (elBgmVol) {
+      elBgmVol.addEventListener('input', function() {
+        const lbl = document.getElementById('labelBgmVolume');
+        if (lbl) lbl.textContent = elBgmVol.value + '%';
+      });
+    }
+    const elTtsOn = document.getElementById('toggleTtsEnabled');
+    if (elTtsOn) {
+      elTtsOn.addEventListener('change', function() {
+        const lbl = document.getElementById('labelTtsStatus');
+        if (lbl) lbl.textContent = elTtsOn.checked ? 'ON' : 'OFF';
+      });
+    }
+    const elBgmOn = document.getElementById('toggleBgmEnabled');
+    if (elBgmOn) {
+      elBgmOn.addEventListener('change', function() {
+        const lbl = document.getElementById('labelBgmStatus');
+        if (lbl) lbl.textContent = elBgmOn.checked ? 'ON' : 'OFF';
+      });
+    }
+  }
+
+  // === BGM Engine ===
+
+  function bgmGetDataUrl(zone) {
+    try {
+      return localStorage.getItem('bgm_' + zone) || null;
+    } catch(_) {
+      return null;
+    }
+  }
+
+  function unggahBgmFile(zone, event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      alert('File terlalu besar! Maksimum 15MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        localStorage.setItem('bgm_' + zone, e.target.result);
+      } catch(err) {
+        alert('Gagal menyimpan! File mungkin terlalu besar untuk localStorage.');
+        return;
+      }
+      const badge = document.getElementById('statusBgm_' + zone);
+      if (badge) {
+        badge.textContent = 'Sudah Diisi ✓';
+        badge.style.color = '#16a34a';
+        badge.style.background = '#dcfce7';
+      }
+      if (typeof tampilkanToastModern === 'function') {
+        tampilkanToastModern('BGM ' + zone.toUpperCase() + ' berhasil diunggah!');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetBgmFile(zone) {
+    try { localStorage.removeItem('bgm_' + zone); } catch(_) {}
+    const badge = document.getElementById('statusBgm_' + zone);
+    if (badge) {
+      badge.textContent = 'Belum Diisi';
+      badge.style.color = '#64748b';
+      badge.style.background = '#f1f5f9';
+    }
+    const input = document.getElementById('bgmInput_' + zone);
+    if (input) input.value = '';
+    if (bgmCurrentZone === zone) {
+      bgmStopAll();
+    }
+    if (typeof tampilkanToastModern === 'function') {
+      tampilkanToastModern('BGM ' + zone.toUpperCase() + ' di-reset.');
+    }
+  }
+
+  function tesBgmFile(zone) {
+    if (bgmTestAudio) {
+      bgmTestAudio.pause();
+      bgmTestAudio = null;
+    }
+    const dataUrl = bgmGetDataUrl(zone);
+    if (!dataUrl) {
+      alert('Belum ada file BGM untuk zona ' + zone.toUpperCase());
+      return;
+    }
+    bgmTestAudio = new Audio(dataUrl);
+    bgmTestAudio.volume = bgmMasterVolume;
+    bgmTestAudio.play().catch(function() {});
+    setTimeout(function() {
+      if (bgmTestAudio) {
+        bgmTestAudio.pause();
+        bgmTestAudio = null;
+      }
+    }, 8000);
+  }
+
+  function bgmDetermineZone() {
+    // victory zone is handled separately
+    if (!isMatchSedangJalan || isMatchDijeda) return '';
+    if (isExtraTimeBin) {
+      if (extraTimerSec <= 60) return 'kritis';
+      if (extraTimerSec <= 600) return 'tegang';
+      return 'normal';
+    }
+    if (timerSec <= 60) return 'kritis';
+    if (timerSec <= 600) return 'tegang';
+    return 'normal';
+  }
+
+  function bgmPlay(zone) {
+    if (!bgmEnabled) return;
+    if (zone === bgmCurrentZone && bgmAudioCurrent && !bgmAudioCurrent.paused) return;
+    const dataUrl = bgmGetDataUrl(zone);
+    if (!dataUrl) {
+      // No file for this zone, just stop current
+      if (bgmCurrentZone !== zone) {
+        bgmFadeOutCurrent(function() {});
+        bgmCurrentZone = zone;
+      }
+      return;
+    }
+
+    bgmCurrentZone = zone;
+
+    // Crossfade: fade out old, fade in new
+    const newAudio = new Audio(dataUrl);
+    newAudio.loop = true;
+    newAudio.volume = 0;
+
+    if (bgmAudioCurrent && !bgmAudioCurrent.paused) {
+      // Crossfade
+      const oldAudio = bgmAudioCurrent;
+      bgmAudioCurrent = newAudio;
+      newAudio.play().catch(function() {});
+
+      const targetVol = bgmIsDucked ? bgmMasterVolume * 0.3 : bgmMasterVolume;
+      bgmCrossfade(oldAudio, newAudio, targetVol, 2000);
+    } else {
+      bgmAudioCurrent = newAudio;
+      const targetVol = bgmIsDucked ? bgmMasterVolume * 0.3 : bgmMasterVolume;
+      newAudio.play().catch(function() {});
+      bgmFadeIn(newAudio, targetVol, 1000);
+    }
+  }
+
+  function bgmCrossfade(oldAudio, newAudio, targetVol, durationMs) {
+    const steps = 20;
+    const interval = durationMs / steps;
+    let step = 0;
+    const oldStartVol = oldAudio.volume;
+
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
+    bgmFadeInterval = setInterval(function() {
+      step++;
+      const progress = step / steps;
+      try {
+        oldAudio.volume = Math.max(0, oldStartVol * (1 - progress));
+        newAudio.volume = Math.min(1, targetVol * progress);
+      } catch(_) {}
+
+      if (step >= steps) {
+        clearInterval(bgmFadeInterval);
+        bgmFadeInterval = null;
+        oldAudio.pause();
+        try { oldAudio.src = ''; } catch(_) {}
+      }
+    }, interval);
+  }
+
+  function bgmFadeIn(audio, targetVol, durationMs) {
+    const steps = 20;
+    const interval = durationMs / steps;
+    let step = 0;
+
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
+    bgmFadeInterval = setInterval(function() {
+      step++;
+      const progress = step / steps;
+      try {
+        audio.volume = Math.min(1, targetVol * progress);
+      } catch(_) {}
+      if (step >= steps) {
+        clearInterval(bgmFadeInterval);
+        bgmFadeInterval = null;
+      }
+    }, interval);
+  }
+
+  function bgmFadeOutCurrent(callback) {
+    if (!bgmAudioCurrent || bgmAudioCurrent.paused) {
+      if (callback) callback();
+      return;
+    }
+    const audio = bgmAudioCurrent;
+    const startVol = audio.volume;
+    const steps = 20;
+    const interval = 100; // 2s total
+    let step = 0;
+
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
+    bgmFadeInterval = setInterval(function() {
+      step++;
+      try {
+        audio.volume = Math.max(0, startVol * (1 - step / steps));
+      } catch(_) {}
+      if (step >= steps) {
+        clearInterval(bgmFadeInterval);
+        bgmFadeInterval = null;
+        audio.pause();
+        try { audio.src = ''; } catch(_) {}
+        if (callback) callback();
+      }
+    }, interval);
+  }
+
+  function bgmStopAll() {
+    if (bgmFadeInterval) {
+      clearInterval(bgmFadeInterval);
+      bgmFadeInterval = null;
+    }
+    if (bgmAudioCurrent) {
+      bgmAudioCurrent.pause();
+      try { bgmAudioCurrent.src = ''; } catch(_) {}
+      bgmAudioCurrent = null;
+    }
+    bgmCurrentZone = '';
+    bgmIsDucked = false;
+  }
+
+  function bgmPause() {
+    if (bgmAudioCurrent && !bgmAudioCurrent.paused) {
+      bgmAudioCurrent.pause();
+    }
+  }
+
+  function bgmResume() {
+    if (!bgmEnabled) return;
+    if (bgmAudioCurrent && bgmAudioCurrent.paused && bgmAudioCurrent.src) {
+      bgmAudioCurrent.play().catch(function() {});
+    }
+  }
+
+  function bgmPlayVictory() {
+    if (!bgmEnabled) return;
+    bgmStopAll();
+    bgmCurrentZone = 'victory';
+    const dataUrl = bgmGetDataUrl('victory');
+    if (!dataUrl) return;
+    bgmAudioCurrent = new Audio(dataUrl);
+    bgmAudioCurrent.loop = true;
+    bgmAudioCurrent.volume = bgmMasterVolume;
+    bgmAudioCurrent.play().catch(function() {});
+  }
+
+  // --- Auto-Ducking ---
+  function bgmDuck(isDucking) {
+    if (!bgmAudioCurrent || bgmAudioCurrent.paused) return;
+
+    if (isDucking) {
+      bgmIsDucked = true;
+      bgmPreDuckVolume = bgmAudioCurrent.volume;
+      const targetVol = bgmPreDuckVolume * 0.3;
+      bgmSmoothVolume(bgmAudioCurrent, targetVol, 300);
+    } else {
+      bgmIsDucked = false;
+      const restoreVol = bgmMasterVolume;
+      bgmSmoothVolume(bgmAudioCurrent, restoreVol, 500);
+    }
+  }
+
+  function bgmSmoothVolume(audio, targetVol, durationMs) {
+    if (!audio) return;
+    const startVol = audio.volume;
+    const steps = 10;
+    const interval = durationMs / steps;
+    let step = 0;
+    const smoothTimer = setInterval(function() {
+      step++;
+      try {
+        audio.volume = Math.max(0, Math.min(1, startVol + (targetVol - startVol) * (step / steps)));
+      } catch(_) {}
+      if (step >= steps) clearInterval(smoothTimer);
+    }, interval);
+  }
+
+  // --- BGM Zone Check (called each timer tick) ---
+  function bgmCheckZoneSwitch() {
+    if (!bgmEnabled || !isMatchSedangJalan || isMatchDijeda) return;
+    const newZone = bgmDetermineZone();
+    if (newZone && newZone !== bgmCurrentZone) {
+      bgmPlay(newZone);
+    }
+  }
+
+  // --- BGM: Start normal BGM for match start ---
+  function bgmStartMatch() {
+    if (!bgmEnabled) return;
+    bgmStopAll();
+    const zone = bgmDetermineZone();
+    if (zone) bgmPlay(zone);
+  }
+
+  // --- Init TTS & BGM UI on page load ---
+  (function initTtsBgmOnLoad() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        isiUiTtsBgm();
+        bindTtsBgmSliders();
+      });
+    } else {
+      setTimeout(function() {
+        isiUiTtsBgm();
+        bindTtsBgmSliders();
+      }, 100);
+    }
+  })();
+
+  // ===================================================================
+  // ==================== TTS & BGM ENGINE (END) =======================
+  // ===================================================================
 
 
   
