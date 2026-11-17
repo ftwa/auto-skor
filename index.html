@@ -1755,139 +1755,172 @@
        ======================================================== */
     .countdown-overlay {
       position: fixed; inset: 0;
-      background: radial-gradient(circle at center, rgba(6, 20, 48, 0.82) 0%, rgba(2, 6, 18, 0.94) 100%);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      background: radial-gradient(circle at center, rgba(5, 18, 42, 0.82) 0%, rgba(2, 6, 18, 0.94) 100%);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       display: none; justify-content: center; align-items: center;
       z-index: 99999;
       overflow: hidden;
+      transition: background 0.3s ease;
     }
     .countdown-overlay.active { display: flex; }
 
-    /* Panggung Pusaran Energi Laut Dalam (Abyssal Energy Vortex) */
-    .vortex-stage {
-      position: relative;
-      width: 440px; height: 440px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .vortex-aura-glow {
-      position: absolute; inset: -40px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.35) 0%, rgba(168, 85, 247, 0.32) 45%, transparent 72%);
-      filter: blur(28px);
-      animation: vortexAuraBreathe 1.4s ease-in-out infinite alternate;
+    /* Mode 10 Detik Terakhir: Semi-Transparan & Non-Blocking agar Papan Skor di belakang tetap terlihat & interaktif */
+    .countdown-overlay.final-10s {
+      background: radial-gradient(circle at center, rgba(4, 16, 38, 0.42) 0%, transparent 65%);
+      backdrop-filter: none; -webkit-backdrop-filter: none;
       pointer-events: none;
-    }
-    .vortex-spiral {
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-      -webkit-mask-image: radial-gradient(circle, transparent 24%, black 52%, transparent 72%);
-      mask-image: radial-gradient(circle, transparent 24%, black 52%, transparent 72%);
-    }
-    .vortex-spiral-outer {
-      inset: 0;
-      background: conic-gradient(from 0deg, transparent 0deg, #00f0ff 45deg, transparent 90deg, #9333ea 135deg, transparent 180deg, #00f0ff 225deg, transparent 270deg, #d946ef 315deg, transparent 360deg);
-      filter: blur(10px);
-      opacity: 0.85;
-      animation: spinVortexCW 2.4s linear infinite;
-    }
-    .vortex-spiral-mid {
-      inset: 38px;
-      background: conic-gradient(from 90deg, transparent 0deg, #38bdf8 55deg, transparent 120deg, #a855f7 185deg, transparent 240deg, #facc15 300deg, transparent 360deg);
-      filter: blur(6px);
-      opacity: 0.9;
-      animation: spinVortexCCW 1.7s linear infinite;
-    }
-    .vortex-spiral-inner {
-      inset: 78px;
-      background: conic-gradient(from 45deg, transparent 0deg, #ffffff 30deg, #00f0ff 70deg, transparent 120deg, #d946ef 210deg, transparent 270deg, #00f0ff 330deg, transparent 360deg);
-      filter: blur(4px);
-      opacity: 0.95;
-      animation: spinVortexCW 1.1s linear infinite;
-    }
-    .vortex-core-ring {
-      position: absolute;
-      width: 190px; height: 190px;
-      border-radius: 50%;
-      border: 3px solid rgba(0, 240, 255, 0.8);
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.85), inset 0 0 35px rgba(168, 85, 247, 0.75);
-      background: radial-gradient(circle, rgba(10, 25, 60, 0.9) 0%, rgba(4, 10, 28, 0.98) 100%);
-      pointer-events: none;
-    }
-    .vortex-shockwave {
-      position: absolute;
-      width: 180px; height: 180px;
-      border-radius: 50%;
-      border: 4px solid #00f0ff;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .countdown-overlay.vortex-burst .vortex-aura-glow {
-      background: radial-gradient(circle, rgba(250, 204, 21, 0.75) 0%, rgba(0, 240, 255, 0.55) 45%, transparent 75%);
-      transform: scale(1.6);
-      transition: transform 0.5s ease-out;
-    }
-    .countdown-overlay.vortex-burst .vortex-core-ring {
-      border-color: #facc15;
-      box-shadow: 0 0 80px rgba(250, 204, 21, 1);
-      transform: scale(3.2);
-      opacity: 0;
-      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .countdown-overlay.vortex-burst .vortex-shockwave {
-      border-color: #facc15;
-      animation: vortexExplodeWave 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes spinVortexCW {
-      0% { transform: rotate(0deg) scale(1); }
-      50% { transform: rotate(180deg) scale(0.95); }
-      100% { transform: rotate(360deg) scale(1); }
+    /* Panggung Holographic Gyro Chrono-Ring (Sinkron Podium 3D) */
+    .gyro-chrono-stage {
+      position: relative;
+      width: 440px; height: 440px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      perspective: 1000px;
+      transform-style: preserve-3d;
     }
-    @keyframes spinVortexCCW {
-      0% { transform: rotate(360deg) scale(1); }
-      50% { transform: rotate(180deg) scale(1.04); }
-      100% { transform: rotate(0deg) scale(1); }
+    .gyro-aura-backdrop {
+      position: absolute; inset: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.32) 0%, rgba(250, 204, 21, 0.18) 45%, transparent 72%);
+      filter: blur(26px);
+      pointer-events: none;
+      animation: gyroBreathe 1.6s ease-in-out infinite alternate;
     }
-    @keyframes vortexAuraBreathe {
-      0% { opacity: 0.7; transform: scale(0.95); }
-      100% { opacity: 1; transform: scale(1.08); }
+    @keyframes gyroBreathe {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      100% { transform: scale(1.08); opacity: 1; }
     }
-    @keyframes vortexExplodeWave {
-      0% { transform: scale(0.6); opacity: 1; border-width: 8px; }
-      100% { transform: scale(4.2); opacity: 0; border-width: 1px; }
+
+    /* Gelombang Kejut (Shockwave) Tiap Detik */
+    .gyro-shockwave-ring {
+      position: absolute;
+      width: 210px; height: 210px;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 240, 255, 0.85);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .gyro-shockwave-ring.pulse-wave {
+      animation: gyroShockwaveExpand 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .gyro-shockwave-ring.wave-delay.pulse-wave {
+      border-color: rgba(250, 204, 21, 0.85);
+      box-shadow: 0 0 25px rgba(250, 204, 21, 0.6);
+      animation: gyroShockwaveExpand 0.95s 0.12s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes gyroShockwaveExpand {
+      0% { transform: scale(0.75); opacity: 0.95; border-width: 5px; }
+      100% { transform: scale(2.4); opacity: 0; border-width: 1px; }
+    }
+
+    /* Cincin Orbital 3D Cyan & Emas */
+    .gyro-orbit-ring {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      transform-style: preserve-3d;
+    }
+    .orbit-cyan-outer {
+      width: 340px; height: 340px;
+      border: 3.5px solid #00f0ff;
+      border-top-color: transparent;
+      border-bottom-color: rgba(0, 240, 255, 0.3);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.65), inset 0 0 20px rgba(0, 240, 255, 0.35);
+      animation: spinGyroCyanOuter 2.6s linear infinite;
+    }
+    .orbit-gold-mid {
+      width: 285px; height: 285px;
+      border: 3px dashed #facc15;
+      box-shadow: 0 0 28px rgba(250, 204, 21, 0.65), inset 0 0 18px rgba(250, 204, 21, 0.3);
+      animation: spinGyroGoldMid 2.0s linear infinite;
+    }
+    .orbit-cyan-inner {
+      width: 230px; height: 230px;
+      border: 2.5px solid rgba(56, 189, 248, 0.9);
+      border-left-color: #facc15;
+      border-right-color: transparent;
+      box-shadow: 0 0 22px rgba(0, 240, 255, 0.5);
+      animation: spinGyroCyanInner 1.4s linear infinite;
+    }
+    @keyframes spinGyroCyanOuter {
+      0% { transform: rotateX(62deg) rotateY(-18deg) rotateZ(0deg); }
+      100% { transform: rotateX(62deg) rotateY(-18deg) rotateZ(360deg); }
+    }
+    @keyframes spinGyroGoldMid {
+      0% { transform: rotateX(-56deg) rotateY(26deg) rotateZ(360deg); }
+      100% { transform: rotateX(-56deg) rotateY(26deg) rotateZ(0deg); }
+    }
+    @keyframes spinGyroCyanInner {
+      0% { transform: rotateX(22deg) rotateY(48deg) rotateZ(0deg); }
+      100% { transform: rotateX(22deg) rotateY(48deg) rotateZ(360deg); }
+    }
+
+    /* Efek Ledakan Saat GASSS MANCING! atau 3 Detik Terakhir */
+    .countdown-overlay.vortex-burst .orbit-cyan-outer,
+    .countdown-overlay.vortex-burst .orbit-gold-mid,
+    .countdown-overlay.vortex-burst .orbit-cyan-inner {
+      border-color: #facc15;
+      box-shadow: 0 0 55px rgba(250, 204, 21, 0.95);
+      transform: scale(1.25);
+      transition: all 0.35s ease;
+    }
+    .countdown-overlay.final-10s.critical-5s .orbit-cyan-outer {
+      border-color: #ef4444;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.85);
+    }
+    .countdown-overlay.final-10s.critical-5s .countdown-text {
+      color: #ff3b5c;
+      text-shadow: 0 0 25px #ef4444, 0 0 55px #facc15;
+    }
+
+    .gyro-chrono-sub {
+      position: relative; z-index: 10;
+      font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px; font-weight: 900;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: #fde047;
+      background: rgba(4, 16, 38, 0.85);
+      border: 1.5px solid #facc15;
+      padding: 4px 14px; border-radius: 999px;
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
+      margin-bottom: 6px;
+      display: none;
+    }
+    .countdown-overlay.final-10s .gyro-chrono-sub {
+      display: inline-block;
     }
 
     .countdown-text {
-      position: relative; z-index: 5;
+      position: relative; z-index: 10;
       font-family: 'Orbitron', 'Outfit', 'Plus Jakarta Sans', sans-serif;
-      font-size: 132px; font-weight: 900;
+      font-size: 130px; font-weight: 900;
       color: #ffffff;
-      text-shadow: 0 0 22px #00f0ff, 0 0 50px #3b82f6, 0 0 90px #a855f7;
+      text-shadow: 0 0 22px #00f0ff, 0 0 50px #0284c7, 0 0 85px rgba(250, 204, 21, 0.65);
       letter-spacing: 2px;
+      line-height: 1;
       user-select: none;
     }
     .countdown-text.start {
-      font-size: 64px;
+      font-size: 62px;
       text-align: center;
       color: #fde047;
-      text-shadow: 0 0 25px #facc15, 0 0 60px #00f0ff, 0 0 100px #f59e0b;
+      text-shadow: 0 0 28px #facc15, 0 0 60px #00f0ff, 0 0 100px #f59e0b;
       letter-spacing: 4px;
       white-space: nowrap;
     }
     @keyframes countZoom {
-      0% { transform: scale(2.1); opacity: 0; filter: blur(8px); }
-      45% { transform: scale(0.95); opacity: 1; filter: blur(0px); }
-      75% { transform: scale(1.04); opacity: 1; }
+      0% { transform: scale(1.85); opacity: 0; filter: blur(6px); }
+      40% { transform: scale(0.95); opacity: 1; filter: blur(0px); }
       100% { transform: scale(1); opacity: 1; }
     }
     @keyframes countExplodeGo {
-      0% { transform: scale(0.4); opacity: 0; filter: blur(6px); }
-      45% { transform: scale(1.22); opacity: 1; filter: blur(0px); }
-      100% { transform: scale(1.05); opacity: 1; }
+      0% { transform: scale(0.45); opacity: 0; filter: blur(6px); }
+      45% { transform: scale(1.18); opacity: 1; filter: blur(0px); }
+      100% { transform: scale(1.04); opacity: 1; }
     }
 
-    
     /* ========================================================
        WINNER OVERLAY - LUXURY BRIGHT AWARDS CEREMONY THEME
        Rombak Desain: Mewah, Cerah, Elegan, Tanpa Medali Kepala
@@ -4807,13 +4840,14 @@
 
 <!-- OVERLAY HITUNGAN MUNDUR -->
 <div class="countdown-overlay" id="countdownOverlay">
-  <div class="vortex-stage" id="vortexStage">
-    <div class="vortex-aura-glow"></div>
-    <div class="vortex-spiral vortex-spiral-outer"></div>
-    <div class="vortex-spiral vortex-spiral-mid"></div>
-    <div class="vortex-spiral vortex-spiral-inner"></div>
-    <div class="vortex-core-ring"></div>
-    <div class="vortex-shockwave" id="vortexShockwave"></div>
+  <div class="gyro-chrono-stage" id="gyroChronoStage">
+    <div class="gyro-aura-backdrop"></div>
+    <div class="gyro-shockwave-ring" id="gyroShockwave1"></div>
+    <div class="gyro-shockwave-ring wave-delay" id="gyroShockwave2"></div>
+    <div class="gyro-orbit-ring orbit-cyan-outer"></div>
+    <div class="gyro-orbit-ring orbit-gold-mid"></div>
+    <div class="gyro-orbit-ring orbit-cyan-inner"></div>
+    <div class="gyro-chrono-sub" id="countdownSubLabel">🔥 10 DETIK TERAKHIR 🔥</div>
     <div class="countdown-text" id="countdownNum">3</div>
   </div>
 </div>
@@ -5900,6 +5934,7 @@
       isMatchSedangJalan = false;
       isMatchDijeda = true;
       perbaruiStatusMatchUI();
+      tutupGyro10DetikTerakhir();
       tambahLogAktivitas('SISTEM', 'Pertandingan DIJEDA', 'system');
       siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true, isAction: true });
     } else if (isMatchDijeda) {
@@ -5951,6 +5986,7 @@
     extraTimerSec = 0;
     setModeTampilan('PREPARE');
     perbaruiStatusMatchUI();
+    tutupGyro10DetikTerakhir();
     tambahLogAktivitas('SISTEM', 'Pertandingan DIHENTIKAN', 'system');
     siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false, isAction: true });
   }
@@ -5966,6 +6002,7 @@
       isMatchSedangJalan = false;
       isMatchDijeda = true;
       perbaruiStatusMatchUI();
+      tutupGyro10DetikTerakhir();
       tambahLogAktivitas('TIMER', 'Timer dijeda', 'system');
       if (broadcast) siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true, isAction: true });
     } else {
@@ -6791,11 +6828,45 @@
     tutupModalKonfirmasiResetTimer();
   }
 
+  function picuGelombangShockwaveGyro() {
+    const sw1 = document.getElementById('gyroShockwave1');
+    const sw2 = document.getElementById('gyroShockwave2');
+    [sw1, sw2].forEach(el => {
+      if (!el) return;
+      el.classList.remove('pulse-wave');
+      void el.offsetWidth;
+      el.classList.add('pulse-wave');
+    });
+  }
+
+  function tampilkanGyro10DetikTerakhir(detik) {
+    const overlay = document.getElementById('countdownOverlay');
+    const numEl = document.getElementById('countdownNum');
+    if (!overlay || !numEl) return;
+    overlay.classList.remove('vortex-burst');
+    overlay.classList.add('active', 'final-10s');
+    if (detik <= 5) overlay.classList.add('critical-5s');
+    else overlay.classList.remove('critical-5s');
+
+    numEl.classList.remove('start');
+    numEl.innerText = String(detik);
+    numEl.style.animation = 'none'; void numEl.offsetWidth;
+    numEl.style.animation = 'countZoom 0.85s cubic-bezier(0.16, 1, 0.3, 1)';
+    picuGelombangShockwaveGyro();
+  }
+
+  function tutupGyro10DetikTerakhir() {
+    const overlay = document.getElementById('countdownOverlay');
+    if (overlay && overlay.classList.contains('final-10s')) {
+      overlay.classList.remove('active', 'final-10s', 'critical-5s', 'vortex-burst');
+    }
+  }
+
   function jalankanCountdown(cb) {
     isCountdownRunning = true;
     const overlay = document.getElementById('countdownOverlay');
     const numEl = document.getElementById('countdownNum');
-    overlay.classList.remove('vortex-burst');
+    overlay.classList.remove('vortex-burst', 'final-10s', 'critical-5s');
     overlay.classList.add('active');
     const steps = [
       { text: '3', isStart: false }, { text: '2', isStart: false },
@@ -6817,6 +6888,7 @@
         numEl.style.animation = item.isStart
           ? 'countExplodeGo 0.85s cubic-bezier(0.16, 1, 0.3, 1)'
           : 'countZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1)';
+        picuGelombangShockwaveGyro();
         putarBeepCountdown(item.isStart);
         idx++; setTimeout(next, 950);
       } else {
@@ -6852,8 +6924,9 @@
             putarSuaraPengingatWaktu('1m');
             tambahLogAktivitas('TIMER', '🚨 PERINGATAN: Waktu tersisa 1 Menit Terakhir!', 'mitos');
           }
-          else if (timerSec <= 5 && timerSec >= 1) {
-            putarBeepCountdown(false);
+          if (timerSec <= 10 && timerSec >= 1) {
+            tampilkanGyro10DetikTerakhir(timerSec);
+            if (timerSec <= 5) putarBeepCountdown(false);
           }
         } else {
           // Waktu utama habis! Cek apakah ada pemain BIN di sesi ini
@@ -6871,6 +6944,7 @@
             isMatchDijeda = false;
             perbaruiStatusMatchUI();
             updateTimer();
+            tutupGyro10DetikTerakhir();
             tambahLogAktivitas('TIMER', 'WAKTU SELESAI!', 'system');
 
             if (notifQueue.length > 0 || isNotifShowing) {
