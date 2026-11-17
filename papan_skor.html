@@ -7624,8 +7624,7 @@
     const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(rawInput)}&background=0284c7&color=fff&rounded=true&bold=true`;
 
     document.getElementById('inputDisplayName').value = rawInput;
-    const inTik = document.getElementById('inputNamaTikTok');
-    if (inTik && !inTik.value.trim()) inTik.value = rawInput;
+
     document.getElementById('inputAvatarUrl').value = fallbackAvatar;
     const in3d = document.getElementById('inputAvatar3dUrl');
     if (in3d) in3d.value = fallbackAvatar;
@@ -7670,11 +7669,7 @@
       document.getElementById('inputUserRoblox').value = uname;
       document.getElementById('inputDisplayName').value = dname;
 
-      // Otomatis isi Nama TikTok jika masih kosong
-      const inTik = document.getElementById('inputNamaTikTok');
-      if (inTik && !inTik.value.trim()) {
-        inTik.value = dname;
-      }
+
 
       document.getElementById('inputAvatarUrl').value = avUrl;
       const elUid = document.getElementById('inputUserId');
@@ -9125,8 +9120,7 @@
         document.getElementById('inputUserRoblox').value = uname;
         document.getElementById('inputDisplayName').value = dname;
 
-        const inTik = document.getElementById('inputNamaTikTok');
-        if (inTik && !inTik.value.trim()) inTik.value = dname;
+
 
         document.getElementById('inputAvatarUrl').value = avUrl;
         const elUid = document.getElementById('inputUserId');
