@@ -3592,7 +3592,7 @@
           // Kirim langsung jika ini adalah aksi (Play/Pause/Stop/Edit) atau waktu darurat (<= 5 detik)
           const isCritical = (typeof data.timerSec === 'number' && data.timerSec <= 5);
           const isActionEvent = Boolean(data.isAction || data.isMatchDijeda || !data.isMatchSedangJalan);
-          if (!isActionEvent && !isCritical && (now - lastNtfyTimerBroadcast < 4500)) {
+          if (!isActionEvent && !isCritical && (now - lastNtfyTimerBroadcast < 8000)) {
             bolehKirimNtfy = false;
           }
         }
