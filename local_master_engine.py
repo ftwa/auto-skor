@@ -219,6 +219,14 @@ logging.getLogger('werkzeug').setLevel(logging.ERROR)
 app = Flask(__name__, static_folder=public_dir)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+@app.after_request
+def add_no_cache_headers(response):
+    if response.content_type and ('html' in response.content_type or 'javascript' in response.content_type):
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
 @app.route('/')
 def route_index():
     candidates = [
@@ -303,6 +311,10 @@ def route_catch():
 
     if not nama_pemain or not nama_ikan:
         return jsonify({"status": "error", "pesan": "Player dan fish wajib diisi"}), 400
+
+    with data_lock:
+        if mode_sistem == "PAUSED":
+            return jsonify({"status": "paused", "sukses": False, "pesan": "Pertandingan sedang dijeda"})
 
     gabungan_mentah = f"{varian} {nama_ikan}".strip().lower()
     if gabungan_mentah in KAMUS_KOREKSI_NAMA:
