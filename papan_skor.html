@@ -41,39 +41,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Outfit:wght@400;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-gradient: linear-gradient(135deg, #0099ff 0%, #00b4d8 50%, #0077b6 100%);
-      --card-bg: rgba(255, 255, 255, 0.96);
-      --card-border: rgba(255, 255, 255, 0.95);
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --accent-cyan: #00d2ff;
+      --bg-gradient: linear-gradient(135deg, #00f0ff 0%, #06b6d4 50%, #ff2a85 100%);
+      --card-bg: rgba(255, 255, 255, 0.98);
+      --card-border: #0f172a;
+      --primary: #06b6d4;
+      --primary-hover: #0891b2;
+      --accent-cyan: #00f0ff;
+      --accent-magenta: #ff2a85;
       --accent-gold: #facc15;
       --accent-silver: #38bdf8;
       --accent-bronze: #fb923c;
       --text-dark: #0f172a;
-      --text-muted: #64748b;
+      --text-muted: #475569;
       --table-bg: #ffffff;
       --table-alt-bg: #f8fafc;
-      --table-header-bg: #e0f2fe;
-      --table-header-text: #0369a1;
-      --border-soft: #e2e8f0;
-      --border-accent: #bae6fd;
+      --table-header-bg: linear-gradient(90deg, #cffafe 0%, #fce7f3 100%);
+      --table-header-text: #0f172a;
+      --border-soft: #cbd5e1;
+      --border-accent: #67e8f9;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     
     html, body {
-      background-color: #f8fafc;
-      background-image: none;
+      background-color: #f4f8fc;
+      background-image:
+        radial-gradient(rgba(6, 182, 212, 0.08) 1.2px, transparent 1.2px),
+        radial-gradient(circle at 0% 0%, rgba(0, 240, 255, 0.10) 0%, transparent 40%),
+        radial-gradient(circle at 100% 0%, rgba(255, 42, 133, 0.09) 0%, transparent 40%);
+      background-size: 16px 16px, 100% 100%, 100% 100%;
       color: var(--text-dark);
       width: 100%; min-height: 100%; overflow-x: hidden;
     }
     body { padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
 
-    /* CONTAINER UTAMA (FULL CLEAN EDGE-TO-EDGE LAYOUT) */
+    /* CONTAINER UTAMA (NEO-POP COMIC CYAN-MAGENTA CLEAN LAYOUT) */
     .container {
       width: 100%; max-width: 100%; min-width: 720px;
-      background: #f8fafc;
+      background: transparent;
       border-radius: 0; padding: 14px 24px 24px 24px;
       border: none;
       box-shadow: none;
@@ -88,16 +93,17 @@
       border-top-right-radius: 24px; border-bottom-right-radius: 24px;
     }
     .container-resizer-right:hover, .container-resizer-right.resizing {
-      background: rgba(2, 132, 199, 0.25);
+      background: rgba(6, 182, 212, 0.25);
     }
 
     /* ========================================================
-       ESPORTS TOURNAMENT HEADER (POSTER BANNER)
+       ESPORTS TOURNAMENT HEADER (NEO-POP COMIC BANNER)
        ======================================================== */
     .esports-header-banner {
       display: flex; justify-content: space-between; align-items: center;
       padding: 6px 4px 14px 4px;
-      border-bottom: 2px solid #e0f2fe;
+      border-bottom: 3px solid #0f172a;
+      box-shadow: 0 3px 0 rgba(0, 240, 255, 0.35);
       margin-bottom: 12px;
     }
     .esports-header-left {
@@ -106,12 +112,13 @@
     .esports-main-title {
       font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
       font-size: 34px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1;
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 70%, #075985 100%);
+      background: linear-gradient(115deg, #06b6d4 0%, #0284c7 48%, #ff2a85 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       text-transform: uppercase;
+      filter: drop-shadow(2px 2px 0px rgba(15, 23, 42, 0.14));
     }
     .esports-sub-title {
-      font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #64748b;
+      font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #475569;
       text-transform: uppercase;
     }
     .esports-header-right {
@@ -119,10 +126,12 @@
     }
     .esports-concept-badge {
       font-family: 'Outfit', sans-serif;
-      font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px;
-      color: #0284c7; background: #e0f2fe; border: 1.5px solid #bae6fd;
+      font-size: 11.5px; font-weight: 900; letter-spacing: 1.4px;
+      color: #0f172a;
+      background: linear-gradient(120deg, #cffafe 0%, #fce7f3 100%);
+      border: 2px solid #0f172a;
       padding: 6px 14px; border-radius: 999px; text-transform: uppercase;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+      box-shadow: 3px 3px 0px #0f172a;
     }
 
     /* ========================================================
@@ -174,16 +183,17 @@
     /* SEGMENTED 1-KLIK MODE SWITCHER */
     .mode-switcher-group {
       display: inline-flex;
-      background: #f1f5f9;
-      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      border: 2px solid #0f172a;
       border-radius: 999px;
       padding: 3px;
       gap: 3px;
+      box-shadow: 2px 2px 0px #0f172a;
     }
     .btn-mode-tab {
       background: transparent;
       border: none;
-      color: #64748b;
+      color: #475569;
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.8px;
@@ -194,25 +204,28 @@
       user-select: none;
     }
     .btn-mode-tab:hover {
-      color: #0284c7;
-      background: rgba(2, 132, 199, 0.08);
+      color: #0f172a;
+      background: #e0f7ff;
     }
     .btn-mode-tab.active {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      background: linear-gradient(120deg, #06b6d4 0%, #ff2a85 100%);
       color: #ffffff !important;
       font-weight: 900;
-      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35);
+      box-shadow: 0 2px 8px rgba(255, 42, 133, 0.28);
     }
 
     /* ACTION BUTTONS */
     .btn-action-soft {
-      background: #ffffff; color: #0284c7; border: 1.5px solid #bae6fd; padding: 6px 12px;
+      background: #ffffff; color: #0f172a; border: 2px solid #0f172a; padding: 6px 12px;
       border-radius: 999px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px;
-      box-shadow: 0 2px 6px rgba(0, 102, 204, 0.08);
+      box-shadow: 2px 2px 0px #0f172a;
       transition: all 0.15s ease;
     }
     .btn-action-soft:hover {
-      background: #e0f2fe; border-color: #38bdf8; color: #0369a1; transform: translateY(-1px);
+      background: linear-gradient(120deg, #cffafe 0%, #fce7f3 100%);
+      border-color: #0f172a; color: #0f172a;
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px #0f172a;
     }
 
     .btn-stop-trigger {
@@ -299,108 +312,127 @@
 
     
     /* ========================================================
-       MODERN BROADCAST ESPORTS TOAST HUD (BIGGER & MODERN)
+       OPSI 8 TORN PAPER STREET-COMIC + ANIMASI 5 ICE GLIDE SHIMMER
        ======================================================== */
     .esports-toast-hud {
       --aura-c1: #00f0ff;
-      --aura-c2: #3b82f6;
-      --aura-glow: rgba(0, 240, 255, 0.7);
+      --aura-c2: #ff2a85;
+      --aura-glow: rgba(0, 240, 255, 0.72);
       position: fixed; top: 22px; left: 50%;
-      transform: translateX(-50%) translateY(-160px) scale(0.92);
-      width: auto; min-width: 390px; max-width: 94vw;
-      padding: 0;
+      transform: translateX(calc(-50% + 220px)) skewX(-7deg) scale(0.95);
+      width: auto; min-width: 410px; max-width: 94vw;
+      padding: 6px 12px 6px 8px;
       display: flex; align-items: center; justify-content: center;
-      gap: 0;
+      gap: 6px;
       z-index: 99999;
       opacity: 0; pointer-events: none;
-      transition: transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.24s ease;
+      transition: transform 0.56s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
       cursor: pointer;
       overflow: visible;
       background: transparent !important;
       border: none !important;
-      box-shadow: none !important;
+      filter: drop-shadow(6px 6px 0px #0f172a) drop-shadow(0 12px 24px rgba(15, 23, 42, 0.45));
       will-change: transform, opacity;
     }
-    /* Kapsul Mini Tengah (Tanpa Kotak Besar, Menghubungkan Avatar Kiri & Ikan Kanan) */
+    /* Pita Komik Torn Paper Street-Comic (Cyan-Magenta + Halftone Dots) */
     .esports-toast-hud::before {
       content: '';
       position: absolute;
-      left: 34px; right: 42px;
+      left: 26px; right: 28px;
       top: 50%; transform: translateY(-50%);
-      height: 62px;
-      border-radius: 18px;
-      background: linear-gradient(90deg, rgba(6, 18, 42, 0.92) 0%, rgba(10, 24, 54, 0.96) 50%, rgba(6, 18, 42, 0.92) 100%);
-      border: 1.5px solid rgba(255, 255, 255, 0.14);
-      border-top-color: var(--aura-c1);
-      border-bottom-color: var(--aura-c1);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65), 0 0 22px var(--aura-glow);
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      height: 70px;
+      background-image:
+        radial-gradient(rgba(15, 23, 42, 0.18) 1.5px, transparent 1.5px),
+        linear-gradient(122deg, var(--aura-c1) 0%, #22d3ee 34%, #d946ef 68%, var(--aura-c2) 100%);
+      background-size: 7px 7px, 100% 100%;
+      border: 3.5px solid #0f172a;
+      outline: 3px solid #ffffff;
+      clip-path: polygon(1.5% 5%, 24% 0%, 49% 4%, 76% 0%, 98.5% 4%, 99.5% 28%, 97% 54%, 99.5% 82%, 97.5% 96%, 72% 100%, 45% 95%, 18% 100%, 0.5% 95%, 2% 62%, 0% 30%);
       z-index: -1;
       pointer-events: none;
     }
+    /* Animasi 5 Shimmer Light Sweep melintasi banner saat muncul */
     .esports-toast-hud::after {
-      display: none !important;
-      content: none !important;
+      content: '';
+      position: absolute;
+      left: 26px; right: 28px;
+      top: 50%; transform: translateY(-50%);
+      height: 70px;
+      background: linear-gradient(110deg, transparent 28%, rgba(255, 255, 255, 0.78) 50%, transparent 72%);
+      background-size: 220% 100%;
+      background-position: -140% 0;
+      clip-path: polygon(1.5% 5%, 24% 0%, 49% 4%, 76% 0%, 98.5% 4%, 99.5% 28%, 97% 54%, 99.5% 82%, 97.5% 96%, 72% 100%, 45% 95%, 18% 100%, 0.5% 95%, 2% 62%, 0% 30%);
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
     }
     .esports-toast-hud.show {
-      transform: translateX(-50%) translateY(0) scale(1);
+      transform: translateX(-50%) skewX(-7deg) scale(1);
       opacity: 1; pointer-events: auto;
     }
-    .esports-toast-hud.pulse-pop {
-      animation: hudPulsePop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .esports-toast-hud.show::after {
+      opacity: 1;
+      animation: comicShimmerSweep 0.85s 0.18s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    @keyframes hudPulsePop {
-      0% { transform: translateX(-50%) translateY(0) scale(0.92); }
-      55% { transform: translateX(-50%) translateY(0) scale(1.06); }
-      100% { transform: translateX(-50%) translateY(0) scale(1.0); }
+    .esports-toast-hud.pulse-pop {
+      animation: hudIceGlideIn 0.56s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes hudIceGlideIn {
+      0% { transform: translateX(calc(-50% + 220px)) skewX(-12deg) scale(0.92); opacity: 0; }
+      100% { transform: translateX(-50%) skewX(-7deg) scale(1); opacity: 1; }
+    }
+    @keyframes comicShimmerSweep {
+      0% { background-position: 140% 0; opacity: 0.95; }
+      100% { background-position: -140% 0; opacity: 0; }
     }
 
-    /* Warna Aura Neon Otomatis Sesuai Tier Ikan */
+    /* Warna Aksen Tier Tetap Sinkron dengan Gaya Komik */
     .esports-toast-hud.tier-forgotten {
-      --aura-c1: #d946ef;
-      --aura-c2: #7e22ce;
-      --aura-glow: rgba(217, 70, 239, 0.8);
+      --aura-c1: #00f0ff;
+      --aura-c2: #a855f7;
+      --aura-glow: rgba(168, 85, 247, 0.8);
     }
     .esports-toast-hud.tier-khusus {
-      --aura-c1: #ec4899;
-      --aura-c2: #00f0ff;
-      --aura-glow: rgba(236, 72, 153, 0.78);
+      --aura-c1: #00f0ff;
+      --aura-c2: #ff2a85;
+      --aura-glow: rgba(255, 42, 133, 0.82);
     }
     .esports-toast-hud.tier-secret {
-      --aura-c1: #facc15;
-      --aura-c2: #10b981;
-      --aura-glow: rgba(250, 204, 21, 0.8);
+      --aura-c1: #22d3ee;
+      --aura-c2: #ec4899;
+      --aura-glow: rgba(34, 211, 238, 0.8);
     }
     .esports-toast-hud.tier-mythic {
-      --aura-c1: #ef4444;
-      --aura-c2: #f97316;
-      --aura-glow: rgba(239, 68, 68, 0.8);
+      --aura-c1: #f97316;
+      --aura-c2: #ef4444;
+      --aura-glow: rgba(239, 68, 68, 0.82);
     }
     .esports-toast-hud.tier-legend {
       --aura-c1: #00f0ff;
-      --aura-c2: #3b82f6;
-      --aura-glow: rgba(0, 240, 255, 0.75);
+      --aura-c2: #ff2a85;
+      --aura-glow: rgba(0, 240, 255, 0.78);
     }
 
-    .log-item.tier-khusus { border-left-color: #a855f7 !important; background: rgba(168, 85, 247, 0.08) !important; }
-    .badge-khusus { background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%) !important; color: #fff !important; }
+    .log-item.tier-khusus { border-left-color: #ff2a85 !important; background: rgba(255, 42, 133, 0.08) !important; }
+    .badge-khusus { background: linear-gradient(135deg, #06b6d4 0%, #ff2a85 100%) !important; color: #fff !important; }
 
-    /* Avatar Bulat Mengambang Bebas (Kiri) */
+    /* Avatar Bulat Mengambang Bebas (Kiri) dengan Outline Tinta Komik */
     .hud-avatar-stage {
-      position: relative; width: 74px; height: 74px; flex-shrink: 0;
+      position: relative; width: 76px; height: 76px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      z-index: 3;
-      filter: drop-shadow(0 0 14px var(--aura-glow)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.7));
+      z-index: 4;
+      transform: skewX(7deg);
+      filter: drop-shadow(3px 4px 0px #0f172a);
     }
     .hud-avatar-circle {
       width: 72px; height: 72px;
       border-radius: 50%;
-      border: 3px solid var(--aura-c1);
-      background: #06142e;
+      border: 3.5px solid #0f172a;
+      outline: 2.5px solid #ffffff;
+      background: #0f172a;
       overflow: hidden;
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 26px; font-weight: 900;
-      box-shadow: inset 0 0 12px var(--aura-glow);
     }
     .hud-avatar-circle img {
       width: 100%; height: 100%;
@@ -408,90 +440,106 @@
       object-fit: cover;
     }
     .hud-crown-icon {
-      position: absolute; top: -8px; right: -2px;
-      font-size: 18px; filter: drop-shadow(0 0 8px var(--aura-c1));
+      position: absolute; top: -9px; right: -4px;
+      font-size: 20px; filter: drop-shadow(2px 2px 0px #0f172a);
       z-index: 5;
     }
 
-    /* Body Info di Dalam Kapsul Mini (Tengah) */
+    /* Body Info di Dalam Pita Komik (Tengah) */
     .hud-body-info {
-      flex: 1; min-width: 150px; max-width: 260px;
-      padding: 4px 14px 4px 12px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; gap: 1px;
+      flex: 1; min-width: 160px; max-width: 280px;
+      padding: 4px 10px 4px 10px;
+      display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+      text-align: left; gap: 3px;
+      transform: skewX(7deg);
+      z-index: 3;
     }
     .hud-tag-row { display: none !important; }
     .hud-catch-time { display: none; }
 
     .hud-player-row {
-      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
       width: 100%;
     }
     .hud-player-name {
-      font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: 0.3px;
-      text-shadow: 0 0 12px var(--aura-glow);
-      line-height: 1.15;
+      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: 0.4px;
+      text-transform: uppercase;
+      -webkit-text-stroke: 1.2px #0f172a;
+      paint-order: stroke fill;
+      text-shadow: 2.5px 2.5px 0px #0f172a;
+      line-height: 1.05;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       max-width: 100%;
     }
     .hud-fish-name {
-      display: block !important;
-      font-size: 12.5px; font-weight: 800; color: var(--aura-c1);
-      letter-spacing: 0.3px;
-      text-shadow: 0 0 8px var(--aura-glow);
+      display: inline-block !important;
+      font-size: 11px; font-weight: 900; color: #ffffff;
+      background: #0f172a;
+      border: 1.5px solid #ffffff;
+      border-radius: 6px;
+      padding: 1px 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.35);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       max-width: 100%;
     }
     .hud-dot-sep, .hud-desc-sub { display: none !important; }
 
-    /* Score Mini Pill di Samping Nama */
+    /* Score Komik di Samping Nama */
     .hud-score-stadium {
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      padding: 0 10px 0 0;
-      margin-left: -4px;
+      background: #facc15;
+      border: 2.5px solid #0f172a;
+      border-radius: 10px;
+      box-shadow: 3px 3px 0px #0f172a;
+      padding: 4px 10px;
+      margin-left: -2px;
       text-align: center;
       flex-shrink: 0;
-      z-index: 3;
+      z-index: 4;
       line-height: 1.05;
+      transform: skewX(7deg);
     }
     .hud-pts-val {
       font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-      font-size: 17px; font-weight: 900; color: var(--aura-c1);
+      font-size: 16px; font-weight: 900; color: #0f172a;
       letter-spacing: 0.3px;
-      text-shadow: 0 0 14px var(--aura-glow);
+      text-shadow: none;
     }
 
     /* Gambar Ikan 3D Mengambang Bebas (Kanan) */
     .hud-fish-showcase {
       position: relative;
-      width: 90px; height: 90px;
-      margin: -10px 0 -10px -6px;
+      width: 92px; height: 92px;
+      margin: -14px -4px -14px -2px;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      z-index: 4;
+      z-index: 5;
+      transform: skewX(7deg);
     }
     .hud-fish-showcase img {
       width: 100%; height: 100%;
       object-fit: contain;
-      filter: drop-shadow(0 0 16px var(--aura-c1)) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.85));
-      animation: fishPopOutFloat 2.4s ease-in-out infinite alternate;
+      filter: drop-shadow(3px 3px 0px #0f172a) drop-shadow(0 0 12px rgba(255, 255, 255, 0.65));
+      animation: fishPopOutFloat 2.2s ease-in-out infinite alternate;
     }
     @keyframes fishPopOutFloat {
-      0% { transform: translateY(2px) scale(1); }
-      100% { transform: translateY(-6px) scale(1.08); }
+      0% { transform: translateY(2px) scale(1) rotate(-2deg); }
+      100% { transform: translateY(-6px) scale(1.09) rotate(3deg); }
     }
 
     .hud-btn-close {
-      position: absolute; top: 0; right: -10px;
-      background: rgba(6, 18, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #94a3b8; width: 22px; height: 22px; border-radius: 50%;
-      font-size: 10px; font-weight: 800; cursor: pointer;
+      position: absolute; top: -4px; right: -8px;
+      background: #0f172a; border: 2px solid #ffffff;
+      color: #ffffff; width: 24px; height: 24px; border-radius: 50%;
+      font-size: 11px; font-weight: 900; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s; z-index: 6;
+      transform: skewX(7deg);
+      box-shadow: 2px 2px 0px #0f172a;
     }
-    .hud-btn-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+    .hud-btn-close:hover { background: #ff2a85; color: #fff; border-color: #ffffff; transform: skewX(7deg) scale(1.1); }
 
     /* ========================================================
        MODAL EDIT KURSI (ESPORTS PLAYER PROFILE STUDIO)
@@ -937,7 +985,7 @@
       text-overflow: ellipsis !important;
     }
     .table-container tbody tr:hover td {
-      background: rgba(224, 242, 254, 0.45);
+      background: rgba(207, 250, 254, 0.45);
     }
     .cell-nama-target, .cell-roblox-target {
       overflow: hidden !important;
@@ -958,8 +1006,8 @@
       padding: 10px 8px; 
       background: var(--table-header-bg);
       font-size: 11.5px; font-weight: 900; color: var(--table-header-text); 
-      border-bottom: 2px solid #38bdf8;
-      border-right: 1px solid #bae6fd;
+      border-bottom: 2.5px solid #0f172a;
+      border-right: 1px solid rgba(15, 23, 42, 0.12);
       text-align: center; letter-spacing: 0.8px; user-select: none;
       text-transform: uppercase;
     }
