@@ -440,15 +440,25 @@
     .hud-catch-time { display: none; }
 
     .hud-player-row {
-      display: flex; align-items: center; gap: 6px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .hud-player-name {
-      font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: 0.4px;
-      text-shadow: 0 0 14px var(--aura-glow);
+      font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: 0.3px;
+      text-shadow: 0 0 12px var(--aura-glow);
+      line-height: 1.15;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
     }
-    .hud-dot-sep, .hud-fish-name, .hud-desc-sub { display: none !important; }
+    .hud-fish-name {
+      display: block !important;
+      font-size: 13.5px; font-weight: 800; color: var(--aura-c1);
+      letter-spacing: 0.3px;
+      text-shadow: 0 0 8px var(--aura-glow);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .hud-dot-sep, .hud-desc-sub { display: none !important; }
 
     /* Showcase Gambar Ikan 3D Pop-Out (Kanan) */
     .hud-fish-showcase {
@@ -9500,7 +9510,8 @@
       });
     }
 
-    const infoIkan = namaIkan ? namaIkan : 'Ikan Tangkapan';
+    const tierLabelTxt = (tierKey === 'mitos') ? 'MYTHIC' : String(tierKey || 'CATCH').toUpperCase();
+    const infoIkan = namaIkan ? `${namaIkan} • ${tierLabelTxt}` : (rincian || 'Tangkapan Ikan');
     const nameEl = document.getElementById('dynamicPillName');
     if (nameEl) nameEl.innerText = displayName || 'Player';
     const fishEl = document.getElementById('dynamicPillFish');
