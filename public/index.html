@@ -20,6 +20,8 @@
         document.documentElement.classList.add('mode-notif');
       } else if (['timer', 'countdown', 'waktu', 'clock'].includes(raw)) {
         document.documentElement.classList.add('mode-timer');
+      } else if (['video', 'animasi', 'vid'].includes(raw)) {
+        document.documentElement.classList.add('mode-video');
       } else {
         document.documentElement.classList.add('mode-admin');
       }
@@ -3219,6 +3221,39 @@
       user-select: none !important;
     }
 
+
+    /* 5. Mode Video Animasi Ikan Saja (?view=video) */
+    html.mode-video, html.mode-video body {
+      background: transparent !important;
+      background-image: none !important;
+      background-color: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      scrollbar-width: none !important;
+    }
+    html.mode-video::-webkit-scrollbar, html.mode-video body::-webkit-scrollbar {
+      display: none !important;
+    }
+    html.mode-video .container,
+    html.mode-video .modal-overlay,
+    html.mode-video .quick-point-popover,
+    html.mode-video .color-picker-mini,
+    html.mode-video #winnerOverlay,
+    html.mode-video #countdownOverlay,
+    html.mode-video #dynamicPillBanner,
+    html.mode-video .esports-toast-hud,
+    html.mode-video .btn-close-fish-video {
+      display: none !important;
+    }
+    html.mode-video #fishVideoOverlay {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
     /* Indikator Sinkronisasi Real-Time */
     .sync-live-pill {
       display: inline-flex;
@@ -3557,7 +3592,8 @@
               document.documentElement.classList.contains('mode-top3') ||
               document.documentElement.classList.contains('mode-podium') ||
               document.documentElement.classList.contains('mode-notif') ||
-              document.documentElement.classList.contains('mode-timer')) {
+              document.documentElement.classList.contains('mode-timer') ||
+              document.documentElement.classList.contains('mode-video')) {
             siarkanSync({ type: 'REQUEST_STATE' });
             let reqAttempt = 0;
             const reqTimer = setInterval(() => {
@@ -3653,7 +3689,8 @@
             !document.documentElement.classList.contains('mode-top3') &&
             !document.documentElement.classList.contains('mode-podium') &&
             !document.documentElement.classList.contains('mode-notif') &&
-            !document.documentElement.classList.contains('mode-timer')) {
+            !document.documentElement.classList.contains('mode-timer') &&
+            !document.documentElement.classList.contains('mode-video')) {
           siarkanSync({
             type: 'SYNC_FULL_STATE',
             db: (db || (function() { try { return JSON.parse(localStorage.getItem('galatama_modern_light_v1') || 'null'); } catch(_) { return null; } })()),
@@ -3775,6 +3812,10 @@
         if (typeof tutupLayarPemenang === 'function') {
           tutupLayarPemenang(false);
         }
+      } else if (msg.type === 'SYNC_VIDEO') {
+        if (msg.videoUrl && typeof putarVideoAnimasiDariUrl === 'function') {
+          putarVideoAnimasiDariUrl(msg.videoUrl, msg.withSound !== false);
+        }
       } else if (msg.type === 'SYNC_NOTIF') {
         if (typeof tampilkanDynamicPill === 'function') {
           tampilkanDynamicPill(msg.player, msg.rincian, msg.delta, msg.tier, msg.avatar, msg.fishName, false, msg.duration || 2000);
@@ -3822,7 +3863,8 @@
     window.addEventListener('resize', periksaDanAutoFitOverlay);
     window.addEventListener('DOMContentLoaded', () => {
       // BULLETPROOF ISOLASI MODE: Hapus elemen yang dilarang dari DOM agar 100% bersih tanpa interferensi
-      if (document.documentElement.classList.contains('mode-timer')) {
+      if (document.documentElement.classList.contains('mode-timer') ||
+              document.documentElement.classList.contains('mode-video')) {
         // Mode timer HANYA menyajikan kapsul waktu countdown di latar transparan (TikTok Studio & OBS)
         const stg = document.getElementById('podiumHeroStage');
         if (stg) stg.remove();
@@ -4881,7 +4923,10 @@
         <label style="font-size: 11px; font-weight: 900; color: #0284c7; text-transform: uppercase;">1. Nama Ikan / Tier Pemicu</label>
         <input type="text" id="inputVideoTriggerFish" placeholder="Contoh: Kraken, Megalodon, Sea Eater, atau Secret" style="width:100%; padding:8px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:12.5px; font-weight:700;">
 
-        <label style="font-size: 11px; font-weight: 900; color: #0284c7; text-transform: uppercase; margin-top:4px;">2. Pilih File Video (.mp4 / .webm)</label>
+        <label style="font-size: 11px; font-weight: 900; color: #0284c7; text-transform: uppercase; margin-top:4px;">2A. Link URL Video Online (.mp4 / .webm) — <span style="color:#7e22ce;">Wajib agar tampil di Link TikTok Studio</span></label>
+        <input type="text" id="inputVideoUrl" placeholder="https://contoh.com/animasi_kraken.mp4" style="width:100%; padding:8px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:12px;">
+
+        <label style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-top:2px;">2B. Atau Pilih File Video Lokal PC (Layar Remote Saja)</label>
         <input type="file" id="inputVideoFile" accept="video/mp4,video/webm,video/*" style="font-size:11.5px;">
 
         <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#334155; margin-top:4px; cursor:pointer;">
@@ -5177,6 +5222,23 @@
           <input type="text" readonly id="linkOverlayTimer" class="stream-url-field" onclick="this.select()">
           <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayTimer', this)">📋 Salin Link</button>
           <a id="previewOverlayTimer" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
+        </div>
+      </div>
+
+      
+      <!-- CARD 6: OVERLAY VIDEO ANIMASI IKAN SAJA -->
+      <div class="stream-link-row" style="border-color: #a855f7; background: rgba(168, 85, 247, 0.05);">
+        <div class="stream-header-row">
+          <div class="stream-row-title">
+            <span style="color:#7e22ce; font-weight:900;">🎬 Overlay Video Animasi Ikan</span>
+          </div>
+          <span class="stream-badge-res" style="background:#7e22ce; color:#fff;">1280 × 720 px</span>
+        </div>
+        <div class="stream-desc-txt">Layar transparan khusus memutar video animasi saat ikan tertentu tertangkap (menggunakan Link URL Video di Settings → Video Animasi).</div>
+        <div class="stream-input-group">
+          <input type="text" readonly id="linkOverlayVideo" class="stream-url-field" onclick="this.select()">
+          <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayVideo', this)">📋 Salin Link</button>
+          <a id="previewOverlayVideo" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
         </div>
       </div>
 
@@ -6263,6 +6325,7 @@
     const urlTimer = `${base}?view=timer`;
     const urlPodium = `${base}?view=podium`;
     const urlNotif = `${base}?view=notif`;
+    const urlVideo = `${base}?view=video`;
 
     const elTabel = document.getElementById('linkOverlayTabel');
     const elTop3 = document.getElementById('linkOverlayTop3');
@@ -6295,6 +6358,12 @@
       elNotif.value = urlNotif;
       const prev = document.getElementById('previewOverlayNotif');
       if (prev) prev.href = urlNotif;
+    }
+    const elVideo = document.getElementById('linkOverlayVideo');
+    if (elVideo) {
+      elVideo.value = urlVideo;
+      const prev = document.getElementById('previewOverlayVideo');
+      if (prev) prev.href = urlVideo;
     }
   }
 
@@ -10409,34 +10478,40 @@
 
   async function tambahVideoAnimasiIkan() {
     const triggerInput = document.getElementById('inputVideoTriggerFish');
+    const urlInput = document.getElementById('inputVideoUrl');
     const fileInput = document.getElementById('inputVideoFile');
     const chkSound = document.getElementById('chkVideoWithSound');
 
     const keyword = (triggerInput ? triggerInput.value : '').trim();
+    const videoUrl = (urlInput ? urlInput.value : '').trim();
     const file = (fileInput && fileInput.files) ? fileInput.files[0] : null;
     if (!keyword) {
       alert('Isi nama ikan atau tier pemicu terlebih dahulu (misal: Kraken atau Secret)!');
       return;
     }
-    if (!file) {
-      alert('Pilih file video (.mp4 / .webm) terlebih dahulu!');
+    if (!videoUrl && !file) {
+      alert('Masukkan Link URL Video atau pilih File Video dari PC terlebih dahulu!');
       return;
     }
 
     const vidId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     try {
-      await simpanBlobVideoIDB(vidId, file);
+      if (file) {
+        await simpanBlobVideoIDB(vidId, file);
+      }
       fishVideoRules.push({
         id: vidId,
         keyword: keyword,
-        fileName: file.name,
+        videoUrl: videoUrl || '',
+        fileName: videoUrl ? 'URL Online' : file.name,
         withSound: chkSound ? chkSound.checked : true
       });
       localStorage.setItem(FISH_VIDEO_RULES_KEY, JSON.stringify(fishVideoRules));
       if (triggerInput) triggerInput.value = '';
+      if (urlInput) urlInput.value = '';
       if (fileInput) fileInput.value = '';
       renderDaftarVideoIkan();
-      tambahLogAktivitas('VIDEO', `Video animasi dipasang untuk ikan "${keyword}" (${file.name})`, 'system');
+      tambahLogAktivitas('VIDEO', `Video animasi dipasang untuk ikan "${keyword}"`, 'system');
     } catch (err) {
       alert('Gagal menyimpan video: ' + err);
     }
@@ -10471,28 +10546,40 @@
   }
 
   let activeVideoObjectUrl = null;
+  function putarVideoAnimasiDariUrl(srcUrl, withSound = true) {
+    const overlay = document.getElementById('fishVideoOverlay');
+    const player = document.getElementById('fishCatchVideoPlayer');
+    if (!overlay || !player || !srcUrl) return;
+    player.src = srcUrl;
+    player.muted = !withSound;
+    player.currentTime = 0;
+    overlay.classList.add('active');
+    player.onended = () => tutupVideoAnimasiIkan();
+    player.onerror = () => tutupVideoAnimasiIkan();
+    player.play().catch(() => {});
+  }
+
   async function putarVideoAnimasiById(id) {
     const rule = fishVideoRules.find(r => r.id === id);
     if (!rule) return;
+
+    // Jika memakai URL Online, siarkan ke TikTok Studio (?view=video) agar ikut memutar!
+    if (rule.videoUrl) {
+      if (typeof siarkanSync === 'function') {
+        siarkanSync({ type: 'SYNC_VIDEO', videoUrl: rule.videoUrl, withSound: rule.withSound });
+      }
+      putarVideoAnimasiDariUrl(rule.videoUrl, rule.withSound);
+      return;
+    }
+
     try {
       const blob = await ambilBlobVideoIDB(id);
       if (!blob) return;
-      const overlay = document.getElementById('fishVideoOverlay');
-      const player = document.getElementById('fishCatchVideoPlayer');
-      if (!overlay || !player) return;
-
       if (activeVideoObjectUrl) {
         try { URL.revokeObjectURL(activeVideoObjectUrl); } catch(_) {}
       }
       activeVideoObjectUrl = URL.createObjectURL(blob);
-      player.src = activeVideoObjectUrl;
-      player.muted = !rule.withSound;
-      player.currentTime = 0;
-      overlay.classList.add('active');
-
-      player.onended = () => tutupVideoAnimasiIkan();
-      player.onerror = () => tutupVideoAnimasiIkan();
-      player.play().catch(() => {});
+      putarVideoAnimasiDariUrl(activeVideoObjectUrl, rule.withSound);
     } catch (_) {}
   }
 
