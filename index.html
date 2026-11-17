@@ -3390,6 +3390,55 @@
       animation: capsuleDangerPulse 0.9s infinite ease-in-out !important;
     }
 
+  
+    /* ========================================================
+       CUSTOM FISH CATCH VIDEO ANIMATION OVERLAY
+       ======================================================== */
+    .fish-video-overlay {
+      position: fixed; inset: 0;
+      display: none; align-items: center; justify-content: center;
+      z-index: 99998;
+      background: radial-gradient(circle at center, rgba(4, 14, 34, 0.55) 0%, rgba(2, 6, 18, 0.72) 100%);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      pointer-events: none;
+      animation: videoOverlayFadeIn 0.28s ease-out;
+    }
+    .fish-video-overlay.active { display: flex; }
+    @keyframes videoOverlayFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .fish-video-wrap {
+      position: relative;
+      max-width: 82vw; max-height: 82vh;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: auto;
+    }
+    .fish-video-wrap video {
+      max-width: 82vw; max-height: 80vh;
+      border-radius: 22px;
+      border: 2.5px solid #00f0ff;
+      box-shadow: 0 0 55px rgba(0, 240, 255, 0.55), 0 20px 60px rgba(0, 0, 0, 0.85);
+      background: transparent;
+      object-fit: contain;
+    }
+    .btn-close-fish-video {
+      position: absolute; top: -12px; right: -12px;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(15, 23, 42, 0.92); color: #fff;
+      border: 2px solid #00f0ff; font-size: 15px; font-weight: 900;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.6);
+      transition: all 0.2s;
+    }
+    .btn-close-fish-video:hover { background: #ef4444; border-color: #ef4444; transform: scale(1.1); }
+    html.mode-timer #fishVideoOverlay,
+    html.mode-tabel #fishVideoOverlay,
+    html.mode-top3 #fishVideoOverlay,
+    html.mode-podium #fishVideoOverlay {
+      display: none !important;
+    }
+
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
   <script src="three.min.js"></script>
@@ -4631,7 +4680,10 @@
         🔊 Audio & Notifikasi
       </button>
       <button type="button" id="tabBtnSettingsIkan" class="settings-tab-btn" onclick="switchSettingsTab('ikan')">
-        🖼️ Kelola Gambar Ikan (269)
+        🖼️ Gambar Ikan
+      </button>
+      <button type="button" id="tabBtnSettingsVideo" class="settings-tab-btn" onclick="switchSettingsTab('video')">
+        🎬 Video Animasi
       </button>
     </div>
 
@@ -4816,6 +4868,35 @@
         <!-- Diisi dinamis oleh renderDaftarIkanSettings() -->
       </div>
     </div> <!-- END TAB CONTENT IKAN -->
+    <!-- TAB CONTENT 3: VIDEO ANIMASI IKAN TERTENTU -->
+    <div id="settingsTabContentVideo" style="display: none; margin-bottom: 18px;">
+      <div style="background: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%); border: 1.5px solid #38bdf8; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;">
+        <div style="font-weight: 900; font-size: 13px; color: #0369a1; margin-bottom: 4px;">🎬 Video Animasi Saat Ikan Tertangkap</div>
+        <div style="font-size: 11px; color: #475569; line-height: 1.45;">
+          Upload video <b>.mp4</b> atau <b>.webm</b> untuk diputar otomatis saat ikan tertentu tertangkap! Video disimpan aman berkapasitas besar di database lokal browser.
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px;">
+        <label style="font-size: 11px; font-weight: 900; color: #0284c7; text-transform: uppercase;">1. Nama Ikan / Tier Pemicu</label>
+        <input type="text" id="inputVideoTriggerFish" placeholder="Contoh: Kraken, Megalodon, Sea Eater, atau Secret" style="width:100%; padding:8px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:12.5px; font-weight:700;">
+
+        <label style="font-size: 11px; font-weight: 900; color: #0284c7; text-transform: uppercase; margin-top:4px;">2. Pilih File Video (.mp4 / .webm)</label>
+        <input type="file" id="inputVideoFile" accept="video/mp4,video/webm,video/*" style="font-size:11.5px;">
+
+        <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#334155; margin-top:4px; cursor:pointer;">
+          <input type="checkbox" id="chkVideoWithSound" checked> 🔊 Putar dengan suara bawaan video
+        </label>
+
+        <button type="button" onclick="tambahVideoAnimasiIkan()" style="margin-top:6px; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color:#fff; border:none; border-radius:10px; padding:9px 14px; font-weight:900; font-size:12px; cursor:pointer;">
+          ➕ Simpan & Pasang Video Ikan
+        </button>
+      </div>
+
+      <div style="font-size: 11.5px; font-weight: 900; color: #0284c7; text-transform: uppercase; margin-bottom: 6px;">Daftar Video Terpasang:</div>
+      <div id="daftarVideoIkanList" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;"></div>
+    </div>
+
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
       <button type="button" class="btn-action-soft" style="padding: 10px; border-radius: 12px; font-weight: 800; font-size: 12.5px;" onclick="batalPengaturanNotifSuara()">Batal</button>
       <button type="button" class="btn-point-studio-save" style="padding: 10px; border-radius: 12px; font-size: 12.5px;" onclick="simpanPengaturanNotifSuara()">💾 Simpan Pengaturan</button>
@@ -4838,6 +4919,15 @@
 </div>
 
 <!-- OVERLAY PODIUM WINNER (LUXURY BRIGHT AWARDS CEREMONY THEME) -->
+
+<!-- OVERLAY VIDEO ANIMASI IKAN TERTENTU -->
+<div class="fish-video-overlay" id="fishVideoOverlay">
+  <div class="fish-video-wrap">
+    <video id="fishCatchVideoPlayer" playsinline></video>
+    <button type="button" class="btn-close-fish-video" onclick="tutupVideoAnimasiIkan()" title="Tutup Video">✕</button>
+  </div>
+</div>
+
 <div class="winner-overlay" id="winnerOverlay">
   <div class="winner-light-beams"></div>
   <canvas id="fireworksCanvas"></canvas>
@@ -10002,21 +10092,27 @@
   function switchSettingsTab(tab) {
     const btnAudio = document.getElementById('tabBtnSettingsAudio');
     const btnIkan = document.getElementById('tabBtnSettingsIkan');
+    const btnVideo = document.getElementById('tabBtnSettingsVideo');
     const contentAudio = document.getElementById('settingsTabContentAudio');
     const contentIkan = document.getElementById('settingsTabContentIkan');
+    const contentVideo = document.getElementById('settingsTabContentVideo');
     const modalBox = document.querySelector('#modalNotifSuara .modal-box');
 
+    [btnAudio, btnIkan, btnVideo].forEach(b => b && b.classList.remove('active'));
+    [contentAudio, contentIkan, contentVideo].forEach(c => { if (c) c.style.display = 'none'; });
+
     if (tab === 'ikan') {
-      if (btnAudio) btnAudio.classList.remove('active');
       if (btnIkan) btnIkan.classList.add('active');
-      if (contentAudio) contentAudio.style.display = 'none';
       if (contentIkan) contentIkan.style.display = 'block';
       if (modalBox) modalBox.style.width = '640px';
       renderDaftarIkanSettings();
+    } else if (tab === 'video') {
+      if (btnVideo) btnVideo.classList.add('active');
+      if (contentVideo) contentVideo.style.display = 'block';
+      if (modalBox) modalBox.style.width = '540px';
+      renderDaftarVideoIkan();
     } else {
-      if (btnIkan) btnIkan.classList.remove('active');
       if (btnAudio) btnAudio.classList.add('active');
-      if (contentIkan) contentIkan.style.display = 'none';
       if (contentAudio) contentAudio.style.display = 'block';
       if (modalBox) modalBox.style.width = '480px';
     }
@@ -10256,39 +10352,177 @@
   }
   
 
-</script>
 
-<!-- BIG SCREEN ALERT OVERLAY (LIVE STREAM HIGHLIGHT) -->
-<!-- CENTER-STAGE CATCH BADGE MODAL POPUP (PANEL 02 & 10 MASTERPIECE) -->
-<div class="catch-badge-overlay" id="bigScreenAlertOverlay" onclick="handleCatchBadgeOverlayClick(event)">
-  <div class="catch-badge-modal" id="catchBadgeModalCard" onclick="event.stopPropagation()">
-    <button class="catch-badge-close" onclick="tutupBigScreenAlert()" title="Tutup">✕</button>
-    
-    <!-- Glowing Halo Avatar at Top Center -->
-    <div class="catch-avatar-halo-wrap">
-      <div class="catch-avatar-halo-glow"></div>
-      <div class="catch-avatar-circle" id="alertAvatarContainer">
-        <img id="alertAvatarImg" src="" alt="Avatar" style="width:100%; height:100%; object-fit:cover; display:none; border-radius:50%;">
-        <span id="alertAvatarInitial">🎣</span>
+  /* =========================================================
+     ENGINE VIDEO ANIMASI IKAN TERTENTU (INDEXEDDB + AUTO-PLAY)
+     ========================================================= */
+  const FISH_VIDEO_RULES_KEY = 'galatama_fish_video_rules_v1';
+  let fishVideoRules = [];
+  try {
+    fishVideoRules = JSON.parse(localStorage.getItem(FISH_VIDEO_RULES_KEY) || '[]');
+    if (!Array.isArray(fishVideoRules)) fishVideoRules = [];
+  } catch(_) { fishVideoRules = []; }
+
+  function bukaVideoIndexedDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('AutoSkorVideoDB', 1);
+      req.onupgradeneeded = (e) => {
+        const dbv = e.target.result;
+        if (!dbv.objectStoreNames.contains('videos')) {
+          dbv.createObjectStore('videos');
+        }
+      };
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function simpanBlobVideoIDB(id, blob) {
+    const dbv = await bukaVideoIndexedDB();
+    return new Promise((resolve, reject) => {
+      const tx = dbv.transaction('videos', 'readwrite');
+      tx.objectStore('videos').put(blob, id);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function ambilBlobVideoIDB(id) {
+    const dbv = await bukaVideoIndexedDB();
+    return new Promise((resolve, reject) => {
+      const tx = dbv.transaction('videos', 'readonly');
+      const req = tx.objectStore('videos').get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function hapusBlobVideoIDB(id) {
+    const dbv = await bukaVideoIndexedDB();
+    return new Promise((resolve) => {
+      const tx = dbv.transaction('videos', 'readwrite');
+      tx.objectStore('videos').delete(id);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    });
+  }
+
+  async function tambahVideoAnimasiIkan() {
+    const triggerInput = document.getElementById('inputVideoTriggerFish');
+    const fileInput = document.getElementById('inputVideoFile');
+    const chkSound = document.getElementById('chkVideoWithSound');
+
+    const keyword = (triggerInput ? triggerInput.value : '').trim();
+    const file = (fileInput && fileInput.files) ? fileInput.files[0] : null;
+    if (!keyword) {
+      alert('Isi nama ikan atau tier pemicu terlebih dahulu (misal: Kraken atau Secret)!');
+      return;
+    }
+    if (!file) {
+      alert('Pilih file video (.mp4 / .webm) terlebih dahulu!');
+      return;
+    }
+
+    const vidId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    try {
+      await simpanBlobVideoIDB(vidId, file);
+      fishVideoRules.push({
+        id: vidId,
+        keyword: keyword,
+        fileName: file.name,
+        withSound: chkSound ? chkSound.checked : true
+      });
+      localStorage.setItem(FISH_VIDEO_RULES_KEY, JSON.stringify(fishVideoRules));
+      if (triggerInput) triggerInput.value = '';
+      if (fileInput) fileInput.value = '';
+      renderDaftarVideoIkan();
+      tambahLogAktivitas('VIDEO', `Video animasi dipasang untuk ikan "${keyword}" (${file.name})`, 'system');
+    } catch (err) {
+      alert('Gagal menyimpan video: ' + err);
+    }
+  }
+
+  function renderDaftarVideoIkan() {
+    const listEl = document.getElementById('daftarVideoIkanList');
+    if (!listEl) return;
+    if (!fishVideoRules || fishVideoRules.length === 0) {
+      listEl.innerHTML = '<div style="font-size:12px; color:#94a3b8; text-align:center; padding:14px; border:1px dashed #cbd5e1; border-radius:10px;">Belum ada video animasi ikan yang dipasang.</div>';
+      return;
+    }
+    listEl.innerHTML = fishVideoRules.map(r => `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 12px; gap:8px;">
+        <div style="min-width:0;">
+          <div style="font-weight:900; font-size:12.5px; color:#0f172a;">🐟 ${escapeHtml(r.keyword)}</div>
+          <div style="font-size:10.5px; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(r.fileName)} · ${r.withSound ? '🔊 Bersuara' : '🔇 Bisukan'}</div>
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button type="button" onclick="putarVideoAnimasiById('${r.id}')" style="background:#e0f2fe; color:#0284c7; border:none; border-radius:8px; padding:5px 10px; font-weight:800; font-size:11px; cursor:pointer;">▶ Tes</button>
+          <button type="button" onclick="hapusVideoAnimasiIkan('${r.id}')" style="background:#fee2e2; color:#dc2626; border:none; border-radius:8px; padding:5px 10px; font-weight:800; font-size:11px; cursor:pointer;">🗑️</button>
+        </div>
       </div>
-    </div>
+    `).join('');
+  }
 
-    <!-- Laurel Crown Shield Badge -->
-    <div class="catch-crest-badge" id="alertBadgeTitle">
-      <span class="crest-icon">👑</span>
-      <span class="crest-text">CATCH BADGE</span>
-    </div>
+  async function hapusVideoAnimasiIkan(id) {
+    fishVideoRules = fishVideoRules.filter(r => r.id !== id);
+    localStorage.setItem(FISH_VIDEO_RULES_KEY, JSON.stringify(fishVideoRules));
+    await hapusBlobVideoIDB(id);
+    renderDaftarVideoIkan();
+  }
 
-    <!-- Big Bold Points Badge -->
-    <div class="catch-pts-number" id="alertPointsVal">+0 PTS</div>
+  let activeVideoObjectUrl = null;
+  async function putarVideoAnimasiById(id) {
+    const rule = fishVideoRules.find(r => r.id === id);
+    if (!rule) return;
+    try {
+      const blob = await ambilBlobVideoIDB(id);
+      if (!blob) return;
+      const overlay = document.getElementById('fishVideoOverlay');
+      const player = document.getElementById('fishCatchVideoPlayer');
+      if (!overlay || !player) return;
 
-    <!-- Player Name & Fish Details -->
-    <div class="catch-player-title" id="alertPlayerName">-</div>
-    <div class="catch-fish-subtitle" id="alertFishDesc">-</div>
+      if (activeVideoObjectUrl) {
+        try { URL.revokeObjectURL(activeVideoObjectUrl); } catch(_) {}
+      }
+      activeVideoObjectUrl = URL.createObjectURL(blob);
+      player.src = activeVideoObjectUrl;
+      player.muted = !rule.withSound;
+      player.currentTime = 0;
+      overlay.classList.add('active');
 
-    <!-- OK Action Button (Panel 02) -->
-    <button class="btn-catch-ok" onclick="tutupBigScreenAlert()">OK</button>
-  </div>
-</div>
+      player.onended = () => tutupVideoAnimasiIkan();
+      player.onerror = () => tutupVideoAnimasiIkan();
+      player.play().catch(() => {});
+    } catch (_) {}
+  }
+
+  function tutupVideoAnimasiIkan() {
+    const overlay = document.getElementById('fishVideoOverlay');
+    const player = document.getElementById('fishCatchVideoPlayer');
+    if (player) {
+      try { player.pause(); player.removeAttribute('src'); player.load(); } catch(_) {}
+    }
+    if (overlay) overlay.classList.remove('active');
+    if (activeVideoObjectUrl) {
+      try { URL.revokeObjectURL(activeVideoObjectUrl); } catch(_) {}
+      activeVideoObjectUrl = null;
+    }
+  }
+
+  function cekDanPutarVideoIkan(namaIkan, tierKey) {
+    if (!fishVideoRules || fishVideoRules.length === 0) return;
+    const fLower = String(namaIkan || '').toLowerCase().trim();
+    const tLower = String(tierKey || '').toLowerCase().trim();
+    const match = fishVideoRules.find(r => {
+      const kw = String(r.keyword || '').toLowerCase().trim();
+      if (!kw) return false;
+      return (fLower && fLower.includes(kw)) || (tLower && tLower === kw);
+    });
+    if (match) {
+      putarVideoAnimasiById(match.id);
+    }
+  }
+
+</script>
 </body>
 </html>
