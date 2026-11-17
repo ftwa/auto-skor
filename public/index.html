@@ -6524,6 +6524,73 @@
     } catch (_) {}
   }
 
+  // Efek Suara Menegangkan 10 Detik Terakhir (Detak Jantung Sub-Bass + Jam Ketegangan Esports)
+  function putarSuaraMenegangkan10Detik(detik) {
+    try {
+      const ctx = dapatkanAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = (typeof volumeNotifAudio === 'number') ? Math.min(1, Math.max(0.2, volumeNotifAudio)) : 0.8;
+
+      // 1. Sub-Bass Heartbeat ("THUMP")
+      const mainBeat = (offset, peakGain) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(105, now + offset);
+        osc.frequency.exponentialRampToValueAtTime(36, now + offset + 0.16);
+        gain.gain.setValueAtTime(0.001, now + offset);
+        gain.gain.linearRampToValueAtTime(peakGain * vol, now + offset + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.23);
+      };
+
+      mainBeat(0, detik <= 3 ? 0.65 : 0.45);
+      // Double heartbeat di 3 detik terakhir agar makin menegangkan!
+      if (detik <= 3) {
+        mainBeat(0.18, 0.48);
+      }
+
+      // 2. Crisp Esports Tension Tick (Pitch naik tiap detik dari 10 -> 1)
+      const tickOsc = ctx.createOscillator();
+      const tickGain = ctx.createGain();
+      tickOsc.type = detik <= 3 ? 'sawtooth' : 'triangle';
+      const baseFreq = 880 + ((10 - detik) * 95);
+      tickOsc.frequency.setValueAtTime(baseFreq, now);
+      tickGain.gain.setValueAtTime((detik <= 3 ? 0.28 : 0.18) * vol, now);
+      tickGain.gain.exponentialRampToValueAtTime(0.001, now + (detik <= 3 ? 0.14 : 0.08));
+      tickOsc.connect(tickGain);
+      tickGain.connect(ctx.destination);
+      tickOsc.start(now);
+      tickOsc.stop(now + 0.16);
+    } catch (_) {}
+  }
+
+  function putarBuzzerWaktuHabis() {
+    try {
+      const ctx = dapatkanAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = (typeof volumeNotifAudio === 'number') ? Math.min(1, Math.max(0.2, volumeNotifAudio)) : 0.8;
+      [165, 220, 330].forEach((freq) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.linearRampToValueAtTime(freq * 0.94, now + 0.85);
+        gain.gain.setValueAtTime(0.22 * vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.92);
+      });
+    } catch (_) {}
+  }
+
   function simpanDB() {
     localStorage.setItem(DB_KEY, JSON.stringify(db));
     syncKePython();
@@ -6925,8 +6992,7 @@
             tambahLogAktivitas('TIMER', '🚨 PERINGATAN: Waktu tersisa 1 Menit Terakhir!', 'mitos');
           }
           if (timerSec <= 10 && timerSec >= 1) {
-            tampilkanGyro10DetikTerakhir(timerSec);
-            if (timerSec <= 5) putarBeepCountdown(false);
+            putarSuaraMenegangkan10Detik(timerSec);
           }
         } else {
           // Waktu utama habis! Cek apakah ada pemain BIN di sesi ini
@@ -6944,7 +7010,7 @@
             isMatchDijeda = false;
             perbaruiStatusMatchUI();
             updateTimer();
-            tutupGyro10DetikTerakhir();
+            putarBuzzerWaktuHabis();
             tambahLogAktivitas('TIMER', 'WAKTU SELESAI!', 'system');
 
             if (notifQueue.length > 0 || isNotifShowing) {
