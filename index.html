@@ -691,7 +691,7 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      padding: 0;
+      padding: 8px 6px 4px 6px;
       cursor: default !important;
       text-align: center;
       display: flex;
@@ -699,9 +699,37 @@
       align-items: center;
       user-select: none;
     }
+    /* Opsi 8: Persona-Style All-Out Attack Comic Shard Backdrop */
+    .podium-hero-card.m4-holo-unit::before {
+      content: '';
+      position: absolute;
+      inset: 14px 10px 8px 10px;
+      background-image:
+        radial-gradient(rgba(15, 23, 42, 0.16) 1.5px, transparent 1.5px),
+        linear-gradient(135deg, #ffffff 0%, #e0f7ff 58%, #00f0ff 100%);
+      background-size: 7px 7px, 100% 100%;
+      border: 3.5px solid #0f172a;
+      outline: 3px solid #ffffff;
+      box-shadow: 6px 6px 0px #0f172a;
+      transform: skewX(-7deg);
+      clip-path: polygon(4% 0%, 100% 3%, 96% 100%, 0% 97%);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .podium-hero-card.m4-holo-unit.hero-rank-1::before {
+      background-image:
+        radial-gradient(rgba(15, 23, 42, 0.16) 1.5px, transparent 1.5px),
+        linear-gradient(135deg, #fef08a 0%, #facc15 55%, #ff2a85 100%);
+      box-shadow: 7px 7px 0px #0f172a;
+    }
+    .podium-hero-card.m4-holo-unit.hero-rank-3::before {
+      background-image:
+        radial-gradient(rgba(15, 23, 42, 0.16) 1.5px, transparent 1.5px),
+        linear-gradient(135deg, #ffffff 0%, #fce7f3 55%, #ff2a85 100%);
+    }
 
     .podium-hero-card.m4-holo-unit.hero-rank-1 {
-      transform: scale(1.06) translateY(-6px);
+      transform: scale(1.06) translateY(-8px);
       z-index: 10;
     }
 
@@ -832,55 +860,60 @@
     .hero-rank-2 .podium-3d-placeholder { color: #38bdf8; text-shadow: 0 0 14px rgba(56, 189, 248, 0.95); }
     .hero-rank-3 .podium-3d-placeholder { color: #fb923c; text-shadow: 0 0 14px rgba(251, 146, 60, 0.95); }
 
-    /* Floating Glass HUD Capsule */
+    /* Neo-Pop Comic HUD Capsule (Opsi 8) */
     .m4-hud-capsule {
       width: 100%;
       max-width: 310px;
-      background: rgba(7, 16, 32, 0.88);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1.5px solid rgba(56, 189, 248, 0.45);
-      border-radius: 16px;
-      padding: 9px 12px;
+      background: #0f172a;
+      border: 3px solid #0f172a;
+      outline: 2.5px solid #ffffff;
+      border-radius: 12px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
       gap: 10px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.25);
+      box-shadow: 5px 5px 0px #00f0ff;
+      transform: skewX(-7deg);
       box-sizing: border-box;
+    }
+    .m4-hud-capsule > * {
+      transform: skewX(7deg);
     }
     .hero-rank-1 .m4-hud-capsule {
       max-width: 350px;
-      border-color: rgba(250, 204, 21, 0.65);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(250, 204, 21, 0.35);
-      padding: 11px 15px;
+      box-shadow: 6px 6px 0px #facc15;
+      padding: 10px 14px;
     }
     .hero-rank-3 .m4-hud-capsule {
-      border-color: rgba(251, 146, 60, 0.45);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), 0 0 20px rgba(251, 146, 60, 0.25);
+      box-shadow: 5px 5px 0px #ff2a85;
     }
 
-    /* Rank Compact Hologram Badge (#1, #2, #3) */
+    /* Rank Compact Comic Badge (#1, #2, #3) */
     .m4-hud-badge {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 9px;
-      padding: 5px 8px;
+      background: #00f0ff;
+      border: 2.5px solid #0f172a;
+      border-radius: 8px;
+      padding: 4px 8px;
       flex-shrink: 0;
       min-width: 34px;
+      box-shadow: 2px 2px 0px #ffffff;
     }
+    .hero-rank-1 .m4-hud-badge { background: #facc15; }
+    .hero-rank-3 .m4-hud-badge { background: #ff2a85; }
     .m4-badge-num {
       font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
       font-size: 15px;
       font-weight: 900;
       line-height: 1;
       letter-spacing: 0.5px;
+      color: #0f172a !important;
+      text-shadow: none !important;
     }
-    .hero-rank-1 .m4-badge-num { color: #facc15; text-shadow: 0 0 10px rgba(250, 204, 21, 0.85); font-size: 16px; }
-    .hero-rank-2 .m4-badge-num { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.85); }
-    .hero-rank-3 .m4-badge-num { color: #fb923c; text-shadow: 0 0 10px rgba(251, 146, 60, 0.85); }
+    .hero-rank-1 .m4-badge-num { font-size: 16px; }
+    .hero-rank-3 .m4-badge-num { color: #ffffff !important; }
 
     /* Player Details */
     .m4-hud-body {
@@ -1960,22 +1993,26 @@
        ======================================================== */
     .winner-overlay {
       position: fixed; inset: 0;
-      /* Tema Mewah & Lebih Terang: Royal Sapphire Blue dengan Golden Overhead Spotlight */
-      background:
-        radial-gradient(circle at 50% -12%, rgba(255, 248, 200, 0.55) 0%, rgba(250, 204, 21, 0.28) 22%, rgba(59, 130, 246, 0.35) 45%, transparent 70%),
-        radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(217, 119, 6, 0.2) 0%, transparent 50%),
-        linear-gradient(180deg, #142a53 0%, #102142 40%, #0a162b 100%);
-      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      /* Opsi 4: Arcade Ink-Splash Stage (Midnight Comic Arena + Cyan/Magenta Splash) */
+      background-color: #0b132b;
+      background-image:
+        radial-gradient(rgba(0, 240, 255, 0.12) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 50% 42%, rgba(250, 204, 21, 0.24) 0%, transparent 45%),
+        radial-gradient(circle at 18% 58%, rgba(0, 240, 255, 0.24) 0%, transparent 42%),
+        radial-gradient(circle at 82% 58%, rgba(255, 42, 133, 0.24) 0%, transparent 42%),
+        linear-gradient(180deg, #0f172a 0%, #091024 100%);
+      background-size: 14px 14px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
       display: none; flex-direction: column; justify-content: center; align-items: center;
       z-index: 99999; padding: 20px 24px; overflow-y: auto;
     }
     .winner-overlay.active { display: flex; }
 
-    /* Luminous God Rays / Light Beams Ambient */
+    /* Ink-Splash Comic Burst Backdrop */
     .winner-light-beams {
       position: absolute; inset: 0; pointer-events: none; z-index: 1;
-      background: radial-gradient(ellipse at 50% 0%, rgba(254, 240, 138, 0.2) 0%, rgba(234, 179, 8, 0.08) 35%, transparent 70%);
+      background:
+        conic-gradient(from 0deg at 50% 58%, rgba(0, 240, 255, 0.08) 0deg 25deg, transparent 25deg 55deg, rgba(255, 42, 133, 0.08) 55deg 80deg, transparent 80deg 120deg, rgba(250, 204, 21, 0.08) 120deg 145deg, transparent 145deg 185deg, rgba(0, 240, 255, 0.08) 185deg 210deg, transparent 210deg 255deg, rgba(255, 42, 133, 0.08) 255deg 285deg, transparent 285deg 360deg);
       opacity: 0.9;
     }
 
@@ -2194,124 +2231,106 @@
       display: flex; flex-direction: column; align-items: center;
     }
     .pedestal-surface {
-      width: 82%; height: 18px; border-radius: 50%;
+      width: 86%; height: 18px; border-radius: 10px;
       position: relative; z-index: 2;
+      border: 3px solid #0f172a !important;
+      box-shadow: 0 4px 0 #0f172a !important;
     }
     .rank-1 .pedestal-surface {
-      width: 90%; height: 22px;
-      background: radial-gradient(ellipse, #fef08a 0%, #facc15 45%, #ca8a04 80%, rgba(202, 138, 4, 0.2) 100%);
-      box-shadow: 0 0 35px rgba(250, 204, 21, 0.95), 0 4px 15px rgba(0,0,0,0.5);
-      border: 1.5px solid rgba(255, 255, 255, 0.8);
+      width: 92%; height: 22px;
+      background: linear-gradient(90deg, #fef08a 0%, #facc15 55%, #eab308 100%);
     }
     .rank-2 .pedestal-surface {
-      background: radial-gradient(ellipse, #e0f2fe 0%, #38bdf8 45%, #0284c7 80%, rgba(2, 132, 199, 0.2) 100%);
-      box-shadow: 0 0 28px rgba(56, 189, 248, 0.85), 0 4px 15px rgba(0,0,0,0.5);
-      border: 1.5px solid rgba(255, 255, 255, 0.8);
+      background: linear-gradient(90deg, #a5f3fc 0%, #00f0ff 55%, #06b6d4 100%);
     }
     .rank-3 .pedestal-surface {
-      background: radial-gradient(ellipse, #ffedd5 0%, #fb923c 45%, #c2410c 80%, rgba(194, 65, 12, 0.2) 100%);
-      box-shadow: 0 0 28px rgba(251, 146, 60, 0.85), 0 4px 15px rgba(0,0,0,0.5);
-      border: 1.5px solid rgba(255, 255, 255, 0.8);
+      background: linear-gradient(90deg, #fbcfe8 0%, #ff2a85 55%, #db2777 100%);
     }
 
-    /* Luxury Glassmorphism Information Card */
+    /* Opsi 4: Chunky 3D Cel-Shaded Arcade Ink Pedestal Block */
     .podium-glass-card {
-      width: 100%; border-radius: 20px;
+      width: 100%; border-radius: 18px;
       padding: 22px 18px 20px 18px;
       display: flex; flex-direction: column; align-items: center; text-align: center;
       position: relative; z-index: 7;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      border: 4px solid #0f172a;
+      outline: 3px solid #ffffff;
+      box-shadow: 8px 8px 0px #0f172a;
       transition: all 0.3s ease;
     }
     .rank-1 .podium-glass-card {
-      background: linear-gradient(180deg, rgba(254, 240, 138, 0.22) 0%, rgba(30, 41, 69, 0.85) 30%, rgba(17, 24, 39, 0.95) 100%);
-      border: 2px solid rgba(250, 204, 21, 0.75);
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 0 35px rgba(250, 204, 21, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+      background-image:
+        radial-gradient(rgba(15, 23, 42, 0.14) 1.5px, transparent 1.5px),
+        linear-gradient(180deg, #fef08a 0%, #facc15 55%, #eab308 100%);
+      background-size: 8px 8px, 100% 100%;
     }
     .rank-2 .podium-glass-card {
-      background: linear-gradient(180deg, rgba(224, 242, 254, 0.18) 0%, rgba(23, 37, 65, 0.85) 30%, rgba(15, 23, 42, 0.95) 100%);
-      border: 2px solid rgba(56, 189, 248, 0.65);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 25px rgba(56, 189, 248, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+      background-image:
+        radial-gradient(rgba(15, 23, 42, 0.14) 1.5px, transparent 1.5px),
+        linear-gradient(180deg, #a5f3fc 0%, #00f0ff 55%, #06b6d4 100%);
+      background-size: 8px 8px, 100% 100%;
     }
     .rank-3 .podium-glass-card {
-      background: linear-gradient(180deg, rgba(255, 237, 213, 0.18) 0%, rgba(41, 29, 24, 0.85) 30%, rgba(24, 18, 17, 0.95) 100%);
-      border: 2px solid rgba(251, 146, 60, 0.65);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 25px rgba(251, 146, 60, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+      background-image:
+        radial-gradient(rgba(15, 23, 42, 0.14) 1.5px, transparent 1.5px),
+        linear-gradient(180deg, #fbcfe8 0%, #ff2a85 55%, #db2777 100%);
+      background-size: 8px 8px, 100% 100%;
     }
 
-    /* Integrated Rank Ribbon Badge (Inside Card, NOT Over Avatar Head) */
+    /* Integrated Comic Rank Ribbon Badge */
     .podium-rank-ribbon {
-      font-size: 13px; font-weight: 950; letter-spacing: 1.8px;
+      font-size: 13px; font-weight: 950; letter-spacing: 1.6px;
       text-transform: uppercase; padding: 5px 18px; border-radius: 999px;
-      margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      margin-bottom: 10px; display: inline-flex; align-items: center; gap: 6px;
+      background: #0f172a !important; color: #ffffff !important;
+      border: 2.5px solid #ffffff !important;
+      box-shadow: 3px 3px 0px #0f172a !important;
     }
-    .rank-1 .podium-rank-ribbon {
-      background: linear-gradient(135deg, #fef08a 0%, #facc15 50%, #d97706 100%);
-      color: #78350f; border: 1px solid #fef08a;
-      box-shadow: 0 0 20px rgba(250, 204, 21, 0.65);
-    }
-    .rank-2 .podium-rank-ribbon {
-      background: linear-gradient(135deg, #f0f9ff 0%, #bae6fd 50%, #38bdf8 100%);
-      color: #0c4a6e; border: 1px solid #e0f2fe;
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
-    }
-    .rank-3 .podium-rank-ribbon {
-      background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #fb923c 100%);
-      color: #7c2d12; border: 1px solid #ffedd5;
-      box-shadow: 0 0 16px rgba(251, 146, 60, 0.5);
-    }
+    .rank-1 .podium-rank-ribbon { color: #facc15 !important; }
+    .rank-2 .podium-rank-ribbon { color: #00f0ff !important; }
+    .rank-3 .podium-rank-ribbon { color: #f472b6 !important; }
 
-    /* Player Names & Identifiers */
+    /* Player Names & Identifiers (High Contrast Comic Ink) */
     .player-display-name {
-      font-size: 20px; font-weight: 900; color: #ffffff;
+      font-size: 21px; font-weight: 900; color: #0f172a;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       margin-bottom: 4px; max-width: 250px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
-      letter-spacing: 0.5px;
+      text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.7);
+      letter-spacing: 0.4px;
     }
     .rank-1 .player-display-name {
-      font-size: 24px; color: #fef08a; max-width: 280px;
-      text-shadow: 0 0 20px rgba(250, 204, 21, 0.6), 0 2px 10px rgba(0, 0, 0, 0.8);
+      font-size: 24px; color: #0f172a; max-width: 280px;
+      text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8);
+    }
+    .rank-3 .player-display-name {
+      color: #ffffff;
+      -webkit-text-stroke: 1px #0f172a;
+      paint-order: stroke fill;
+      text-shadow: 2px 2px 0px #0f172a;
     }
     .player-username-pill {
-      font-size: 12px; font-weight: 700; color: #cbd5e1;
-      background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 12px; font-weight: 800; color: #ffffff;
+      background: #0f172a; border: 2px solid #ffffff;
       border-radius: 999px; padding: 3px 12px; margin-bottom: 14px;
       letter-spacing: 0.5px; max-width: 200px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .rank-1 .player-username-pill {
-      color: #fef9c3; background: rgba(250, 204, 21, 0.12);
-      border-color: rgba(250, 204, 21, 0.35);
+      color: #fef08a; background: #0f172a; border-color: #ffffff;
     }
 
-    /* Score Capsule Badge */
+    /* Score Comic Capsule Badge */
     .podium-score-pill {
-      background: rgba(0, 0, 0, 0.45); border-radius: 999px;
-      padding: 6px 20px; display: inline-flex; align-items: baseline; gap: 6px;
-      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
-    }
-    .rank-1 .podium-score-pill {
-      border: 1.5px solid #facc15; background: rgba(250, 204, 21, 0.18);
-      box-shadow: 0 0 16px rgba(250, 204, 21, 0.35), inset 0 2px 5px rgba(0, 0, 0, 0.5);
-    }
-    .rank-2 .podium-score-pill {
-      border: 1.5px solid #38bdf8; background: rgba(56, 189, 248, 0.18);
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.3), inset 0 2px 5px rgba(0, 0, 0, 0.5);
-    }
-    .rank-3 .podium-score-pill {
-      border: 1.5px solid #fb923c; background: rgba(251, 146, 60, 0.18);
-      box-shadow: 0 0 14px rgba(251, 146, 60, 0.3), inset 0 2px 5px rgba(0, 0, 0, 0.5);
+      background: #ffffff !important; border: 3px solid #0f172a !important;
+      border-radius: 14px; padding: 6px 20px;
+      display: inline-flex; align-items: baseline; gap: 6px;
+      box-shadow: 4px 4px 0px #0f172a !important;
     }
     .podium-score-val {
-      font-size: 24px; font-weight: 950; color: #ffffff;
+      font-size: 24px; font-weight: 950; color: #0f172a !important;
+      text-shadow: none !important;
       font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
     }
-    .rank-1 .podium-score-val { color: #fef08a; text-shadow: 0 0 10px rgba(250, 204, 21, 0.8); }
-    .rank-2 .podium-score-val { color: #e0f2fe; text-shadow: 0 0 10px rgba(56, 189, 248, 0.8); }
-    .rank-3 .podium-score-val { color: #ffedd5; text-shadow: 0 0 10px rgba(251, 146, 60, 0.8); }
     .podium-score-lbl {
       font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 1px;
     }
