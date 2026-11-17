@@ -1755,21 +1755,135 @@
        ======================================================== */
     .countdown-overlay {
       position: fixed; inset: 0;
-      background: rgba(3, 14, 28, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background: radial-gradient(circle at center, rgba(6, 20, 48, 0.82) 0%, rgba(2, 6, 18, 0.94) 100%);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       display: none; justify-content: center; align-items: center;
       z-index: 99999;
+      overflow: hidden;
     }
     .countdown-overlay.active { display: flex; }
-    .countdown-text {
-      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-      font-size: 140px; font-weight: 900;
-      color: #00d2ff; text-shadow: 0 0 50px rgba(0, 210, 255, 0.8), 0 0 100px rgba(0, 210, 255, 0.4);
-      animation: countdownPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Panggung Pusaran Energi Laut Dalam (Abyssal Energy Vortex) */
+    .vortex-stage {
+      position: relative;
+      width: 440px; height: 440px;
+      display: flex; align-items: center; justify-content: center;
     }
-    @keyframes countdownPop {
-      0% { transform: scale(0.3); opacity: 0; }
-      50% { transform: scale(1.15); opacity: 1; }
+    .vortex-aura-glow {
+      position: absolute; inset: -40px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.35) 0%, rgba(168, 85, 247, 0.32) 45%, transparent 72%);
+      filter: blur(28px);
+      animation: vortexAuraBreathe 1.4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .vortex-spiral {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      -webkit-mask-image: radial-gradient(circle, transparent 24%, black 52%, transparent 72%);
+      mask-image: radial-gradient(circle, transparent 24%, black 52%, transparent 72%);
+    }
+    .vortex-spiral-outer {
+      inset: 0;
+      background: conic-gradient(from 0deg, transparent 0deg, #00f0ff 45deg, transparent 90deg, #9333ea 135deg, transparent 180deg, #00f0ff 225deg, transparent 270deg, #d946ef 315deg, transparent 360deg);
+      filter: blur(10px);
+      opacity: 0.85;
+      animation: spinVortexCW 2.4s linear infinite;
+    }
+    .vortex-spiral-mid {
+      inset: 38px;
+      background: conic-gradient(from 90deg, transparent 0deg, #38bdf8 55deg, transparent 120deg, #a855f7 185deg, transparent 240deg, #facc15 300deg, transparent 360deg);
+      filter: blur(6px);
+      opacity: 0.9;
+      animation: spinVortexCCW 1.7s linear infinite;
+    }
+    .vortex-spiral-inner {
+      inset: 78px;
+      background: conic-gradient(from 45deg, transparent 0deg, #ffffff 30deg, #00f0ff 70deg, transparent 120deg, #d946ef 210deg, transparent 270deg, #00f0ff 330deg, transparent 360deg);
+      filter: blur(4px);
+      opacity: 0.95;
+      animation: spinVortexCW 1.1s linear infinite;
+    }
+    .vortex-core-ring {
+      position: absolute;
+      width: 190px; height: 190px;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 240, 255, 0.8);
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.85), inset 0 0 35px rgba(168, 85, 247, 0.75);
+      background: radial-gradient(circle, rgba(10, 25, 60, 0.9) 0%, rgba(4, 10, 28, 0.98) 100%);
+      pointer-events: none;
+    }
+    .vortex-shockwave {
+      position: absolute;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      border: 4px solid #00f0ff;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .countdown-overlay.vortex-burst .vortex-aura-glow {
+      background: radial-gradient(circle, rgba(250, 204, 21, 0.75) 0%, rgba(0, 240, 255, 0.55) 45%, transparent 75%);
+      transform: scale(1.6);
+      transition: transform 0.5s ease-out;
+    }
+    .countdown-overlay.vortex-burst .vortex-core-ring {
+      border-color: #facc15;
+      box-shadow: 0 0 70px rgba(250, 204, 21, 1), inset 0 0 50px rgba(0, 240, 255, 0.9);
+      transform: scale(1.35);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .countdown-overlay.vortex-burst .vortex-shockwave {
+      border-color: #facc15;
+      animation: vortexExplodeWave 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes spinVortexCW {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(0.95); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    @keyframes spinVortexCCW {
+      0% { transform: rotate(360deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.04); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+    @keyframes vortexAuraBreathe {
+      0% { opacity: 0.7; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1.08); }
+    }
+    @keyframes vortexExplodeWave {
+      0% { transform: scale(0.6); opacity: 1; border-width: 8px; }
+      100% { transform: scale(4.2); opacity: 0; border-width: 1px; }
+    }
+
+    .countdown-text {
+      position: relative; z-index: 5;
+      font-family: 'Orbitron', 'Outfit', 'Plus Jakarta Sans', sans-serif;
+      font-size: 132px; font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 22px #00f0ff, 0 0 50px #3b82f6, 0 0 90px #a855f7;
+      letter-spacing: 2px;
+      user-select: none;
+    }
+    .countdown-text.start {
+      font-size: 64px;
+      text-align: center;
+      color: #fde047;
+      text-shadow: 0 0 25px #facc15, 0 0 60px #00f0ff, 0 0 100px #f59e0b;
+      letter-spacing: 4px;
+      white-space: nowrap;
+    }
+    @keyframes countZoom {
+      0% { transform: scale(2.1); opacity: 0; filter: blur(8px); }
+      45% { transform: scale(0.95); opacity: 1; filter: blur(0px); }
+      75% { transform: scale(1.04); opacity: 1; }
       100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes countExplodeGo {
+      0% { transform: scale(0.4); opacity: 0; filter: blur(6px); }
+      45% { transform: scale(1.22); opacity: 1; filter: blur(0px); }
+      100% { transform: scale(1.05); opacity: 1; }
     }
 
     
@@ -4692,7 +4806,15 @@
 
 <!-- OVERLAY HITUNGAN MUNDUR -->
 <div class="countdown-overlay" id="countdownOverlay">
-  <div class="countdown-text" id="countdownNum">3</div>
+  <div class="vortex-stage" id="vortexStage">
+    <div class="vortex-aura-glow"></div>
+    <div class="vortex-spiral vortex-spiral-outer"></div>
+    <div class="vortex-spiral vortex-spiral-mid"></div>
+    <div class="vortex-spiral vortex-spiral-inner"></div>
+    <div class="vortex-core-ring"></div>
+    <div class="vortex-shockwave" id="vortexShockwave"></div>
+    <div class="countdown-text" id="countdownNum">3</div>
+  </div>
 </div>
 
 <!-- OVERLAY PODIUM WINNER (LUXURY BRIGHT AWARDS CEREMONY THEME) -->
