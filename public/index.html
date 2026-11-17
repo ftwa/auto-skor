@@ -24,6 +24,24 @@
         document.documentElement.classList.add('mode-admin');
       }
     })();
+
+    // ANTISIPASI GLOBAL: Cegah crash akibat QuotaExceededError localStorage & error runtime tak terduga saat Live
+    (function() {
+      try {
+        const _origSetItem = Storage.prototype.setItem;
+        Storage.prototype.setItem = function(k, v) {
+          try {
+            return _origSetItem.call(this, k, v);
+          } catch (err) {
+            console.warn('[Anti-Crash Storage] Gagal menyimpan "' + k + '" (kuota penuh):', err && err.message ? err.message : err);
+            return undefined;
+          }
+        };
+      } catch (_) {}
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      });
+    })();
   </script>
   <!-- Paho MQTT WebSocket Client (Offline First / Local Asset) -->
   <script src="mqttws31.min.js"></script>
