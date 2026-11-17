@@ -26,7 +26,12 @@
     })();
   </script>
   <!-- Paho MQTT WebSocket Client (Offline First / Local Asset) -->
-  <script src="mqttws31.min.js" defer></script>
+  <script src="mqttws31.min.js"></script>
+  <script>
+    if (typeof Paho === 'undefined' || !Paho.MQTT) {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"><\/script>');
+    }
+  </script>
   <script src="fish_database.js"></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2938,6 +2943,34 @@
     html.mode-timer .container > *:not(.middle-strip) {
       display: none !important;
     }
+    /* HILANGKAN PODIUM 3 BESAR SECARA TOTAL DI MODE TIMER TIKTOK STUDIO (Override body.view-match) */
+    html.mode-timer #podiumHeroStage,
+    html.mode-timer body #podiumHeroStage,
+    html.mode-timer body.view-match #podiumHeroStage,
+    html.mode-timer body.view-setup #podiumHeroStage,
+    html.mode-timer body.view-member #podiumHeroStage,
+    html.mode-timer .podium-hero-stage,
+    html.mode-timer body.view-match .podium-hero-stage,
+    html.mode-timer .container #podiumHeroStage,
+    html.mode-timer .container > #podiumHeroStage,
+    html.mode-timer .grid-tables,
+    html.mode-timer .tables-wrapper,
+    html.mode-timer .top-bar,
+    html.mode-timer .esports-header-banner,
+    html.mode-timer #memberHallContainer,
+    html.mode-timer .footer-brand,
+    html.mode-timer #notifBanner {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      max-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+    }
     /* Sembunyikan juga modal, toast, dan popover luar */
     html.mode-timer .modal-overlay,
     html.mode-timer .quick-point-popover,
@@ -3117,12 +3150,69 @@
       object-fit: contain;
     }
 
-</style>
+
+    /* ========================================================
+       ANIMASI DAN EFEK WAKTU KRITIS ESPORTS (<= 60 DETIK)
+       ======================================================== */
+    @keyframes timerCriticalPulse {
+      0% {
+        color: #ff0055;
+        text-shadow: 0 0 16px rgba(255, 0, 85, 0.9), 0 0 35px rgba(255, 0, 85, 0.6);
+        transform: scale(1);
+      }
+      50% {
+        color: #ffffff;
+        text-shadow: 0 0 25px rgba(255, 255, 255, 1), 0 0 45px rgba(255, 0, 85, 0.95);
+        transform: scale(1.04);
+      }
+      100% {
+        color: #ff0055;
+        text-shadow: 0 0 16px rgba(255, 0, 85, 0.9), 0 0 35px rgba(255, 0, 85, 0.6);
+        transform: scale(1);
+      }
+    }
+    @keyframes capsuleDangerPulse {
+      0% {
+        border-color: #ff0055;
+        box-shadow: 0 0 30px rgba(255, 0, 85, 0.65), inset 0 0 15px rgba(255, 0, 85, 0.3);
+      }
+      50% {
+        border-color: #ff3377;
+        box-shadow: 0 0 50px rgba(255, 0, 85, 0.95), inset 0 0 25px rgba(255, 0, 85, 0.5);
+      }
+      100% {
+        border-color: #ff0055;
+        box-shadow: 0 0 30px rgba(255, 0, 85, 0.65), inset 0 0 15px rgba(255, 0, 85, 0.3);
+      }
+    }
+    .stadium-timer-display.timer-danger {
+      color: #ff0055 !important;
+      animation: timerCriticalPulse 0.9s infinite ease-in-out !important;
+    }
+    .stadium-chronometer-capsule.is-danger,
+    .stadium-chronometer-capsule:has(.timer-danger) {
+      border-color: #ff0055 !important;
+      animation: capsuleDangerPulse 0.9s infinite ease-in-out !important;
+    }
+
+  </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
   <script src="three.min.js"></script>
   <script src="OBJLoader.js"></script>
 
   <script>
+    /* =========================================================
+       STATE VARIABEL GLOBAL AMAN (Mencegah TDZ ReferenceError antar script)
+       ========================================================= */
+    var db = null;
+    var timerSec = 900;
+    var timerInterval = null;
+    var isMatchSedangJalan = false;
+    var isMatchDijeda = false;
+    var isCountdownRunning = false;
+    var modeTampilanSaatIni = 'MATCH';
+    var hasReceivedInitialSync = false;
+
     /* =========================================================
        ENGINE SINKRONISASI KILAT: HIVEMQ SECURE WSS + BROADCASTCHANNEL
        Kecepatan respon < 25ms, realtime tanpa refresh ke TikTok LIVE Studio
@@ -3224,6 +3314,15 @@
               document.documentElement.classList.contains('mode-notif') ||
               document.documentElement.classList.contains('mode-timer')) {
             siarkanSync({ type: 'REQUEST_STATE' });
+            let reqAttempt = 0;
+            const reqTimer = setInterval(() => {
+              if (hasReceivedInitialSync || reqAttempt >= 6) {
+                clearInterval(reqTimer);
+                return;
+              }
+              reqAttempt++;
+              siarkanSync({ type: 'REQUEST_STATE' });
+            }, 1500);
           }
         },
         onFailure: (err) => {
@@ -3280,8 +3379,7 @@
           fetch('https://ntfy.sh/galatama_auto_skor_live_bus_v1', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Priority': 'urgent' },
-            body: JSON.stringify(data),
-            mode: 'no-cors'
+            body: JSON.stringify(data)
           }).catch(() => {});
         } catch (_) {}
       }
@@ -3300,7 +3398,7 @@
             !document.documentElement.classList.contains('mode-timer')) {
           siarkanSync({
             type: 'SYNC_FULL_STATE',
-            db: db,
+            db: (db || (function() { try { return JSON.parse(localStorage.getItem('galatama_modern_light_v1') || 'null'); } catch(_) { return null; } })()),
             timerSec: (typeof timerSec !== 'undefined') ? timerSec : 900,
             isMatchSedangJalan: !!isMatchSedangJalan,
             isMatchDijeda: !!isMatchDijeda,
@@ -3361,17 +3459,42 @@
           if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
         }
       } else if (msg.type === 'SYNC_TIMER') {
+        hasReceivedInitialSync = true;
         if (typeof msg.timerSec === 'number') {
           timerSec = msg.timerSec;
           isMatchSedangJalan = !!msg.isMatchSedangJalan;
           isMatchDijeda = !!msg.isMatchDijeda;
-          if (typeof updateTimer === 'function') updateTimer();
-          if (isMatchSedangJalan) {
+          if (typeof updateTimer === 'function') {
+            updateTimer();
+          } else {
+            const elDisp = document.getElementById('dispTimer');
+            if (elDisp) {
+              const h = String(Math.floor(timerSec / 3600)).padStart(2, '0');
+              const m = String(Math.floor((timerSec % 3600) / 60)).padStart(2, '0');
+              const s = String(timerSec % 60).padStart(2, '0');
+              elDisp.innerText = `${h}:${m}:${sec}`;
+              if (timerSec <= 60 && timerSec > 0) elDisp.classList.add('timer-danger');
+              else elDisp.classList.remove('timer-danger');
+            }
+          }
+          if (isMatchSedangJalan && !isMatchDijeda) {
             if (!timerInterval) {
               timerInterval = setInterval(() => {
                 if (timerSec > 0) {
                   timerSec--;
-                  updateTimer();
+                  if (typeof updateTimer === 'function') {
+                    updateTimer();
+                  } else {
+                    const elDisp = document.getElementById('dispTimer');
+                    if (elDisp) {
+                      const h = String(Math.floor(timerSec / 3600)).padStart(2, '0');
+                      const m = String(Math.floor((timerSec % 3600) / 60)).padStart(2, '0');
+                      const s = String(timerSec % 60).padStart(2, '0');
+                      elDisp.innerText = `${h}:${m}:${sec}`;
+                      if (timerSec <= 60 && timerSec > 0) elDisp.classList.add('timer-danger');
+                      else elDisp.classList.remove('timer-danger');
+                    }
+                  }
                 }
               }, 1000);
             }
@@ -3440,7 +3563,40 @@
     }
     window.addEventListener('resize', periksaDanAutoFitOverlay);
     window.addEventListener('DOMContentLoaded', () => {
-      if (document.documentElement.classList.contains('mode-overlay') || document.documentElement.classList.contains('mode-tabel')) {
+      // BULLETPROOF ISOLASI MODE: Hapus elemen yang dilarang dari DOM agar 100% bersih tanpa interferensi
+      if (document.documentElement.classList.contains('mode-timer')) {
+        // Mode timer HANYA menyajikan kapsul waktu countdown di latar transparan (TikTok Studio & OBS)
+        const stg = document.getElementById('podiumHeroStage');
+        if (stg) stg.remove();
+        const tbl = document.querySelector('.tables-wrapper');
+        if (tbl) tbl.remove();
+        const hdr = document.querySelector('.top-bar');
+        if (hdr) hdr.remove();
+        const banner = document.querySelector('.esports-header-banner');
+        if (banner) banner.remove();
+        const ft = document.querySelector('.footer-brand');
+        if (ft) ft.remove();
+        const hall = document.getElementById('memberHallContainer');
+        if (hall) hall.remove();
+        const alertOver = document.getElementById('bigScreenAlertOverlay');
+        if (alertOver) alertOver.remove();
+      } else if (document.documentElement.classList.contains('mode-top3')) {
+        // Mode top3 HANYA menyajikan podium 3 besar
+        const tbl = document.querySelector('.tables-wrapper');
+        if (tbl) tbl.remove();
+        const hdr = document.querySelector('.top-bar');
+        if (hdr) hdr.remove();
+        const banner = document.querySelector('.esports-header-banner');
+        if (banner) banner.remove();
+        const strip = document.querySelector('.middle-strip');
+        if (strip) strip.remove();
+        const ft = document.querySelector('.footer-brand');
+        if (ft) ft.remove();
+        const hall = document.getElementById('memberHallContainer');
+        if (hall) hall.remove();
+        const alertOver = document.getElementById('bigScreenAlertOverlay');
+        if (alertOver) alertOver.remove();
+      } else if (document.documentElement.classList.contains('mode-overlay') || document.documentElement.classList.contains('mode-tabel')) {
         document.body.classList.remove('view-setup', 'view-member');
         document.body.classList.add('view-match');
         if (typeof setModeTampilanDirect === 'function') {
@@ -4898,7 +5054,7 @@
     matrix: JSON.parse(JSON.stringify(DEFAULT_MATRIKS_TIER))
   };
 
-  let db = null;
+  db = null;
   try {
     const rawDb = localStorage.getItem(DB_KEY);
     if (rawDb) db = JSON.parse(rawDb);
@@ -5827,8 +5983,8 @@
 
   function bukaModalLinkStream() {
     tutupSemuaDropdown();
-    // Default: Tautan Lokal 5000 untuk TikTok LIVE Studio & OBS
-    gantiTabSumberStream('local');
+    // Default: Tautan Cloud Web untuk TikTok LIVE Studio karena TikTok Studio memblokir IP lokal 127.0.0.1
+    gantiTabSumberStream('cloud');
     const modal = document.getElementById('modalLinkStream');
     if (modal) modal.style.display = 'flex';
   }
@@ -6337,8 +6493,8 @@
     tutupModalKonfirmasiResetTabel();
   }
 
-  let timerSec = (db.durasiMenitDefault || 15) * 60;
-  let timerInterval = null;
+  timerSec = (db && db.durasiMenitDefault ? db.durasiMenitDefault : 15) * 60;
+  timerInterval = null;
 
   function formatTime(s) {
     const h = String(Math.floor(s / 3600)).padStart(2, '0');
@@ -6350,9 +6506,16 @@
   function updateTampilanTimerDisplay() { updateTimer(); }
   function updateTimer() {
     const el = document.getElementById('dispTimer');
+    if (!el) return;
     el.innerText = formatTime(timerSec);
-    if (timerSec <= 60 && timerSec > 0) el.classList.add('timer-danger');
-    else el.classList.remove('timer-danger');
+    const capsule = el.closest('.stadium-chronometer-capsule');
+    if (timerSec <= 60 && timerSec > 0) {
+      el.classList.add('timer-danger');
+      if (capsule) capsule.classList.add('is-danger');
+    } else {
+      el.classList.remove('timer-danger');
+      if (capsule) capsule.classList.remove('is-danger');
+    }
   }
 
   function bukaModalEditTimer() {
@@ -6459,9 +6622,8 @@
           timerSec--;
           updateTimer();
 
-          if (timerSec % 5 === 0) {
-            siarkanSync({ type: 'SYNC_TIMER', timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
-          }
+          // Siarkan per detik agar link TikTok Studio lancar detik demi detik
+          siarkanSync({ type: 'SYNC_TIMER', timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
 
           if (timerSec === 600) {
             putarSuaraPengingatWaktu('10m');
@@ -7935,6 +8097,11 @@
   function renderHeroPodium() {
     const stage = document.getElementById('podiumHeroStage');
     if (!stage) return;
+    // Mode timer dan mode tabel TIDAK BOLEH menampilkan podium hero stage
+    if (document.documentElement.classList.contains('mode-timer') || document.documentElement.classList.contains('mode-tabel')) {
+      stage.style.display = 'none';
+      return;
+    }
     const s = getSesi();
     if (!s || !s.players) return;
 
@@ -8709,9 +8876,8 @@
     const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
     
     // Hubungkan ke Cloud Bus Vercel hanya jika online di cloud
-    if (!isLokal) {
-      inisialisasiCloudSSE();
-    } else {
+    // Selalu hubungkan ke Cloud Bus (ntfy.sh) agar Master Laptop dan Link Web TikTok Studio tersinkron dua arah
+    inisialisasiCloudSSE();
       updateSyncBadge(true);
       setStatusSystem(true);
     }
