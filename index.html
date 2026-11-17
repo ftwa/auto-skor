@@ -3507,7 +3507,7 @@
         syncChannel = new BroadcastChannel(SYNC_BUS_NAME);
         syncChannel.onmessage = (e) => {
           if (e && e.data && e.data._sender !== LOCAL_SENDER_ID) {
-            tanganiPesanSync(e.data);
+            tanganiPesanSyncDebounced(e.data);
           }
         };
       }
@@ -3522,7 +3522,7 @@
           const payload = JSON.parse(e.newValue);
           if (payload && payload._sender !== LOCAL_SENDER_ID) {
             if (payload._ts && (Date.now() - payload._ts > 120000)) return;
-            tanganiPesanSync(payload);
+            tanganiPesanSyncDebounced(payload);
           }
         } catch (_) {}
       }
@@ -3556,7 +3556,7 @@
             const payload = JSON.parse(msg.payloadString);
             if (payload && payload._sender !== LOCAL_SENDER_ID) {
               if (payload._ts && (Date.now() - payload._ts > 120000)) return;
-              tanganiPesanSync(payload);
+              tanganiPesanSyncDebounced(payload);
             }
           } catch (_) {}
         };
@@ -3675,8 +3675,24 @@
       }
     }
 
+    let _lastSyncMsgTs = {};
+    const SYNC_DEDUP_MS = 100; // Tolak pesan duplikat dalam 100ms
+
     function tanganiPesanSync(msg) {
       if (!msg || !msg.type) return;
+
+      // STABILITY: Dedup pesan yang sama dalam waktu singkat (mencegah echo storm)
+      const dedupKey = msg.type + (msg.ses || '') + (msg.chair || '');
+      const now = Date.now();
+      if (_lastSyncMsgTs[dedupKey] && (now - _lastSyncMsgTs[dedupKey] < SYNC_DEDUP_MS)) {
+        return; // Tolak duplikat
+      }
+      _lastSyncMsgTs[dedupKey] = now;
+      // Bersihkan cache dedup setiap 50 entry
+      const keys = Object.keys(_lastSyncMsgTs);
+      if (keys.length > 50) {
+        keys.slice(0, keys.length - 20).forEach(k => delete _lastSyncMsgTs[k]);
+      }
 
       if (msg.type === 'REQUEST_STATE') {
         // Hanya mode master/admin yang merespon dan membagikan state penuh
@@ -3738,15 +3754,13 @@
         if (msg.db) {
           db = msg.db;
           try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
-          if (typeof renderIsiTabel === 'function') renderIsiTabel();
-          if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
+          if (typeof renderIsiTabelDebounced === 'function') renderIsiTabelDebounced();
         }
       } else if (msg.type === 'SYNC_SCORE') {
         if (db && db.sessions && db.sessions[msg.ses] && db.sessions[msg.ses].players && db.sessions[msg.ses].players[msg.chair]) {
           db.sessions[msg.ses].players[msg.chair].poin = msg.poin;
           try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
-          if (typeof renderIsiTabel === 'function') renderIsiTabel();
-          if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
+          if (typeof renderIsiTabelDebounced === 'function') renderIsiTabelDebounced();
         }
       } else if (msg.type === 'SYNC_TIMER') {
         hasReceivedInitialSync = true;
@@ -5497,6 +5511,41 @@
   let isNotifShowing = false;
   let testBannerTimer = null;
   let sseEventSource = null;
+
+  /* ===== STABILITY: Debounce & Throttle Engine ===== */
+  let _renderDebounceTimer = null;
+  let _lastRenderTime = 0;
+  const RENDER_THROTTLE_MS = 80; // Max render rate: ~12 fps (lebih dari cukup untuk tabel)
+
+  // Debounced render: mencegah renderIsiTabel dipanggil berulang kali dalam waktu singkat
+  function renderIsiTabelDebounced() {
+    const now = Date.now();
+    if (now - _lastRenderTime < RENDER_THROTTLE_MS) {
+      if (_renderDebounceTimer) clearTimeout(_renderDebounceTimer);
+      _renderDebounceTimer = setTimeout(() => {
+        _lastRenderTime = Date.now();
+        if (typeof renderIsiTabel === 'function') renderIsiTabel();
+      }, RENDER_THROTTLE_MS);
+      return;
+    }
+    _lastRenderTime = now;
+    if (typeof renderIsiTabel === 'function') renderIsiTabel();
+  }
+
+  let _syncDebounceTimer = null;
+  const SYNC_THROTTLE_MS = 150;
+  // Debounced sync message handler: mencegah flood dari BroadcastChannel / MQTT
+  function tanganiPesanSyncDebounced(msg) {
+    // Pesan kritis (timer, score, notif) langsung proses, sisanya debounce
+    if (msg && (msg.type === 'SYNC_TIMER' || msg.type === 'SYNC_SCORE' || msg.type === 'SYNC_NOTIF' || msg.type === 'CLOSE_WINNER' || msg.type === 'SYNC_PRESENCE')) {
+      if (typeof tanganiPesanSync === 'function') tanganiPesanSync(msg);
+      return;
+    }
+    if (_syncDebounceTimer) clearTimeout(_syncDebounceTimer);
+    _syncDebounceTimer = setTimeout(() => {
+      if (typeof tanganiPesanSync === 'function') tanganiPesanSync(msg);
+    }, SYNC_THROTTLE_MS);
+  }
 
   /* AUDIO ENGINE AMAN */
   let audioCtx = null;
@@ -7716,7 +7765,10 @@
     canvas.height = window.innerHeight;
 
     let particles = [];
+    const MAX_PARTICLES = 500; // STABILITY: Cap partikel agar tidak habiskan memori
     function createFirework(x, y) {
+      // Jika sudah terlalu banyak partikel, skip spawn baru
+      if (particles.length >= MAX_PARTICLES) return;
       const colors = ['#facc15', '#38bdf8', '#fb923c', '#4ade80', '#f43f5e', '#ffffff'];
       for (let i = 0; i < 35; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -8944,6 +8996,11 @@
   }
 
   function enqueueNotif(displayName, rincianKategori, delta, poinAkhir, tierKey = 'legend', avatarUrl = '', namaIkan = '') {
+    // STABILITY: Cap antrean notifikasi agar tidak menumpuk tanpa batas
+    // Jika sudah > 50, buang notifikasi lama yang belum sempat ditampilkan
+    if (notifQueue.length >= 50) {
+      notifQueue.splice(0, notifQueue.length - 20); // simpan 20 terbaru saja
+    }
     notifQueue.push({
       displayName,
       rincianKategori,
@@ -8982,18 +9039,20 @@
     const item = notifQueue.shift();
     updateIndikatorAntrean();
 
-    // Durasi Notifikasi Adaptif (Anti-Delay Murni):
-    // Jika antrean kosong/1: tampil 2.0s
-    // Jika ada 2: tampil 1.2s
-    // Jika lebih dari 3: persingkat jadi 0.8s agar tidak menumpuk
+    // Durasi Notifikasi Adaptif (Anti-Delay & Anti-Menumpuk):
+    // Semakin banyak antrean, semakin cepat notifikasi berganti
     let displayDuration = 2000;
     const qCount = notifQueue.length;
-    if (qCount >= 4) {
-      displayDuration = 800;
+    if (qCount >= 10) {
+      displayDuration = 400; // Super cepat: habiskan tumpukan
+    } else if (qCount >= 6) {
+      displayDuration = 550;
+    } else if (qCount >= 4) {
+      displayDuration = 700;
     } else if (qCount >= 2) {
-      displayDuration = 1200;
+      displayDuration = 1000;
     } else if (qCount === 1) {
-      displayDuration = 1600;
+      displayDuration = 1400;
     }
 
     putarSuaraNotif(item.tierKey);
@@ -9316,7 +9375,7 @@
           // Teruskan juga ke handler state sync (Timer, Mode, Score, Winner, DB)
           if (typeof tanganiPesanSync === 'function') {
             item._fromCloud = true;
-            tanganiPesanSync(item);
+            tanganiPesanSyncDebounced(item);
           }
 
           // Deduplikasi tangkapan
