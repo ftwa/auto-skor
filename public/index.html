@@ -4729,7 +4729,7 @@
         🖼️ Gambar Ikan
       </button>
       <button type="button" id="tabBtnSettingsVideo" class="settings-tab-btn" onclick="switchSettingsTab('video')">
-        🎙️ TTS & Musik
+        🎵 Musik Latar
       </button>
     </div>
 
@@ -4915,36 +4915,8 @@
       </div>
     </div> <!-- END TAB CONTENT IKAN -->
 
-    <!-- TAB CONTENT 3: TTS & MUSIK LATAR -->
+    <!-- TAB CONTENT 3: MUSIK LATAR -->
     <div id="settingsTabContentVideo" style="display: none; margin-bottom: 18px;">
-
-      <!-- === TTS SECTION === -->
-      <div style="margin-bottom: 16px;">
-        <span style="font-size: 11.5px; font-weight: 900; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">🎙️ Text-to-Speech (TTS)</span>
-
-        <div class="audio-cyber-card" style="border-left: 3.5px solid #6366f1; margin-top: 8px;">
-          <div class="audio-cyber-top" style="margin-bottom: 8px;">
-            <span style="font-size: 12px; font-weight: 900; color: #4f46e5;">Aktifkan TTS Notifikasi</span>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-              <input type="checkbox" id="toggleTtsEnabled" style="width:18px;height:18px;accent-color:#4f46e5;cursor:pointer;">
-              <span id="labelTtsStatus" style="font-size:10px;font-weight:800;color:#64748b;">OFF</span>
-            </label>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;font-weight:800;color:#475569;min-width:60px;">Volume:</span>
-              <input type="range" id="sliderTtsVolume" min="0" max="100" value="80" style="flex:1;accent-color:#4f46e5;">
-              <span id="labelTtsVolume" style="font-size:10px;font-weight:800;color:#4f46e5;min-width:30px;">80%</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;font-weight:800;color:#475569;min-width:60px;">Kecepatan:</span>
-              <input type="range" id="sliderTtsRate" min="50" max="200" value="100" step="10" style="flex:1;accent-color:#4f46e5;">
-              <span id="labelTtsRate" style="font-size:10px;font-weight:800;color:#4f46e5;min-width:30px;">1.0x</span>
-            </div>
-            <button type="button" class="btn-action-soft" style="padding:5px 12px;font-size:11px;font-weight:800;align-self:flex-start;" onclick="tesTtsSuara()">🔊 Tes TTS</button>
-          </div>
-        </div>
-      </div>
 
       <!-- === BGM SECTION === -->
       <div>
@@ -5027,13 +4999,13 @@
 
         <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:8px 12px;margin-top:8px;">
           <div style="font-size:10.5px;color:#475569;line-height:1.4;">
-            💡 <strong>Auto-Ducking:</strong> Volume BGM otomatis turun saat TTS berbicara, lalu kembali normal setelahnya.
+            💡 <strong>Auto-Ducking:</strong> Volume BGM otomatis turun saat notifikasi berbunyi.
             <br>🔄 <strong>Auto-Switch:</strong> BGM otomatis berganti sesuai sisa waktu pertandingan.
           </div>
         </div>
       </div>
 
-    </div> <!-- END TAB CONTENT TTS & MUSIK -->
+    </div> <!-- END TAB CONTENT MUSIK LATAR -->
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
       <button type="button" class="btn-action-soft" style="padding: 10px; border-radius: 12px; font-weight: 800; font-size: 12.5px;" onclick="batalPengaturanNotifSuara()">Batal</button>
@@ -6597,8 +6569,8 @@
     if (elAutoReg) isBetaAutoRegisterAktif = elAutoReg.checked;
     try { localStorage.setItem(BETA_AUTO_REG_KEY, JSON.stringify(isBetaAutoRegisterAktif)); } catch(_) {}
 
-    // Simpan pengaturan TTS & BGM
-    if (typeof simpanTtsBgmSettings === 'function') simpanTtsBgmSettings();
+    // Simpan pengaturan BGM
+    if (typeof simpanBgmSettings === 'function') simpanBgmSettings();
 
     terapkanBackgroundNotif();
     renderIsiTabel(); 
@@ -9210,11 +9182,6 @@
     // Tampilkan Dynamic Island Pill di atas dengan durasi tersinkronisasi
     tampilkanDynamicPill(item.displayName, item.rincianKategori, item.delta, item.tierKey, item.avatarUrl || '', item.namaIkan, true, displayDuration);
 
-    // TTS: Ucapkan notifikasi (fire-and-forget)
-    if (typeof ttsSpeakNotif === 'function') {
-      ttsSpeakNotif(item.displayName, item.namaIkan, item.delta, item.tierKey);
-    }
-
     setTimeout(() => {
       prosesAntreanNotif();
     }, displayDuration);
@@ -10370,7 +10337,7 @@
       if (btnVideo) btnVideo.classList.add('active');
       if (contentVideo) contentVideo.style.display = 'block';
       if (modalBox) modalBox.style.width = '540px';
-      if (typeof isiUiTtsBgm === 'function') isiUiTtsBgm();
+      if (typeof isiUiBgm === 'function') isiUiBgm();
     } else {
       if (btnAudio) btnAudio.classList.add('active');
       if (contentAudio) contentAudio.style.display = 'block';
@@ -10613,25 +10580,8 @@
   
 
   // ===================================================================
-  // =================== TTS & BGM ENGINE (START) ======================
+  // ===================== BGM ENGINE (START) =========================
   // ===================================================================
-
-  // --- TTS Global State ---
-  let ttsEnabled = false;
-  let ttsVolume = 0.8;
-  let ttsRate = 1.0;
-  try {
-    const _te = localStorage.getItem('tts_enabled');
-    if (_te !== null) ttsEnabled = (_te === 'true');
-  } catch(_) {}
-  try {
-    const _tv = localStorage.getItem('tts_volume');
-    if (_tv !== null) ttsVolume = Math.max(0, Math.min(1, parseFloat(_tv)));
-  } catch(_) {}
-  try {
-    const _tr = localStorage.getItem('tts_rate');
-    if (_tr !== null) ttsRate = Math.max(0.5, Math.min(2, parseFloat(_tr)));
-  } catch(_) {}
 
   // --- BGM Global State ---
   let bgmEnabled = false;
@@ -10653,69 +10603,8 @@
     if (_bv !== null) bgmMasterVolume = Math.max(0, Math.min(1, parseFloat(_bv)));
   } catch(_) {}
 
-  // --- TTS Templates ---
-  const TTS_TEMPLATES = {
-    khusus:   '{nama} menangkap {ikan}! Plus {poin} poin!',
-    secret:   'SECRET CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
-    mitos:    'MYTHIC CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
-    mythic:   'MYTHIC CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
-    forgotten:'EPIC FORGOTTEN CATCH! {nama} mendapat {ikan}! Plus {poin} poin!',
-    legend:   '{nama} menangkap {ikan}! Plus {poin} poin!'
-  };
-
-  // --- TTS: Speak function ---
-  function ttsSpeak(text) {
-    if (!ttsEnabled) return;
-    if (!window.speechSynthesis) return;
-    try {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'id-ID';
-      utter.volume = ttsVolume;
-      utter.rate = ttsRate;
-
-      utter.onstart = function() {
-        bgmDuck(true);
-      };
-      utter.onend = function() {
-        bgmDuck(false);
-      };
-      utter.onerror = function() {
-        bgmDuck(false);
-      };
-
-      window.speechSynthesis.speak(utter);
-    } catch(_) {}
-  }
-
-  function ttsSpeakNotif(nama, ikan, poin, tierKey) {
-    if (!ttsEnabled) return;
-    const tpl = TTS_TEMPLATES[tierKey] || TTS_TEMPLATES.legend;
-    const text = tpl
-      .replace('{nama}', nama || 'Pemain')
-      .replace('{ikan}', ikan || 'Ikan')
-      .replace('{poin}', poin || '0');
-    ttsSpeak(text);
-  }
-
-  function tesTtsSuara() {
-    const wasEnabled = ttsEnabled;
-    ttsEnabled = true;
-    muatTtsBgmDariUi();
-    ttsSpeak('Tes suara Text to Speech. Selamat bermain!');
-    ttsEnabled = wasEnabled;
-  }
-
-  // --- TTS & BGM: Load settings from UI ---
-  function muatTtsBgmDariUi() {
-    const elTtsOn = document.getElementById('toggleTtsEnabled');
-    if (elTtsOn) ttsEnabled = elTtsOn.checked;
-
-    const elTtsVol = document.getElementById('sliderTtsVolume');
-    if (elTtsVol) ttsVolume = parseInt(elTtsVol.value, 10) / 100;
-
-    const elTtsRate = document.getElementById('sliderTtsRate');
-    if (elTtsRate) ttsRate = parseInt(elTtsRate.value, 10) / 100;
-
+  // --- BGM: Load settings from UI ---
+  function muatBgmDariUi() {
     const elBgmOn = document.getElementById('toggleBgmEnabled');
     if (elBgmOn) bgmEnabled = elBgmOn.checked;
 
@@ -10723,23 +10612,8 @@
     if (elBgmVol) bgmMasterVolume = parseInt(elBgmVol.value, 10) / 100;
   }
 
-  // --- TTS & BGM: Populate UI from state ---
-  function isiUiTtsBgm() {
-    const elTtsOn = document.getElementById('toggleTtsEnabled');
-    if (elTtsOn) elTtsOn.checked = ttsEnabled;
-    const elTtsLabel = document.getElementById('labelTtsStatus');
-    if (elTtsLabel) elTtsLabel.textContent = ttsEnabled ? 'ON' : 'OFF';
-
-    const elTtsVol = document.getElementById('sliderTtsVolume');
-    if (elTtsVol) elTtsVol.value = Math.round(ttsVolume * 100);
-    const elTtsVolLabel = document.getElementById('labelTtsVolume');
-    if (elTtsVolLabel) elTtsVolLabel.textContent = Math.round(ttsVolume * 100) + '%';
-
-    const elTtsRate = document.getElementById('sliderTtsRate');
-    if (elTtsRate) elTtsRate.value = Math.round(ttsRate * 100);
-    const elTtsRateLabel = document.getElementById('labelTtsRate');
-    if (elTtsRateLabel) elTtsRateLabel.textContent = ttsRate.toFixed(1) + 'x';
-
+  // --- BGM: Populate UI from state ---
+  function isiUiBgm() {
     const elBgmOn = document.getElementById('toggleBgmEnabled');
     if (elBgmOn) elBgmOn.checked = bgmEnabled;
     const elBgmLabel = document.getElementById('labelBgmStatus');
@@ -10770,44 +10644,20 @@
     });
   }
 
-  // --- TTS & BGM: Save to localStorage ---
-  function simpanTtsBgmSettings() {
-    muatTtsBgmDariUi();
-    try { localStorage.setItem('tts_enabled', String(ttsEnabled)); } catch(_) {}
-    try { localStorage.setItem('tts_volume', String(ttsVolume)); } catch(_) {}
-    try { localStorage.setItem('tts_rate', String(ttsRate)); } catch(_) {}
+  // --- BGM: Save to localStorage ---
+  function simpanBgmSettings() {
+    muatBgmDariUi();
     try { localStorage.setItem('bgm_enabled', String(bgmEnabled)); } catch(_) {}
     try { localStorage.setItem('bgm_volume', String(bgmMasterVolume)); } catch(_) {}
   }
 
-  // --- TTS & BGM: Bind UI sliders live update ---
-  function bindTtsBgmSliders() {
-    const elTtsVol = document.getElementById('sliderTtsVolume');
-    if (elTtsVol) {
-      elTtsVol.addEventListener('input', function() {
-        const lbl = document.getElementById('labelTtsVolume');
-        if (lbl) lbl.textContent = elTtsVol.value + '%';
-      });
-    }
-    const elTtsRate = document.getElementById('sliderTtsRate');
-    if (elTtsRate) {
-      elTtsRate.addEventListener('input', function() {
-        const lbl = document.getElementById('labelTtsRate');
-        if (lbl) lbl.textContent = (parseInt(elTtsRate.value, 10) / 100).toFixed(1) + 'x';
-      });
-    }
+  // --- BGM: Bind UI sliders live update ---
+  function bindBgmSliders() {
     const elBgmVol = document.getElementById('sliderBgmVolume');
     if (elBgmVol) {
       elBgmVol.addEventListener('input', function() {
         const lbl = document.getElementById('labelBgmVolume');
         if (lbl) lbl.textContent = elBgmVol.value + '%';
-      });
-    }
-    const elTtsOn = document.getElementById('toggleTtsEnabled');
-    if (elTtsOn) {
-      elTtsOn.addEventListener('change', function() {
-        const lbl = document.getElementById('labelTtsStatus');
-        if (lbl) lbl.textContent = elTtsOn.checked ? 'ON' : 'OFF';
       });
     }
     const elBgmOn = document.getElementById('toggleBgmEnabled');
@@ -11102,23 +10952,23 @@
     if (zone) bgmPlay(zone);
   }
 
-  // --- Init TTS & BGM UI on page load ---
-  (function initTtsBgmOnLoad() {
+  // --- Init BGM UI on page load ---
+  (function initBgmOnLoad() {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', function() {
-        isiUiTtsBgm();
-        bindTtsBgmSliders();
+        isiUiBgm();
+        bindBgmSliders();
       });
     } else {
       setTimeout(function() {
-        isiUiTtsBgm();
-        bindTtsBgmSliders();
+        isiUiBgm();
+        bindBgmSliders();
       }, 100);
     }
   })();
 
   // ===================================================================
-  // ==================== TTS & BGM ENGINE (END) =======================
+  // ====================== BGM ENGINE (END) ==========================
   // ===================================================================
 
 
