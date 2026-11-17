@@ -3335,12 +3335,8 @@
   
     /* ========================================================
      CSS TIER FORGOTTEN NOTIFIKASI & HUD
+     (Legacy styles removed — comic tier vars already defined at L405)
      ======================================================== */
-  .esports-toast-hud.tier-forgotten {
-    border: 2px solid #ec4899 !important;
-    background: linear-gradient(135deg, rgba(88, 28, 135, 0.95), rgba(15, 23, 42, 0.98)) !important;
-    box-shadow: 0 0 40px rgba(236, 72, 153, 0.6), 0 0 80px rgba(168, 85, 247, 0.4) !important;
-  }
   .tier-forgotten .hud-tier-badge, .badge-forgotten {
     background: linear-gradient(90deg, #ec4899, #8b5cf6) !important;
     color: #fff !important;
@@ -3711,8 +3707,8 @@
           if (typeof renderIsiTabel === 'function') renderIsiTabel();
           if (typeof perbaruiPodiumTop3Hero === 'function') perbaruiPodiumTop3Hero();
         }
-        if (typeof msg.timerSec === 'number') {
-          timerSec = msg.timerSec;
+        if (typeof msg.timerSec === 'number' && Number.isFinite(msg.timerSec) && msg.timerSec >= 0) {
+          timerSec = Math.floor(msg.timerSec);
           isMatchSedangJalan = !!msg.isMatchSedangJalan;
           isMatchDijeda = !!msg.isMatchDijeda;
           if (typeof updateTimer === 'function') updateTimer();
@@ -3754,8 +3750,8 @@
         }
       } else if (msg.type === 'SYNC_TIMER') {
         hasReceivedInitialSync = true;
-        if (typeof msg.timerSec === 'number') {
-          timerSec = msg.timerSec;
+        if (typeof msg.timerSec === 'number' && Number.isFinite(msg.timerSec) && msg.timerSec >= 0) {
+          timerSec = Math.floor(msg.timerSec);
           isMatchSedangJalan = !!msg.isMatchSedangJalan;
           isMatchDijeda = !!msg.isMatchDijeda;
           if (typeof updateTimer === 'function') {
@@ -3766,7 +3762,7 @@
               const h = String(Math.floor(timerSec / 3600)).padStart(2, '0');
               const m = String(Math.floor((timerSec % 3600) / 60)).padStart(2, '0');
               const s = String(timerSec % 60).padStart(2, '0');
-              elDisp.innerText = `${h}:${m}:${sec}`;
+              elDisp.innerText = `${h}:${m}:${s}`;
               if (timerSec <= 60 && timerSec > 0) elDisp.classList.add('timer-danger');
               else elDisp.classList.remove('timer-danger');
             }
@@ -3784,7 +3780,7 @@
                       const h = String(Math.floor(timerSec / 3600)).padStart(2, '0');
                       const m = String(Math.floor((timerSec % 3600) / 60)).padStart(2, '0');
                       const s = String(timerSec % 60).padStart(2, '0');
-                      elDisp.innerText = `${h}:${m}:${sec}`;
+                      elDisp.innerText = `${h}:${m}:${s}`;
                       if (timerSec <= 60 && timerSec > 0) elDisp.classList.add('timer-danger');
                       else elDisp.classList.remove('timer-danger');
                     }
@@ -5267,7 +5263,7 @@
   }
 
   function simpanUkuranKolomTabel() {
-    localStorage.setItem(COL_SIZE_KEY, JSON.stringify(colSizes));
+    try { localStorage.setItem(COL_SIZE_KEY, JSON.stringify(colSizes)); } catch(_) {}
   }
 
   function resetUkuranTabelDefault() {
@@ -5667,7 +5663,7 @@
       else if (p3 && p.id === p3.id && p.poin > 0) rec.win3 = (rec.win3 || 0) + 1;
     });
 
-    localStorage.setItem(MEMBER_HALL_KEY, JSON.stringify(memberHallDB));
+    try { localStorage.setItem(MEMBER_HALL_KEY, JSON.stringify(memberHallDB)); } catch(_) {}
     if (document.body.classList.contains('view-member')) {
       renderTabelMemberHall();
     }
@@ -5735,14 +5731,18 @@
   function bukaModalEditMember(key) {
     const m = memberHallDB[key];
     if (!m) return;
-    document.getElementById('editMemberKeyInput').value = key;
-    document.getElementById('judulEditMemberStat').innerText = `Koreksi: ${m.nick || m.user || m.robloxUser}`;
-    document.getElementById('editMemPlays').value = m.plays ?? 1;
-    document.getElementById('editMemWin1').value = m.win1 ?? 0;
-    document.getElementById('editMemWin2').value = m.win2 ?? 0;
-    document.getElementById('editMemWin3').value = m.win3 ?? 0;
-    document.getElementById('editMemSecret').value = m.totalSecret ?? 0;
-    document.getElementById('modalEditMemberStat').style.display = 'flex';
+    const elKey = document.getElementById('editMemberKeyInput');
+    const elModal = document.getElementById('modalEditMemberStat');
+    if (!elKey || !elModal) return;
+    elKey.value = key;
+    const elJudul = document.getElementById('judulEditMemberStat');
+    if (elJudul) elJudul.innerText = `Koreksi: ${m.nick || m.user || m.robloxUser}`;
+    const elP = document.getElementById('editMemPlays'); if (elP) elP.value = m.plays ?? 1;
+    const elW1 = document.getElementById('editMemWin1'); if (elW1) elW1.value = m.win1 ?? 0;
+    const elW2 = document.getElementById('editMemWin2'); if (elW2) elW2.value = m.win2 ?? 0;
+    const elW3 = document.getElementById('editMemWin3'); if (elW3) elW3.value = m.win3 ?? 0;
+    const elS = document.getElementById('editMemSecret'); if (elS) elS.value = m.totalSecret ?? 0;
+    elModal.style.display = 'flex';
   }
 
   function tutupModalEditMember() {
@@ -5751,30 +5751,35 @@
   }
 
   function simpanKoreksiMember() {
-    const key = document.getElementById('editMemberKeyInput').value;
+    const elKey = document.getElementById('editMemberKeyInput');
+    if (!elKey) return;
+    const key = elKey.value;
     const m = memberHallDB[key];
     if (!m) return;
 
-    m.plays = Math.max(0, parseInt(document.getElementById('editMemPlays').value) || 0);
-    m.win1 = Math.max(0, parseInt(document.getElementById('editMemWin1').value) || 0);
-    m.win2 = Math.max(0, parseInt(document.getElementById('editMemWin2').value) || 0);
-    m.win3 = Math.max(0, parseInt(document.getElementById('editMemWin3').value) || 0);
-    m.totalSecret = Math.max(0, parseInt(document.getElementById('editMemSecret').value) || 0);
+    const gv = (id) => { const e = document.getElementById(id); return e ? (parseInt(e.value, 10) || 0) : 0; };
+    m.plays = Math.max(0, gv('editMemPlays'));
+    m.win1 = Math.max(0, gv('editMemWin1'));
+    m.win2 = Math.max(0, gv('editMemWin2'));
+    m.win3 = Math.max(0, gv('editMemWin3'));
+    m.totalSecret = Math.max(0, gv('editMemSecret'));
 
-    localStorage.setItem(MEMBER_HALL_KEY, JSON.stringify(memberHallDB));
+    try { localStorage.setItem(MEMBER_HALL_KEY, JSON.stringify(memberHallDB)); } catch(_) {}
     renderTabelMemberHall();
     tutupModalEditMember();
     tambahLogAktivitas('MEMBER', `Statistik ${m.nick || m.user} berhasil dikoreksi (${m.plays}x Main)`, 'system');
   }
 
   function hapusSatuMemberDariModal() {
-    const key = document.getElementById('editMemberKeyInput').value;
+    const elKey = document.getElementById('editMemberKeyInput');
+    if (!elKey) return;
+    const key = elKey.value;
     const m = memberHallDB[key];
     if (!m) return;
     if (!confirm(`Hapus data riwayat milik "${m.nick || m.user || m.robloxUser}"?`)) return;
 
     delete memberHallDB[key];
-    localStorage.setItem(MEMBER_HALL_KEY, JSON.stringify(memberHallDB));
+    try { localStorage.setItem(MEMBER_HALL_KEY, JSON.stringify(memberHallDB)); } catch(_) {}
     renderTabelMemberHall();
     tutupModalEditMember();
     tambahLogAktivitas('MEMBER', `Data member ${m.nick || m.user} dihapus`, 'system');
@@ -5822,10 +5827,11 @@
     if (box) box.style.display = 'none';
     if (!m) return;
 
-    document.getElementById('inputUserRoblox').value = m.robloxUser || '';
-    document.getElementById('inputNamaTikTok').value = m.user || '';
-    document.getElementById('inputDisplayName').value = m.nick || '';
-    document.getElementById('inputAvatarUrl').value = m.avatar || '';
+    const setVal = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+    setVal('inputUserRoblox', m.robloxUser || '');
+    setVal('inputNamaTikTok', m.user || '');
+    setVal('inputDisplayName', m.nick || '');
+    setVal('inputAvatarUrl', m.avatar || '');
     updateModalPreviewUI(m.robloxUser || '', m.nick || '', m.avatar || '');
   }
 
@@ -5898,7 +5904,7 @@
     if (!list) return;
 
     isLogFolded = !isLogFolded;
-    localStorage.setItem(LOG_FOLD_KEY, JSON.stringify(isLogFolded));
+    try { localStorage.setItem(LOG_FOLD_KEY, JSON.stringify(isLogFolded)); } catch(_) {}
 
     if (isLogFolded) {
       list.style.display = 'none';
@@ -6394,7 +6400,8 @@
 
   function resetBackgroundNotifPreview() {
     tempPreviewBgData = null;
-    document.getElementById('modalNotifBgInput').value = '';
+    const inp = document.getElementById('modalNotifBgInput');
+    if (inp) inp.value = '';
     updateLivePreview();
   }
 
@@ -6411,18 +6418,21 @@
       localStorage.removeItem(NOTIF_BG_KEY);
     }
 
-    isBetaAutoRegisterAktif = document.getElementById('toggleBetaAutoRegister').checked;
-    localStorage.setItem(BETA_AUTO_REG_KEY, JSON.stringify(isBetaAutoRegisterAktif));
+    const elAutoReg = document.getElementById('toggleBetaAutoRegister');
+    if (elAutoReg) isBetaAutoRegisterAktif = elAutoReg.checked;
+    try { localStorage.setItem(BETA_AUTO_REG_KEY, JSON.stringify(isBetaAutoRegisterAktif)); } catch(_) {}
 
     terapkanBackgroundNotif();
     renderIsiTabel(); 
     syncKePython();
-    document.getElementById('modalNotifSuara').style.display = 'none';
+    const elModalNotif = document.getElementById('modalNotifSuara');
+    if (elModalNotif) elModalNotif.style.display = 'none';
     tambahLogAktivitas('SETTINGS', `Pengaturan disimpan (Auto-Register: ${isBetaAutoRegisterAktif ? 'ON' : 'OFF'})`, 'system');
   }
 
   function batalPengaturanNotifSuara() {
-    document.getElementById('modalNotifSuara').style.display = 'none';
+    const el = document.getElementById('modalNotifSuara');
+    if (el) el.style.display = 'none';
   }
   function tutupModalNotifSuara() {
     batalPengaturanNotifSuara();
@@ -6694,7 +6704,7 @@
   }
 
   function simpanDB() {
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
     syncKePython();
     siarkanSync({ type: "SYNC_DB", db: db });
   }
@@ -6726,6 +6736,7 @@
   function toggleDropdownReset(e) {
     e.stopPropagation();
     const el = document.getElementById('dropdownReset');
+    if (!el) return;
     const wasOpen = el.classList.contains('show');
     tutupSemuaDropdown();
     if (!wasOpen) el.classList.add('show');
@@ -6734,6 +6745,7 @@
   function toggleDropdownSesi(e) {
     e.stopPropagation();
     const el = document.getElementById('dropdownSesi');
+    if (!el) return;
     const wasOpen = el.classList.contains('show');
     tutupSemuaDropdown();
     if (!wasOpen) {
@@ -6861,6 +6873,7 @@
     tipeResetPending = tipe;
     const title = document.getElementById('resetTabelModalTitle');
     const desc = document.getElementById('resetTabelModalDesc');
+    if (!title || !desc) return;
 
     if (tipe === 'POINT') {
       title.innerText = "Reset Semua Point?";
@@ -6869,11 +6882,13 @@
       title.innerText = "Kosongkan Seluruh Tabel?";
       desc.innerText = `Seluruh data pada Sesi ${db.current} (semua nama pemain, status Ready/BIN/Absen, dan skor) akan DIHAPUS TOTAL.`;
     }
-    document.getElementById('modalConfirmResetTabel').style.display = 'flex';
+    const modalReset = document.getElementById('modalConfirmResetTabel');
+    if (modalReset) modalReset.style.display = 'flex';
   }
 
   function tutupModalKonfirmasiResetTabel() {
-    document.getElementById('modalConfirmResetTabel').style.display = 'none';
+    const modalReset = document.getElementById('modalConfirmResetTabel');
+    if (modalReset) modalReset.style.display = 'none';
     tipeResetPending = null;
   }
 
@@ -6934,22 +6949,31 @@
     const m = Math.floor((timerSec % 3600) / 60);
     const s = timerSec % 60;
 
-    document.getElementById('inputJamTimer').value = h;
-    document.getElementById('inputMenitTimer').value = m;
-    document.getElementById('inputDetikTimer').value = s;
-
-    document.getElementById('modalEditTimer').style.display = 'flex';
-    setTimeout(() => { document.getElementById('inputMenitTimer').select(); }, 100);
+    const eH = document.getElementById('inputJamTimer');
+    const eM = document.getElementById('inputMenitTimer');
+    const eS = document.getElementById('inputDetikTimer');
+    const eModal = document.getElementById('modalEditTimer');
+    if (!eH || !eM || !eS || !eModal) return;
+    eH.value = h;
+    eM.value = m;
+    eS.value = s;
+    eModal.style.display = 'flex';
+    setTimeout(() => { eM.select(); }, 100);
   }
 
   function tutupModalEditTimer() {
-    document.getElementById('modalEditTimer').style.display = 'none';
+    const el = document.getElementById('modalEditTimer');
+    if (el) el.style.display = 'none';
   }
 
   function simpanModalEditTimer() {
-    const h = parseInt(document.getElementById('inputJamTimer').value) || 0;
-    const m = parseInt(document.getElementById('inputMenitTimer').value) || 0;
-    const s = parseInt(document.getElementById('inputDetikTimer').value) || 0;
+    const eH = document.getElementById('inputJamTimer');
+    const eM = document.getElementById('inputMenitTimer');
+    const eS = document.getElementById('inputDetikTimer');
+    if (!eH || !eM || !eS) return;
+    const h = parseInt(eH.value, 10) || 0;
+    const m = parseInt(eM.value, 10) || 0;
+    const s = parseInt(eS.value, 10) || 0;
     const totalDetik = (h * 3600) + (m * 60) + s;
 
     if (totalDetik > 0) {
@@ -6973,10 +6997,12 @@
   }
 
   function bukaModalKonfirmasiResetTimer() {
-    document.getElementById('modalConfirmResetTimer').style.display = 'flex';
+    const el = document.getElementById('modalConfirmResetTimer');
+    if (el) el.style.display = 'flex';
   }
   function tutupModalKonfirmasiResetTimer() {
-    document.getElementById('modalConfirmResetTimer').style.display = 'none';
+    const el = document.getElementById('modalConfirmResetTimer');
+    if (el) el.style.display = 'none';
   }
   function eksekusiResetTimerPasti() {
     setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 50);
@@ -7035,6 +7061,7 @@
     isCountdownRunning = true;
     const overlay = document.getElementById('countdownOverlay');
     const numEl = document.getElementById('countdownNum');
+    if (!overlay || !numEl) { isCountdownRunning = false; if (cb) cb(); return; }
     overlay.classList.remove('vortex-burst', 'final-10s', 'critical-5s');
     overlay.classList.add('active');
     const steps = [
@@ -7610,7 +7637,9 @@
     }
 
     // Buka overlay terlebih dahulu agar layout aktif dan elemen memiliki clientWidth & clientHeight riil
-    document.getElementById('winnerOverlay').classList.add('active');
+    const winOverlay = document.getElementById('winnerOverlay');
+    if (!winOverlay) return;
+    winOverlay.classList.add('active');
 
     // Tampilkan indikator Sesi Aktif pada Header Winner
     const badgeSesi = document.getElementById('winSessionBadge');
@@ -7634,7 +7663,8 @@
 
   function tutupLayarPemenang(broadcast = true) {
     if (broadcast) siarkanSync({ type: "CLOSE_WINNER" });
-    document.getElementById('winnerOverlay').classList.remove('active');
+    const winOvl = document.getElementById('winnerOverlay');
+    if (winOvl) winOvl.classList.remove('active');
     if (fireworksInterval) { clearInterval(fireworksInterval); fireworksInterval = null; }
     const canvas = document.getElementById('fireworksCanvas');
     if (canvas) {
@@ -7679,7 +7709,9 @@
 
   function mulaiAnimasiPetasan() {
     const canvas = document.getElementById('fireworksCanvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -7709,7 +7741,8 @@
     }, 550);
 
     function loop() {
-      if (!document.getElementById('winnerOverlay').classList.contains('active')) {
+      const winOvl = document.getElementById('winnerOverlay');
+      if (!winOvl || !winOvl.classList.contains('active')) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         return;
       }
@@ -8380,6 +8413,7 @@
   function inisialisasiStrukturTabel() {
     const tbL = document.getElementById('bodyLeft');
     const tbR = document.getElementById('bodyRight');
+    if (!tbL || !tbR) return;
     tbL.innerHTML = ''; 
     tbR.innerHTML = '';
 
@@ -8905,7 +8939,8 @@
   }
 
   function hapusLogAktivitas() {
-    document.getElementById('logList').innerHTML = `<div style="color: #64748b; font-style: italic; padding: 12px; text-align: center;" id="emptyLogText">Log telah dibersihkan</div>`;
+    const el = document.getElementById('logList');
+    if (el) el.innerHTML = `<div style="color: #64748b; font-style: italic; padding: 12px; text-align: center;" id="emptyLogText">Log telah dibersihkan</div>`;
   }
 
   function enqueueNotif(displayName, rincianKategori, delta, poinAkhir, tierKey = 'legend', avatarUrl = '', namaIkan = '') {
@@ -9325,8 +9360,9 @@
         }
       };
 
-      cloudEventSource.onerror = () => {
-        // SSE otomatis reconnect
+      cloudEventSource.onerror = (evt) => {
+        console.warn('[Cloud Bus] SSE error, browser will auto-reconnect');
+        // SSE otomatis reconnect oleh browser
       };
     } catch (err) {
       console.warn('[Cloud Bus] Init error:', err);
@@ -9663,7 +9699,7 @@
       botRobloxInfo = data;
       if (data.cookie && !cookieRobloxAktif) {
         cookieRobloxAktif = data.cookie;
-        localStorage.setItem('roblox_cookie', data.cookie);
+        try { localStorage.setItem('roblox_cookie', data.cookie); } catch(_) {}
         const inp = document.getElementById('inputKodeCookie');
         if (inp && !inp.value) inp.value = data.cookie;
       }
@@ -9772,7 +9808,7 @@
 
     // Simpan ke localStorage terlebih dahulu
     cookieRobloxAktif = rawVal;
-    localStorage.setItem('roblox_cookie', rawVal);
+    try { localStorage.setItem('roblox_cookie', rawVal); } catch(_) {}
 
     // Kirim ke backend lokal dan cloud
     const endpoints = [
@@ -10321,7 +10357,7 @@
         customMap = JSON.parse(localStorage.getItem('CUSTOM_FISH_IMAGES') || '{}');
       } catch (_) {}
       customMap[cleanName] = dataUrl;
-      localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap));
+      try { localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap)); } catch(_) {}
       renderDaftarIkanSettings();
       if (typeof tampilkanToastModern === 'function') {
         tampilkanToastModern(`Foto untuk "${cleanName.toUpperCase()}" berhasil disimpan!`);
@@ -10341,13 +10377,13 @@
       const val = input.trim();
       if (val) {
         customMap[cleanName] = val;
-        localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap));
+        try { localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap)); } catch(_) {}
         if (typeof tampilkanToastModern === 'function') {
           tampilkanToastModern(`URL untuk "${cleanName.toUpperCase()}" disimpan!`);
         }
       } else {
         delete customMap[cleanName];
-        localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap));
+        try { localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap)); } catch(_) {}
       }
       renderDaftarIkanSettings();
     }
@@ -10360,7 +10396,7 @@
     } catch (_) {}
     if (customMap[cleanName]) {
       delete customMap[cleanName];
-      localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap));
+      try { localStorage.setItem('CUSTOM_FISH_IMAGES', JSON.stringify(customMap)); } catch(_) {}
       renderDaftarIkanSettings();
       if (typeof tampilkanToastModern === 'function') {
         tampilkanToastModern(`Gambar "${cleanName.toUpperCase()}" di-reset ke default.`);
