@@ -6794,24 +6794,33 @@
     isCountdownRunning = true;
     const overlay = document.getElementById('countdownOverlay');
     const numEl = document.getElementById('countdownNum');
+    overlay.classList.remove('vortex-burst');
     overlay.classList.add('active');
     const steps = [
       { text: '3', isStart: false }, { text: '2', isStart: false },
-      { text: '1', isStart: false }, { text: 'GASSS MANCING', isStart: true }
+      { text: '1', isStart: false }, { text: 'GASSS MANCING!', isStart: true }
     ];
     let idx = 0;
     function next() {
       if (idx < steps.length) {
         const item = steps[idx];
         numEl.innerText = item.text;
-        if (item.isStart) numEl.classList.add('start'); else numEl.classList.remove('start');
+        if (item.isStart) {
+          numEl.classList.add('start');
+          overlay.classList.add('vortex-burst');
+        } else {
+          numEl.classList.remove('start');
+          overlay.classList.remove('vortex-burst');
+        }
         numEl.style.animation = 'none'; void numEl.offsetWidth;
-        numEl.style.animation = 'countZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1)';
+        numEl.style.animation = item.isStart
+          ? 'countExplodeGo 0.85s cubic-bezier(0.16, 1, 0.3, 1)'
+          : 'countZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1)';
         putarBeepCountdown(item.isStart);
         idx++; setTimeout(next, 950);
       } else {
-        overlay.classList.remove('active');
-        isCountdownRunning = false; 
+        overlay.classList.remove('active', 'vortex-burst');
+        isCountdownRunning = false;
         cb();
       }
     }
