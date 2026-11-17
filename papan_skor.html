@@ -9510,8 +9510,7 @@
       });
     }
 
-    const tierLabelTxt = (tierKey === 'mitos') ? 'MYTHIC' : String(tierKey || 'CATCH').toUpperCase();
-    const infoIkan = namaIkan ? `${namaIkan} • ${tierLabelTxt}` : (rincian || 'Tangkapan Ikan');
+    const infoIkan = namaIkan ? namaIkan : (rincian || 'Tangkapan Ikan');
     const nameEl = document.getElementById('dynamicPillName');
     if (nameEl) nameEl.innerText = displayName || 'Player';
     const fishEl = document.getElementById('dynamicPillFish');
