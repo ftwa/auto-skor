@@ -3342,11 +3342,11 @@
       const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
       el.className = 'sync-live-pill online';
       if (isLokal) {
-        el.innerHTML = '⚡ SYNC LOKAL (0ms)';
-        el.title = 'Terhubung langsung ke Python Localhost & Event Bus (0ms)';
+        el.innerHTML = '⚡ LOKAL';
+        el.title = 'Terhubung ke Sistem Lokal';
       } else {
-        el.innerHTML = aktif ? '⚡ SYNC LIVE (0.02s)' : '⚡ CLOUD SYNC AKTIF';
-        el.title = 'Terhubung ke Vercel Cloud Serverless & Live Event Bus';
+        el.innerHTML = aktif ? '⚡ LIVE' : '⚡ CLOUD';
+        el.title = 'Terhubung ke Live Event Bus';
       }
       if (typeof setStatusSystem === 'function') setStatusSystem(true);
     }
@@ -3678,14 +3678,14 @@
     <div class="top-left">
       <span id="systemStatus" class="status-badge status-online">ON</span>
 
-      <span id="syncIndicatorBadge" class="sync-live-pill online" title="Sistem Auto Skor Siap & Tersinkron">⚡ SYNC LOKAL (0ms)</span>
+      <span id="syncIndicatorBadge" class="sync-live-pill online" title="Sistem Auto Skor Siap & Tersinkron">⚡ LOKAL</span>
 
 
       <!-- SEGMENTED MODE SWITCHER (1-KLIK) -->
       <div class="mode-switcher-group" id="modeSwitcherGroup">
         <button type="button" class="btn-mode-tab active" id="btnModePrepare" onclick="setModeTampilanDirect('PREPARE')">PREPARE</button>
         <button type="button" class="btn-mode-tab" id="btnModeMatch" onclick="setModeTampilanDirect('MATCH')">MATCH</button>
-        <button type="button" class="btn-mode-tab" id="btnModeMember" onclick="setModeTampilanDirect('MEMBER')">MEMBER</button>
+        
       </div>
 
       <button class="btn-action-soft" onclick="bukaModalPoin()">Point</button>
@@ -4782,13 +4782,13 @@
     <div class="modal-card modal-stream-card">
       <div class="modal-stream-header">
         <div class="modal-stream-title">
-          <span>🔗 Link TikTok Studio & OBS</span>
+          <span>🔗 Link TikTok LIVE Studio</span>
         </div>
         <button class="btn-close-hud" style="background:#e0f2fe; border:none; color:#0284c7; font-size:16px; font-weight:900; width:30px; height:30px; border-radius:50%; cursor:pointer;" onclick="tutupModalLinkStream()" title="Tutup (Esc)">✕</button>
       </div>
 
       <p class="stream-desc-txt" style="margin-bottom:12px;">
-        Gunakan tautan di bawah ini sebagai <b>Tautan Web (Browser Source)</b> di <b>TikTok LIVE Studio</b> atau <b>OBS Studio</b>. Tampilan berlatar belakang <b>transparan</b> dan tersinkronisasi otomatis saat pertandingan berjalan!
+        Gunakan tautan di bawah ini sebagai <b>Tautan Web (Browser Source)</b> di <b>TikTok LIVE Studio</b>. Tampilan berlatar belakang <b>transparan</b> dan tersinkronisasi otomatis saat pertandingan berjalan!
       </p>
 
       <!-- NOTICE KHUSUS TIKTOK LIVE STUDIO -->
@@ -4796,10 +4796,9 @@
         <b>⚠️ PENTING UNTUK TIKTOK LIVE STUDIO:</b> TikTok LIVE Studio memblokir alamat lokal (<code>127.0.0.1</code>). Anda <b>wajib</b> menggunakan tautan <b>☁️ Link Web</b> di bawah ini. Skor dan podium juara akan tersinkron otomatis secara real-time via Cloud Bus ke siaran Anda!
       </div>
 
-      <!-- SWITCHER SUMBER: WEB CLOUD (TIKTOK STUDIO & OBS) VS LOKAL (OBS) -->
+      <!-- KHUSUS TIKTOK LIVE STUDIO -->
       <div class="stream-source-tabs">
-        <button type="button" class="btn-source-tab active" id="tabSourceCloud" onclick="gantiTabSumberStream('cloud')">☁️ Link Web (TikTok LIVE Studio & OBS - Wajib)</button>
-        <button type="button" class="btn-source-tab" id="tabSourceLocal" onclick="gantiTabSumberStream('local')">🖥️ Link Host Lokal (OBS Studio Saja)</button>
+        <button type="button" class="btn-source-tab active" id="tabSourceCloud" style="cursor:default;">🎵 Tautan Web Resmi TikTok LIVE Studio</button>
       </div>
 
       <!-- CARD 1: TABEL SKOR -->
@@ -5955,12 +5954,7 @@
   }
 
   function updateNilaiLinkStream() {
-    let base = '';
-    if (streamLinkMode === 'local') {
-      base = 'http://127.0.0.1:5000/';
-    } else {
-      base = 'https://ftwa.github.io/auto-skor/';
-    }
+    const base = 'https://ftwa.github.io/auto-skor/';
 
     const urlTabel = `${base}?view=tabel`;
     const urlTop3 = `${base}?view=top3`;
