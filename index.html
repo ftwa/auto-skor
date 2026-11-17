@@ -309,51 +309,44 @@
        ======================================================== */
     .esports-toast-hud {
       --aura-c1: #00f0ff;
-      --aura-c2: #0284c7;
-      --aura-glow: rgba(0, 240, 255, 0.65);
-      position: fixed; top: 24px; left: 50%;
+      --aura-c2: #3b82f6;
+      --aura-glow: rgba(0, 240, 255, 0.7);
+      position: fixed; top: 22px; left: 50%;
       transform: translateX(-50%) translateY(-160px) scale(0.92);
-      width: 590px; max-width: 94vw; min-height: 82px;
-      padding: 10px 26px 10px 22px;
-      display: flex; align-items: center; gap: 16px;
+      width: auto; min-width: 390px; max-width: 94vw;
+      padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0;
       z-index: 99999;
       opacity: 0; pointer-events: none;
       transition: transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.24s ease;
       cursor: pointer;
       overflow: visible;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
       will-change: transform, opacity;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      filter: drop-shadow(0 0 18px var(--aura-glow));
     }
-    /* Bingkai Outer Hexa Polygon Glowing */
+    /* Kapsul Mini Tengah (Tanpa Kotak Besar, Menghubungkan Avatar Kiri & Ikan Kanan) */
     .esports-toast-hud::before {
       content: '';
       position: absolute;
-      inset: 0;
-      clip-path: polygon(26px 0%, calc(100% - 26px) 0%, 100% 50%, calc(100% - 26px) 100%, 26px 100%, 0% 50%);
-      background: linear-gradient(90deg, var(--aura-c1) 0%, var(--aura-c2) 50%, var(--aura-c1) 100%);
-      z-index: -2;
-      pointer-events: none;
-      animation: hexaBorderPulse 2.2s ease-in-out infinite alternate;
-    }
-    /* Background Inner Dark Navy & Pola Sirkuit Cyber */
-    .esports-toast-hud::after {
-      content: '';
-      position: absolute;
-      inset: 2.5px;
-      clip-path: polygon(25px 0%, calc(100% - 25px) 0%, 100% 50%, calc(100% - 25px) 100%, 25px 100%, 0% 50%);
-      background:
-        radial-gradient(circle at 50% 100%, var(--aura-glow) 0%, transparent 55%),
-        linear-gradient(135deg, rgba(6, 18, 40, 0.96) 0%, rgba(3, 10, 24, 0.99) 100%),
-        repeating-linear-gradient(90deg, rgba(0, 240, 255, 0.04) 0px, rgba(0, 240, 255, 0.04) 1px, transparent 1px, transparent 28px);
+      left: 34px; right: 42px;
+      top: 50%; transform: translateY(-50%);
+      height: 62px;
+      border-radius: 18px;
+      background: linear-gradient(90deg, rgba(6, 18, 42, 0.92) 0%, rgba(10, 24, 54, 0.96) 50%, rgba(6, 18, 42, 0.92) 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      border-top-color: var(--aura-c1);
+      border-bottom-color: var(--aura-c1);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65), 0 0 22px var(--aura-glow);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
       z-index: -1;
       pointer-events: none;
     }
-    @keyframes hexaBorderPulse {
-      0% { opacity: 0.85; filter: brightness(0.95); }
-      100% { opacity: 1; filter: brightness(1.25); }
+    .esports-toast-hud::after {
+      display: none !important;
+      content: none !important;
     }
     .esports-toast-hud.show {
       transform: translateX(-50%) translateY(0) scale(1);
@@ -364,87 +357,84 @@
     }
     @keyframes hudPulsePop {
       0% { transform: translateX(-50%) translateY(0) scale(0.92); }
-      55% { transform: translateX(-50%) translateY(0) scale(1.05); }
+      55% { transform: translateX(-50%) translateY(0) scale(1.06); }
       100% { transform: translateX(-50%) translateY(0) scale(1.0); }
     }
 
-    /* Warna Aura Neon Cyber Hexa Sesuai Tier Ikan */
+    /* Warna Aura Neon Otomatis Sesuai Tier Ikan */
     .esports-toast-hud.tier-forgotten {
       --aura-c1: #d946ef;
       --aura-c2: #7e22ce;
-      --aura-glow: rgba(217, 70, 239, 0.78);
+      --aura-glow: rgba(217, 70, 239, 0.8);
     }
     .esports-toast-hud.tier-khusus {
       --aura-c1: #ec4899;
       --aura-c2: #00f0ff;
-      --aura-glow: rgba(236, 72, 153, 0.75);
+      --aura-glow: rgba(236, 72, 153, 0.78);
     }
     .esports-toast-hud.tier-secret {
       --aura-c1: #facc15;
       --aura-c2: #10b981;
-      --aura-glow: rgba(250, 204, 21, 0.75);
+      --aura-glow: rgba(250, 204, 21, 0.8);
     }
     .esports-toast-hud.tier-mythic {
       --aura-c1: #ef4444;
       --aura-c2: #f97316;
-      --aura-glow: rgba(239, 68, 68, 0.75);
+      --aura-glow: rgba(239, 68, 68, 0.8);
     }
     .esports-toast-hud.tier-legend {
       --aura-c1: #00f0ff;
       --aura-c2: #3b82f6;
-      --aura-glow: rgba(0, 240, 255, 0.72);
+      --aura-glow: rgba(0, 240, 255, 0.75);
     }
 
     .log-item.tier-khusus { border-left-color: #a855f7 !important; background: rgba(168, 85, 247, 0.08) !important; }
     .badge-khusus { background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%) !important; color: #fff !important; }
 
-    /* Avatar Stage Heksagonal (Kiri) */
+    /* Avatar Bulat Mengambang Bebas (Kiri) */
     .hud-avatar-stage {
-      position: relative; width: 60px; height: 64px; flex-shrink: 0;
+      position: relative; width: 74px; height: 74px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      filter: drop-shadow(0 0 10px var(--aura-glow));
+      z-index: 3;
+      filter: drop-shadow(0 0 14px var(--aura-glow)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.7));
     }
     .hud-avatar-circle {
-      width: 58px; height: 64px;
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      background: var(--aura-c1);
-      padding: 2.5px;
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: 3px solid var(--aura-c1);
+      background: #06142e;
+      overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 22px; font-weight: 900;
-      position: relative;
+      color: #fff; font-size: 26px; font-weight: 900;
+      box-shadow: inset 0 0 12px var(--aura-glow);
     }
     .hud-avatar-circle img {
       width: 100%; height: 100%;
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      border-radius: 50%;
       object-fit: cover;
-      background: #07192f;
     }
     .hud-crown-icon {
       position: absolute; top: -8px; right: -2px;
-      font-size: 16px; filter: drop-shadow(0 0 8px var(--aura-c1));
+      font-size: 18px; filter: drop-shadow(0 0 8px var(--aura-c1));
       z-index: 5;
     }
 
-    /* Body Info (Tengah: Hanya Tier Badge & Nama Pemain, Tanpa Teks Nama Ikan) */
-    .hud-body-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
-    .hud-tag-row { display: flex; align-items: center; gap: 8px; }
-    .hud-tier-badge {
-      font-size: 10px; font-weight: 900; letter-spacing: 1px;
-      text-transform: uppercase; padding: 2px 10px; border-radius: 6px;
-      display: inline-flex; align-items: center; gap: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--aura-c1);
-      color: #ffffff;
-      box-shadow: 0 0 10px var(--aura-glow);
+    /* Body Info di Dalam Kapsul Mini (Tengah) */
+    .hud-body-info {
+      flex: 1; min-width: 150px; max-width: 260px;
+      padding: 4px 14px 4px 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 1px;
     }
+    .hud-tag-row { display: none !important; }
     .hud-catch-time { display: none; }
 
     .hud-player-row {
-      display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      width: 100%;
     }
     .hud-player-name {
-      font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: 0.3px;
+      font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: 0.3px;
       text-shadow: 0 0 12px var(--aura-glow);
       line-height: 1.15;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -452,7 +442,7 @@
     }
     .hud-fish-name {
       display: block !important;
-      font-size: 13.5px; font-weight: 800; color: var(--aura-c1);
+      font-size: 12.5px; font-weight: 800; color: var(--aura-c1);
       letter-spacing: 0.3px;
       text-shadow: 0 0 8px var(--aura-glow);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -460,11 +450,30 @@
     }
     .hud-dot-sep, .hud-desc-sub { display: none !important; }
 
-    /* Showcase Gambar Ikan 3D Pop-Out (Kanan) */
+    /* Score Mini Pill di Samping Nama */
+    .hud-score-stadium {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0 10px 0 0;
+      margin-left: -4px;
+      text-align: center;
+      flex-shrink: 0;
+      z-index: 3;
+      line-height: 1.05;
+    }
+    .hud-pts-val {
+      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px; font-weight: 900; color: var(--aura-c1);
+      letter-spacing: 0.3px;
+      text-shadow: 0 0 14px var(--aura-glow);
+    }
+
+    /* Gambar Ikan 3D Mengambang Bebas (Kanan) */
     .hud-fish-showcase {
       position: relative;
-      width: 92px; height: 84px;
-      margin: -22px -6px -14px 0;
+      width: 90px; height: 90px;
+      margin: -10px 0 -10px -6px;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
       z-index: 4;
@@ -472,39 +481,21 @@
     .hud-fish-showcase img {
       width: 100%; height: 100%;
       object-fit: contain;
-      filter: drop-shadow(0 0 14px var(--aura-c1)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+      filter: drop-shadow(0 0 16px var(--aura-c1)) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.85));
       animation: fishPopOutFloat 2.4s ease-in-out infinite alternate;
     }
     @keyframes fishPopOutFloat {
       0% { transform: translateY(2px) scale(1); }
-      100% { transform: translateY(-5px) scale(1.08); }
-    }
-
-    /* Score Stadium Lingkaran (Kanan) */
-    .hud-score-stadium {
-      width: 62px; height: 62px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18) 0%, rgba(4, 16, 36, 0.95) 85%);
-      border: 2.5px solid var(--aura-c1);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-      box-shadow: 0 0 18px var(--aura-glow), inset 0 0 12px var(--aura-glow);
-      flex-shrink: 0;
-      z-index: 5;
-      line-height: 1.05;
-    }
-    .hud-pts-val {
-      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-      font-size: 16px; font-weight: 900; color: #ffffff;
-      letter-spacing: 0.3px; text-shadow: 0 0 10px var(--aura-c1);
+      100% { transform: translateY(-6px) scale(1.08); }
     }
 
     .hud-btn-close {
-      background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #94a3b8; width: 24px; height: 24px; border-radius: 50%;
-      font-size: 11px; font-weight: 800; cursor: pointer;
+      position: absolute; top: 0; right: -10px;
+      background: rgba(6, 18, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #94a3b8; width: 22px; height: 22px; border-radius: 50%;
+      font-size: 10px; font-weight: 800; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s; flex-shrink: 0; margin-left: 2px;
+      transition: all 0.2s; z-index: 6;
     }
     .hud-btn-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
 
@@ -3860,14 +3851,14 @@
     <div class="hud-desc-sub" id="dynamicPillDesc">-</div>
   </div>
 
-  <!-- Showcase Gambar Ikan 3D Pop-Out (Tanpa Teks Nama Ikan) -->
-  <div class="hud-fish-showcase" id="hudFishShowcase">
-    <img id="dynamicPillFishImg" src="" alt="Ikan" style="display:none;">
-  </div>
-
-  <!-- Right Glowing Circular Points Stadium Badge -->
+  <!-- Mini Points inside Capsule -->
   <div class="hud-score-stadium">
     <span class="hud-pts-val" id="dynamicPillPts">+0 PTS</span>
+  </div>
+
+  <!-- Gambar Ikan 3D Mengambang Bebas di Kanan -->
+  <div class="hud-fish-showcase" id="hudFishShowcase">
+    <img id="dynamicPillFishImg" src="" alt="Ikan" style="display:none;">
   </div>
 
   <button class="hud-btn-close" onclick="klikDynamicPill(); event.stopPropagation();" title="Tutup">✕</button>
@@ -9784,7 +9775,7 @@
     const descEl = document.getElementById('dynamicPillDesc');
     if (descEl) descEl.innerText = `${rincian || 'Tangkapan Langka'}`;
     const ptsEl = document.getElementById('dynamicPillPts');
-    if (ptsEl) ptsEl.innerHTML = `+${poinDelta}<br><span style="font-size:10px;opacity:0.9;">PTS</span>`;
+    if (ptsEl) ptsEl.innerText = `+${poinDelta} PTS`;
 
     const tierBadge = document.getElementById('hudTierBadge');
     const crownIcon = document.getElementById('hudCrownIcon');
