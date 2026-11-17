@@ -3379,9 +3379,10 @@
         let bolehKirimNtfy = true;
         const now = Date.now();
         if (data.type === 'SYNC_TIMER') {
-          // Kirim tick countdown ke ntfy per 5 detik atau saat waktu darurat (<= 5 detik)
+          // Kirim langsung jika ini adalah aksi (Play/Pause/Stop/Edit) atau waktu darurat (<= 5 detik)
           const isCritical = (typeof data.timerSec === 'number' && data.timerSec <= 5);
-          if (!isCritical && (now - lastNtfyTimerBroadcast < 4500)) {
+          const isActionEvent = Boolean(data.isAction || data.isMatchDijeda || !data.isMatchSedangJalan);
+          if (!isActionEvent && !isCritical && (now - lastNtfyTimerBroadcast < 4500)) {
             bolehKirimNtfy = false;
           }
         }
@@ -5699,7 +5700,6 @@
   }
 
   function eksekusiTombolUtama() {
-    setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 50);
     dapatkanAudioContext();
     if (isCountdownRunning) return;
 
@@ -5712,7 +5712,7 @@
       isMatchDijeda = true;
       perbaruiStatusMatchUI();
       tambahLogAktivitas('SISTEM', 'Pertandingan DIJEDA', 'system');
-      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true });
+      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true, isAction: true });
     } else if (isMatchDijeda) {
       isMatchSedangJalan = true;
       isMatchDijeda = false;
@@ -5720,7 +5720,7 @@
       perbaruiStatusMatchUI();
       mulaiIntervalTimer();
       tambahLogAktivitas('SISTEM', 'Pertandingan DILANJUTKAN', 'system');
-      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
+      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false, isAction: true });
     } else {
       if (timerSec <= 0) {
         timerSec = (db.durasiMenitDefault || 15) * 60;
@@ -5751,7 +5751,6 @@
   }
 
   function eksekusiBerhentiMatch() {
-    setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 50);
     if (timerInterval) {
       clearInterval(timerInterval);
       timerInterval = null;
@@ -5764,27 +5763,31 @@
     setModeTampilan('PREPARE');
     perbaruiStatusMatchUI();
     tambahLogAktivitas('SISTEM', 'Pertandingan DIHENTIKAN', 'system');
-    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false });
+    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false, isAction: true });
   }
 
   function toggleTimerManual(broadcast = true) {
-    if (broadcast) setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 40);
     dapatkanAudioContext();
     if (isCountdownRunning) return;
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
+    if (timerInterval || isMatchSedangJalan) {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
       isMatchSedangJalan = false;
       isMatchDijeda = true;
       perbaruiStatusMatchUI();
       tambahLogAktivitas('TIMER', 'Timer dijeda', 'system');
+      if (broadcast) siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: true, isAction: true });
     } else {
       if (timerSec <= 0) return;
       isMatchSedangJalan = true;
       isMatchDijeda = false;
+      setModeTampilan('MATCH');
       perbaruiStatusMatchUI();
       mulaiIntervalTimer();
       tambahLogAktivitas('TIMER', 'Timer dijalankan', 'system');
+      if (broadcast) siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: true, isMatchDijeda: false, isAction: true });
     }
   }
 
@@ -6635,6 +6638,11 @@
   function mulaiIntervalTimer() {
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
+      if (!isMatchSedangJalan || isMatchDijeda) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        return;
+      }
       if (!isExtraTimeBin) {
         if (timerSec > 0) {
           timerSec--;
@@ -8860,6 +8868,10 @@
             tanganiPlayerPresence(item);
           } else if (item.type === 'SYNC_CATCH' || (item.user && item.poin !== undefined)) {
             setStatusSystem(true);
+            if (isMatchDijeda) {
+              // Pertandingan sedang DIJEDA / PAUSE: abaikan tangkapan dan jangan nyalakan timer!
+              return;
+            }
             if (!isMatchSedangJalan) {
               isMatchSedangJalan = true;
               isMatchDijeda = false;
@@ -8952,6 +8964,10 @@
               processedCatchIds.delete(first);
             }
 
+            if (isMatchDijeda) {
+              // Pertandingan sedang DIJEDA / PAUSE: abaikan tangkapan dan jangan nyalakan timer!
+              return;
+            }
             if (!isMatchSedangJalan) {
               isMatchSedangJalan = true;
               isMatchDijeda = false;
