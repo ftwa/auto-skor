@@ -5245,7 +5245,11 @@
     containerMax: 1320
   };
 
-  let colSizes = Object.assign({}, DEFAULT_COL_SIZES, JSON.parse(localStorage.getItem(COL_SIZE_KEY)) || {});
+  let parsedColSizes = {};
+  try {
+    parsedColSizes = JSON.parse(localStorage.getItem(COL_SIZE_KEY) || '{}') || {};
+  } catch (_) { parsedColSizes = {}; }
+  let colSizes = Object.assign({}, DEFAULT_COL_SIZES, parsedColSizes);
   colSizes.stat = colSizes.no || 42; // Samakan ukuran kolom STAT persis dengan kolom NO
 
   function terapkanUkuranKolomTabel() {
