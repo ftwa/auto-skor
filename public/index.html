@@ -3987,6 +3987,7 @@
       <button class="btn-action-soft" onclick="bukaModalNotifSuara(event)">Settings</button>
       <button class="btn-action-soft btn-cookie-roblox" id="btnTopBarCookie" onclick="bukaModalCookieRoblox()" title="Atur Cookie Roblox (.ROBLOSECURITY) untuk fitur Auto Add Friend">🍪 Cookie <span id="topBarCookieDot" style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#94a3b8; margin-left:3px; vertical-align:middle;"></span></button>
       <button class="btn-action-soft btn-stream-link" onclick="bukaModalLinkStream()" title="Salin Link Modular untuk TikTok LIVE Studio & OBS">🔗 Link Stream</button>
+      <a href="portal.html" target="_blank" class="btn-action-soft" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Buka Website Portal Pusat Kendali & PratinjauSemua Layar">🌐 Portal</a>
       
       <div class="dropdown" id="dropdownReset">
         <button class="btn-action-soft" onclick="toggleDropdownReset(event)">RESET ▾</button>
@@ -5282,23 +5283,6 @@
         </div>
       </div>
 
-      
-      <!-- CARD 6: OVERLAY VIDEO ANIMASI IKAN SAJA -->
-      <div class="stream-link-row" style="border-color: #a855f7; background: rgba(168, 85, 247, 0.05);">
-        <div class="stream-header-row">
-          <div class="stream-row-title">
-            <span style="color:#7e22ce; font-weight:900;">🎬 Overlay Video Animasi Ikan</span>
-          </div>
-          <span class="stream-badge-res" style="background:#7e22ce; color:#fff;">1280 × 720 px</span>
-        </div>
-        <div class="stream-desc-txt">Layar transparan khusus memutar video animasi saat ikan tertentu tertangkap (menggunakan Link URL Video di Settings → Video Animasi).</div>
-        <div class="stream-input-group">
-          <input type="text" readonly id="linkOverlayVideo" class="stream-url-field" onclick="this.select()">
-          <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayVideo', this)">📋 Salin Link</button>
-          <a id="previewOverlayVideo" target="_blank" class="btn-preview-stream" title="Buka di tab baru">↗</a>
-        </div>
-      </div>
-
       <!-- PANDUAN CEPAT PASANG DI TIKTOK STUDIO -->
       <div class="stream-guide-box">
         <div class="stream-guide-heading">💡 Langkah Pasang di TikTok LIVE Studio:</div>
@@ -5562,20 +5546,34 @@
     if (rawEs) extraSettings = JSON.parse(rawEs) || extraSettings;
   } catch(_) {}
 
-  let customAudioTierData = {
-    forgotten: localStorage.getItem(AUDIO_TIER_KEYS.forgotten) || null,
-    legend: localStorage.getItem(AUDIO_TIER_KEYS.legend) || null,
-    mitos: localStorage.getItem(AUDIO_TIER_KEYS.mitos) || null,
-    secret: localStorage.getItem(AUDIO_TIER_KEYS.secret) || null,
-    khusus: localStorage.getItem(AUDIO_TIER_KEYS.khusus) || null
-  };
+  let customAudioTierData = { forgotten: null, legend: null, mitos: null, secret: null, khusus: null };
+  try {
+    customAudioTierData = {
+      forgotten: localStorage.getItem(AUDIO_TIER_KEYS.forgotten) || null,
+      legend: localStorage.getItem(AUDIO_TIER_KEYS.legend) || null,
+      mitos: localStorage.getItem(AUDIO_TIER_KEYS.mitos) || null,
+      secret: localStorage.getItem(AUDIO_TIER_KEYS.secret) || null,
+      khusus: localStorage.getItem(AUDIO_TIER_KEYS.khusus) || null
+    };
+  } catch(_) {}
 
-  let customAudioTimerData = {
-    '10m': localStorage.getItem(AUDIO_TIMER_KEYS['10m']) || null,
-    '1m': localStorage.getItem(AUDIO_TIMER_KEYS['1m']) || null
-  };
+  let customAudioTimerData = { '10m': null, '1m': null };
+  try {
+    customAudioTimerData = {
+      '10m': localStorage.getItem(AUDIO_TIMER_KEYS['10m']) || null,
+      '1m': localStorage.getItem(AUDIO_TIMER_KEYS['1m']) || null
+    };
+  } catch(_) {}
 
-  let customNotifBgData = localStorage.getItem(NOTIF_BG_KEY) || null;
+  let customAudioWinnerData = null;
+  try {
+    customAudioWinnerData = localStorage.getItem('custom_audio_winner') || null;
+  } catch(_) {}
+
+  let customNotifBgData = null;
+  try {
+    customNotifBgData = localStorage.getItem(NOTIF_BG_KEY) || null;
+  } catch(_) {}
   let isBetaAutoRegisterAktif = true;
   try {
     const rawBeta = localStorage.getItem(BETA_AUTO_REG_KEY);
@@ -6306,7 +6304,7 @@
 
   function resetAudioTier(tierKey) {
     customAudioTierData[tierKey] = null;
-    localStorage.removeItem(AUDIO_TIER_KEYS[tierKey]);
+    try { localStorage.removeItem(AUDIO_TIER_KEYS[tierKey]); } catch(_) {}
     const inp = document.getElementById(`audioInput_${tierKey}`);
     if (inp) inp.value = '';
     updateStatusAudioTierUI();
@@ -6329,17 +6327,19 @@
 
   function resetAudioTimer(timerKey) {
     customAudioTimerData[timerKey] = null;
-    localStorage.removeItem(AUDIO_TIMER_KEYS[timerKey]);
+    try { localStorage.removeItem(AUDIO_TIMER_KEYS[timerKey]); } catch(_) {}
     const inp = document.getElementById(`audioInputTimer_${timerKey}`);
     if (inp) inp.value = '';
     updateStatusAudioTierUI();
   }
 
   function putarSuaraNotif(tierKey) {
+    if (typeof bgmTriggerAutoDuck === 'function') bgmTriggerAutoDuck(1500);
     const customData = customAudioTierData[tierKey];
     if (customData) {
       try {
         const audio = new Audio(customData);
+        audio.onended = () => { if (typeof bgmDuck === 'function') bgmDuck(false); };
         audio.play().catch(() => putarSuaraTierBawaan(tierKey));
         return;
       } catch (_) {}
@@ -6470,12 +6470,6 @@
       const prev = document.getElementById('previewOverlayNotif');
       if (prev) prev.href = urlNotif;
     }
-    const elVideo = document.getElementById('linkOverlayVideo');
-    if (elVideo) {
-      elVideo.value = urlVideo;
-      const prev = document.getElementById('previewOverlayVideo');
-      if (prev) prev.href = urlVideo;
-    }
   }
 
   function bukaModalLinkStream() {
@@ -6562,14 +6556,15 @@
         alert("Gambar terlalu besar untuk memori browser!");
       }
     } else {
-      localStorage.removeItem(NOTIF_BG_KEY);
+      try { localStorage.removeItem(NOTIF_BG_KEY); } catch(_) {}
     }
 
     const elAutoReg = document.getElementById('toggleBetaAutoRegister');
     if (elAutoReg) isBetaAutoRegisterAktif = elAutoReg.checked;
     try { localStorage.setItem(BETA_AUTO_REG_KEY, JSON.stringify(isBetaAutoRegisterAktif)); } catch(_) {}
 
-    // Simpan pengaturan BGM
+    // Simpan pengaturan BGM & hentikan suara tes BGM jika ada
+    if (typeof stopBgmTestAudio === 'function') stopBgmTestAudio();
     if (typeof simpanBgmSettings === 'function') simpanBgmSettings();
 
     terapkanBackgroundNotif();
@@ -6581,6 +6576,8 @@
   }
 
   function batalPengaturanNotifSuara() {
+    if (typeof stopBgmTestAudio === 'function') stopBgmTestAudio();
+    if (typeof isiUiBgm === 'function') isiUiBgm();
     const el = document.getElementById('modalNotifSuara');
     if (el) el.style.display = 'none';
   }
@@ -6688,10 +6685,12 @@
   }
 
   function putarSuaraPengingatWaktu(jenis = '10m') {
+    if (typeof bgmTriggerAutoDuck === 'function') bgmTriggerAutoDuck(2000);
     const customData = customAudioTimerData[jenis];
     if (customData) {
       try {
         const audio = new Audio(customData);
+        audio.onended = () => { if (typeof bgmDuck === 'function') bgmDuck(false); };
         audio.play().catch(() => putarSuaraPengingatBawaan(jenis));
       } catch (e) {
         putarSuaraPengingatBawaan(jenis);
@@ -6703,7 +6702,7 @@
 
   function putarSuaraWinnerCustom() {
     try {
-      const customWinnerAudio = localStorage.getItem('custom_audio_winner');
+      const customWinnerAudio = customAudioWinnerData || localStorage.getItem('custom_audio_winner');
       if (customWinnerAudio) {
         const a = new Audio(customWinnerAudio);
         a.play().catch(() => putarTerompetDanTepukTangan());
@@ -6721,10 +6720,11 @@
     const r = new FileReader();
     r.onload = function(evt) {
       try {
+        customAudioWinnerData = evt.target.result;
         localStorage.setItem('custom_audio_winner', evt.target.result);
         const st = document.getElementById('statusAudio_winner');
         if (st) {
-          st.innerText = 'Audio Kustom ✔';
+          st.innerText = 'Audio Custom ✔';
           st.style.color = '#16a34a';
         }
       } catch (_) {}
@@ -6733,7 +6733,8 @@
   }
 
   function resetAudioWinner() {
-    localStorage.removeItem('custom_audio_winner');
+    customAudioWinnerData = null;
+    try { localStorage.removeItem('custom_audio_winner'); } catch(_) {}
     const st = document.getElementById('statusAudio_winner');
     if (st) {
       st.innerText = 'Tepuk Tangan Bawaan';
@@ -7137,9 +7138,11 @@
       isWaitingWinnerAfterQueue = false;
       isExtraTimeBin = false;
       extraTimerSec = 0;
+      tutupGyro10DetikTerakhir();
+      if (typeof bgmStopAll === 'function') bgmStopAll();
       perbaruiStatusMatchUI();
       tambahLogAktivitas('TIMER', `Waktu timer diatur ke ${formatTime(totalDetik)}`, 'system');
-      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false });
+      siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false, isAction: true });
       tutupModalEditTimer();
     } else {
       alert("Durasi waktu tidak boleh 0 detik!");
@@ -7155,7 +7158,6 @@
     if (el) el.style.display = 'none';
   }
   function eksekusiResetTimerPasti() {
-    setTimeout(() => siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan, isMatchDijeda }), 50);
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     timerSec = (db.durasiMenitDefault || 15) * 60; 
     isMatchSedangJalan = false;
@@ -7164,12 +7166,15 @@
     isExtraTimeBin = false;
     extraTimerSec = 0;
     sudahCatatMemberSesiIni = false;
-    getSesi().sudahCatatMember = false;
+    const s = getSesi();
+    if (s) s.sudahCatatMember = false;
+    tutupGyro10DetikTerakhir();
+    if (typeof bgmStopAll === 'function') bgmStopAll();
     simpanDB();
     perbaruiStatusMatchUI();
     updateTimer(); 
     tambahLogAktivitas('TIMER', 'Timer berhasil di-reset', 'system');
-    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false });
+    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false, isAction: true });
     tutupModalKonfirmasiResetTimer();
   }
 
@@ -7261,16 +7266,15 @@
 
           // Siarkan per detik agar link TikTok Studio lancar detik demi detik
           siarkanSync({ type: 'SYNC_TIMER', timerSec, isMatchSedangJalan: true, isMatchDijeda: false });
+          if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
 
           if (timerSec === 600) {
             putarSuaraPengingatWaktu('10m');
             tambahLogAktivitas('TIMER', '⏰ Waktu tersisa 10 Menit!', 'system');
-            if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
           }
           else if (timerSec === 60) {
             putarSuaraPengingatWaktu('1m');
             tambahLogAktivitas('TIMER', '🚨 PERINGATAN: Waktu tersisa 1 Menit Terakhir!', 'mitos');
-            if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
           }
           if (timerSec <= 10 && timerSec >= 1) {
             putarSuaraMenegangkan10Detik(timerSec);
@@ -7284,6 +7288,7 @@
             isExtraTimeBin = true;
             extraTimerSec = (db.warnaPoin.waktuBinMenit ?? 15) * 60;
             tambahLogAktivitas('TIMER', 'WAKTU UTAMA HABIS! OB Terkunci. Masuk Waktu Tambahan BIN.', 'system');
+            if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
             renderIsiTabel(); 
           } else {
             clearInterval(timerInterval); timerInterval = null;
@@ -7312,6 +7317,11 @@
             el.innerText = "BIN+" + formatTime(extraTimerSec);
             el.style.color = '#38bdf8';
           }
+          siarkanSync({ type: 'SYNC_TIMER', timerSec: extraTimerSec, isMatchSedangJalan: true, isMatchDijeda: false });
+          if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
+          if (extraTimerSec <= 10 && extraTimerSec >= 1) {
+            putarSuaraMenegangkan10Detik(extraTimerSec);
+          }
         } else {
           clearInterval(timerInterval); timerInterval = null;
           isExtraTimeBin = false;
@@ -7319,6 +7329,7 @@
           isMatchDijeda = false;
           perbaruiStatusMatchUI();
           updateTimer();
+          putarBuzzerWaktuHabis();
           tambahLogAktivitas('TIMER', 'WAKTU TAMBAHAN BIN SELESAI!', 'system');
 
           if (notifQueue.length > 0 || isNotifShowing) {
@@ -7931,20 +7942,28 @@
     const s = getSesi();
     const isHost = (index === 19);
     const p = isHost ? s.host : s.players[index];
+    if (!p) return;
 
-    document.getElementById('editPlayerIndex').value = index;
-    document.getElementById('modalInputJudul').innerText = isHost ? "Kursi 20 (Host)" : `Kursi ${index + 1}`;
-    document.getElementById('inputUserRoblox').value = p.robloxUser || '';
-    document.getElementById('inputNamaTikTok').value = p.user || '';
-    document.getElementById('inputDisplayName').value = p.nick || '';
-    document.getElementById('inputAvatarUrl').value = p.avatar || '';
+    const elIdx = document.getElementById('editPlayerIndex');
+    if (elIdx) elIdx.value = index;
+    const elJudul = document.getElementById('modalInputJudul');
+    if (elJudul) elJudul.innerText = isHost ? "Kursi 20 (Host)" : `Kursi ${index + 1}`;
+    const elRob = document.getElementById('inputUserRoblox');
+    if (elRob) elRob.value = p.robloxUser || '';
+    const elTik = document.getElementById('inputNamaTikTok');
+    if (elTik) elTik.value = p.user || '';
+    const elDisp = document.getElementById('inputDisplayName');
+    if (elDisp) elDisp.value = p.nick || '';
+    const elAv = document.getElementById('inputAvatarUrl');
+    if (elAv) elAv.value = p.avatar || '';
     const inUid = document.getElementById('inputUserId');
     if (inUid) inUid.value = p.userId || '';
     const in3d = document.getElementById('inputAvatar3dUrl');
     if (in3d) in3d.value = p.avatar3d || '';
 
     updateModalPreviewUI(p.robloxUser || '', p.nick || '', p.avatar || '');
-    document.getElementById('modalSearchStatus').innerText = '';
+    const elStat = document.getElementById('modalSearchStatus');
+    if (elStat) elStat.innerText = '';
     const sug = document.getElementById('memberSuggestBox');
     if (sug) sug.style.display = 'none';
 
@@ -7957,9 +7976,10 @@
       btnAdd.style.borderColor = "#38bdf8";
     }
 
-    document.getElementById('modalInputNama').style.display = 'flex';
+    const elModal = document.getElementById('modalInputNama');
+    if (elModal) elModal.style.display = 'flex';
     ambilStatusCookieRoblox();
-    setTimeout(() => { document.getElementById('inputUserRoblox').focus(); }, 100);
+    setTimeout(() => { document.getElementById('inputUserRoblox')?.focus(); }, 100);
   }
 
   function updateModalPreviewUI(robloxUser, nick, avatarUrl) {
@@ -7997,23 +8017,29 @@
   }
 
   function tutupModalNama() {
-    document.getElementById('modalInputNama').style.display = 'none';
+    const elModal = document.getElementById('modalInputNama');
+    if (elModal) elModal.style.display = 'none';
   }
 
   function resetFormModalNama() {
-    document.getElementById('inputUserRoblox').value = '';
-    document.getElementById('inputNamaTikTok').value = '';
-    document.getElementById('inputDisplayName').value = '';
-    document.getElementById('inputAvatarUrl').value = '';
+    const elRob = document.getElementById('inputUserRoblox');
+    if (elRob) elRob.value = '';
+    const elTik = document.getElementById('inputNamaTikTok');
+    if (elTik) elTik.value = '';
+    const elDisp = document.getElementById('inputDisplayName');
+    if (elDisp) elDisp.value = '';
+    const elAv = document.getElementById('inputAvatarUrl');
+    if (elAv) elAv.value = '';
     const inUid = document.getElementById('inputUserId');
     if (inUid) inUid.value = '';
     const in3d = document.getElementById('inputAvatar3dUrl');
     if (in3d) in3d.value = '';
     updateModalPreviewUI('', '', '');
-    document.getElementById('modalSearchStatus').innerText = '';
+    const elStat = document.getElementById('modalSearchStatus');
+    if (elStat) elStat.innerText = '';
     const btnPakai = document.getElementById('btnPakaiManual');
     if (btnPakai) btnPakai.style.display = 'none';
-    document.getElementById('inputUserRoblox').focus();
+    if (elRob) elRob.focus();
   }
 
   
@@ -8183,45 +8209,60 @@
 
 
   function pakaiUsernameIniLangsung() {
-    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '').trim();
+    const elRob = document.getElementById('inputUserRoblox');
+    const rawInput = (elRob ? elRob.value : '').trim().replace(/^@+/, '').trim();
     if (!rawInput) return;
     const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(rawInput)}&background=0284c7&color=fff&rounded=true&bold=true`;
 
-    document.getElementById('inputDisplayName').value = rawInput;
+    const elDisp = document.getElementById('inputDisplayName');
+    if (elDisp) elDisp.value = rawInput;
 
-    document.getElementById('inputAvatarUrl').value = fallbackAvatar;
+    const elAv = document.getElementById('inputAvatarUrl');
+    if (elAv) elAv.value = fallbackAvatar;
     const in3d = document.getElementById('inputAvatar3dUrl');
     if (in3d) in3d.value = fallbackAvatar;
     updateModalPreviewUI(rawInput, rawInput, fallbackAvatar);
     const statusEl = document.getElementById('modalSearchStatus');
-    statusEl.style.color = '#f59e0b';
-    statusEl.innerText = `Menggunakan akun "@${rawInput}" langsung ✔`;
-    document.getElementById('btnPakaiManual').style.display = 'none';
+    if (statusEl) {
+      statusEl.style.color = '#f59e0b';
+      statusEl.innerText = `Menggunakan akun "@${rawInput}" langsung ✔`;
+    }
+    const btnPakai = document.getElementById('btnPakaiManual');
+    if (btnPakai) btnPakai.style.display = 'none';
   }
 
   async function mulaiCariAkunRobloxAuto() {
-    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '').trim();
+    const elRob = document.getElementById('inputUserRoblox');
+    const rawInput = (elRob ? elRob.value : '').trim().replace(/^@+/, '').trim();
     const statusEl = document.getElementById('modalSearchStatus');
     const btnCari = document.getElementById('btnCariRoblox');
     const btnPakai = document.getElementById('btnPakaiManual');
 
     if (!rawInput) {
-      statusEl.style.color = '#ef4444';
-      statusEl.innerText = 'Ketik username Roblox terlebih dahulu!';
+      if (statusEl) {
+        statusEl.style.color = '#ef4444';
+        statusEl.innerText = 'Ketik username Roblox terlebih dahulu!';
+      }
       if (btnPakai) btnPakai.style.display = 'none';
       return;
     }
 
-    btnCari.disabled = true;
-    btnCari.innerText = '🔍 Mencari...';
+    if (btnCari) {
+      btnCari.disabled = true;
+      btnCari.innerText = '🔍 Mencari...';
+    }
     if (btnPakai) btnPakai.style.display = 'none';
-    statusEl.style.color = 'var(--primary)';
-    statusEl.innerText = 'Menghubungkan ke server Roblox...';
+    if (statusEl) {
+      statusEl.style.color = 'var(--primary)';
+      statusEl.innerText = 'Menghubungkan ke server Roblox...';
+    }
 
     const hasil = await fetchCariRoblox(rawInput);
 
-    btnCari.disabled = false;
-    btnCari.innerText = '🔍 Cari';
+    if (btnCari) {
+      btnCari.disabled = false;
+      btnCari.innerText = '🔍 Cari';
+    }
 
     const uname = hasil ? (hasil.userName || hasil.username) : null;
     if (hasil && uname) {
@@ -8230,12 +8271,12 @@
       const av3d = hasil.avatar3dUrl || avUrl;
       const uid = hasil.userId || '';
 
-      document.getElementById('inputUserRoblox').value = uname;
-      document.getElementById('inputDisplayName').value = dname;
+      if (elRob) elRob.value = uname;
+      const elDisp = document.getElementById('inputDisplayName');
+      if (elDisp) elDisp.value = dname;
 
-
-
-      document.getElementById('inputAvatarUrl').value = avUrl;
+      const elAv = document.getElementById('inputAvatarUrl');
+      if (elAv) elAv.value = avUrl;
       const elUid = document.getElementById('inputUserId');
       if (elUid) elUid.value = uid;
       const el3d = document.getElementById('inputAvatar3dUrl');
@@ -8243,8 +8284,10 @@
 
       updateModalPreviewUI(uname, dname, av3d || avUrl);
 
-      statusEl.style.color = '#4ade80';
-      statusEl.innerText = `Akun ditemukan: @${uname} (${dname}) ✔`;
+      if (statusEl) {
+        statusEl.style.color = '#4ade80';
+        statusEl.innerText = `Akun ditemukan: @${uname} (${dname}) ✔`;
+      }
       if (btnPakai) btnPakai.style.display = 'none';
 
       const btnAdd = document.getElementById('btnAutoAddFriend');
@@ -8256,8 +8299,10 @@
         btnAdd.style.borderColor = "#38bdf8";
       }
     } else {
-      statusEl.style.color = '#ef4444';
-      statusEl.innerText = 'Akun tidak ditemukan di Roblox. Ingin pakai nama ini?';
+      if (statusEl) {
+        statusEl.style.color = '#ef4444';
+        statusEl.innerText = 'Akun tidak ditemukan di Roblox. Ingin pakai nama ini?';
+      }
       if (btnPakai) {
         btnPakai.style.display = 'inline-block';
         btnPakai.innerText = `Gunakan "${rawInput}"`;
@@ -8266,14 +8311,15 @@
   }
 
   function simpanDataModalNama() {
-    const idx = parseInt(document.getElementById('editPlayerIndex').value);
-    if (isNaN(idx)) return;
+    const elIdx = document.getElementById('editPlayerIndex');
+    const idx = parseInt(elIdx ? elIdx.value : '-1');
+    if (isNaN(idx) || idx < 0) return;
 
     const s = getSesi();
-    const robloxU = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '');
-    const namaPemain = document.getElementById('inputNamaTikTok').value.trim();
-    const displayN = document.getElementById('inputDisplayName').value.trim().replace(/^@+/, '');
-    const avatarA = document.getElementById('inputAvatarUrl').value.trim();
+    const robloxU = (document.getElementById('inputUserRoblox')?.value || '').trim().replace(/^@+/, '');
+    const namaPemain = (document.getElementById('inputNamaTikTok')?.value || '').trim();
+    const displayN = (document.getElementById('inputDisplayName')?.value || '').trim().replace(/^@+/, '');
+    const avatarA = (document.getElementById('inputAvatarUrl')?.value || '').trim();
     const elUid = document.getElementById('inputUserId');
     const userIdVal = elUid && elUid.value ? parseInt(elUid.value) : null;
     const el3dVal = document.getElementById('inputAvatar3dUrl') ? document.getElementById('inputAvatar3dUrl').value.trim() : '';
@@ -8326,53 +8372,49 @@
 
   function bukaModalPoin() { 
     const m = db.warnaPoin.matrix || DEFAULT_MATRIKS_TIER;
-    document.getElementById('inputWaktuBinMenit').value = db.warnaPoin.waktuBinMenit !== undefined ? db.warnaPoin.waktuBinMenit : 15;
-    document.getElementById('mat_legend_base').value = m.legend.base ?? 1;
-    document.getElementById('mat_legend_big_on').checked = !!m.legend.bigOn;
-    document.getElementById('mat_legend_big_val').value = m.legend.bigVal ?? 0;
-    document.getElementById('mat_legend_shiny_on').checked = !!m.legend.shinyOn;
-    document.getElementById('mat_legend_shiny_val').value = m.legend.shinyVal ?? 0;
-    document.getElementById('mat_legend_mutasi_on').checked = !!m.legend.mutasiOn;
-    document.getElementById('mat_legend_mutasi_val').value = m.legend.mutasiVal ?? 0;
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
 
-    document.getElementById('mat_mitos_base').value = m.mitos.base ?? 2;
-    document.getElementById('mat_mitos_big_on').checked = !!m.mitos.bigOn;
-    document.getElementById('mat_mitos_big_val').value = m.mitos.bigVal ?? 1;
-    document.getElementById('mat_mitos_shiny_on').checked = !!m.mitos.shinyOn;
-    document.getElementById('mat_mitos_shiny_val').value = m.mitos.shinyVal ?? 1;
-    document.getElementById('mat_mitos_mutasi_on').checked = !!m.mitos.mutasiOn;
-    document.getElementById('mat_mitos_mutasi_val').value = m.mitos.mutasiVal ?? 1;
+    setVal('inputWaktuBinMenit', db.warnaPoin.waktuBinMenit !== undefined ? db.warnaPoin.waktuBinMenit : 15);
+    setVal('mat_legend_base', m.legend.base ?? 1);
+    setChk('mat_legend_big_on', m.legend.bigOn);
+    setVal('mat_legend_big_val', m.legend.bigVal ?? 0);
+    setChk('mat_legend_shiny_on', m.legend.shinyOn);
+    setVal('mat_legend_shiny_val', m.legend.shinyVal ?? 0);
+    setChk('mat_legend_mutasi_on', m.legend.mutasiOn);
+    setVal('mat_legend_mutasi_val', m.legend.mutasiVal ?? 0);
 
-    document.getElementById('mat_secret_base').value = m.secret.base ?? 3;
-    document.getElementById('mat_secret_big_on').checked = !!m.secret.bigOn;
-    document.getElementById('mat_secret_big_val').value = m.secret.bigVal ?? 2;
-    document.getElementById('mat_secret_shiny_on').checked = !!m.secret.shinyOn;
-    document.getElementById('mat_secret_shiny_val').value = m.secret.shinyVal ?? 2;
-    document.getElementById('mat_secret_mutasi_on').checked = !!m.secret.mutasiOn;
-    document.getElementById('mat_secret_mutasi_val').value = m.secret.mutasiVal ?? 3;
+    setVal('mat_mitos_base', m.mitos.base ?? 2);
+    setChk('mat_mitos_big_on', m.mitos.bigOn);
+    setVal('mat_mitos_big_val', m.mitos.bigVal ?? 1);
+    setChk('mat_mitos_shiny_on', m.mitos.shinyOn);
+    setVal('mat_mitos_shiny_val', m.mitos.shinyVal ?? 1);
+    setChk('mat_mitos_mutasi_on', m.mitos.mutasiOn);
+    setVal('mat_mitos_mutasi_val', m.mitos.mutasiVal ?? 1);
+
+    setVal('mat_secret_base', m.secret.base ?? 3);
+    setChk('mat_secret_big_on', m.secret.bigOn);
+    setVal('mat_secret_big_val', m.secret.bigVal ?? 2);
+    setChk('mat_secret_shiny_on', m.secret.shinyOn);
+    setVal('mat_secret_shiny_val', m.secret.shinyVal ?? 2);
+    setChk('mat_secret_mutasi_on', m.secret.mutasiOn);
+    setVal('mat_secret_mutasi_val', m.secret.mutasiVal ?? 3);
 
     const k = m.khusus || { nama: '', base: 5, bigOn: true, bigVal: 2, shinyOn: true, shinyVal: 2, mutasiOn: true, mutasiVal: 3 };
-    const elNamaKhusus = document.getElementById('mat_khusus_nama');
-    if (elNamaKhusus) elNamaKhusus.value = k.nama || '';
-    const elBaseKhusus = document.getElementById('mat_khusus_base');
-    if (elBaseKhusus) elBaseKhusus.value = k.base ?? 5;
-    const elBigOnKhusus = document.getElementById('mat_khusus_big_on');
-    if (elBigOnKhusus) elBigOnKhusus.checked = !!k.bigOn;
-    const elBigValKhusus = document.getElementById('mat_khusus_big_val');
-    if (elBigValKhusus) elBigValKhusus.value = k.bigVal ?? 2;
-    const elShinyOnKhusus = document.getElementById('mat_khusus_shiny_on');
-    if (elShinyOnKhusus) elShinyOnKhusus.checked = !!k.shinyOn;
-    const elShinyValKhusus = document.getElementById('mat_khusus_shiny_val');
-    if (elShinyValKhusus) elShinyValKhusus.value = k.shinyVal ?? 2;
-    const elMutasiOnKhusus = document.getElementById('mat_khusus_mutasi_on');
-    if (elMutasiOnKhusus) elMutasiOnKhusus.checked = !!k.mutasiOn;
-    const elMutasiValKhusus = document.getElementById('mat_khusus_mutasi_val');
-    if (elMutasiValKhusus) elMutasiValKhusus.value = k.mutasiVal ?? 3;
+    setVal('mat_khusus_nama', k.nama || '');
+    setVal('mat_khusus_base', k.base ?? 5);
+    setChk('mat_khusus_big_on', k.bigOn);
+    setVal('mat_khusus_big_val', k.bigVal ?? 2);
+    setChk('mat_khusus_shiny_on', k.shinyOn);
+    setVal('mat_khusus_shiny_val', k.shinyVal ?? 2);
+    setChk('mat_khusus_mutasi_on', k.mutasiOn);
+    setVal('mat_khusus_mutasi_val', k.mutasiVal ?? 3);
 
-    document.getElementById('inputBonusBin').value = db.warnaPoin.bonusBin ?? 1;
+    setVal('inputBonusBin', db.warnaPoin.bonusBin ?? 1);
 
     sinkronkanInputMatriksUI();
-    document.getElementById('modalPoin').style.display = 'flex'; 
+    const elModal = document.getElementById('modalPoin');
+    if (elModal) elModal.style.display = 'flex'; 
   }
 
   function sinkronkanInputMatriksUI() {
@@ -8385,7 +8427,10 @@
     });
   }
 
-  function tutupModalPoin() { document.getElementById('modalPoin').style.display = 'none'; }
+  function tutupModalPoin() {
+    const elModal = document.getElementById('modalPoin');
+    if (elModal) elModal.style.display = 'none';
+  }
   function tutupModalDiLuar(e) {
     if (e.target.id === 'modalPoin') tutupModalPoin();
     if (e.target.id === 'modalInputNama') tutupModalNama();
@@ -8401,36 +8446,36 @@
   function simpanPoinWarna() {
     sinkronkanInputMatriksUI();
     const bonusBinLama = dapatkanBonusBinAktif();
-    const bonusBinBaru = Math.max(0, parseInt(document.getElementById('inputBonusBin').value) || 0);
+    const bonusBinBaru = Math.max(0, parseInt(document.getElementById('inputBonusBin')?.value) || 0);
     const selisihBin = bonusBinBaru - bonusBinLama;
 
     const matrixBaru = {
       legend: {
-        base: Math.max(0, parseInt(document.getElementById('mat_legend_base').value) || 0),
-        bigOn: document.getElementById('mat_legend_big_on').checked,
-        bigVal: Math.max(0, parseInt(document.getElementById('mat_legend_big_val').value) || 0),
-        shinyOn: document.getElementById('mat_legend_shiny_on').checked,
-        shinyVal: Math.max(0, parseInt(document.getElementById('mat_legend_shiny_val').value) || 0),
-        mutasiOn: document.getElementById('mat_legend_mutasi_on').checked,
-        mutasiVal: Math.max(0, parseInt(document.getElementById('mat_legend_mutasi_val').value) || 0)
+        base: Math.max(0, parseInt(document.getElementById('mat_legend_base')?.value) || 0),
+        bigOn: !!document.getElementById('mat_legend_big_on')?.checked,
+        bigVal: Math.max(0, parseInt(document.getElementById('mat_legend_big_val')?.value) || 0),
+        shinyOn: !!document.getElementById('mat_legend_shiny_on')?.checked,
+        shinyVal: Math.max(0, parseInt(document.getElementById('mat_legend_shiny_val')?.value) || 0),
+        mutasiOn: !!document.getElementById('mat_legend_mutasi_on')?.checked,
+        mutasiVal: Math.max(0, parseInt(document.getElementById('mat_legend_mutasi_val')?.value) || 0)
       },
       mitos: {
-        base: Math.max(0, parseInt(document.getElementById('mat_mitos_base').value) || 0),
-        bigOn: document.getElementById('mat_mitos_big_on').checked,
-        bigVal: Math.max(0, parseInt(document.getElementById('mat_mitos_big_val').value) || 0),
-        shinyOn: document.getElementById('mat_mitos_shiny_on').checked,
-        shinyVal: Math.max(0, parseInt(document.getElementById('mat_mitos_shiny_val').value) || 0),
-        mutasiOn: document.getElementById('mat_mitos_mutasi_on').checked,
-        mutasiVal: Math.max(0, parseInt(document.getElementById('mat_mitos_mutasi_val').value) || 0)
+        base: Math.max(0, parseInt(document.getElementById('mat_mitos_base')?.value) || 0),
+        bigOn: !!document.getElementById('mat_mitos_big_on')?.checked,
+        bigVal: Math.max(0, parseInt(document.getElementById('mat_mitos_big_val')?.value) || 0),
+        shinyOn: !!document.getElementById('mat_mitos_shiny_on')?.checked,
+        shinyVal: Math.max(0, parseInt(document.getElementById('mat_mitos_shiny_val')?.value) || 0),
+        mutasiOn: !!document.getElementById('mat_mitos_mutasi_on')?.checked,
+        mutasiVal: Math.max(0, parseInt(document.getElementById('mat_mitos_mutasi_val')?.value) || 0)
       },
       secret: {
-        base: Math.max(0, parseInt(document.getElementById('mat_secret_base').value) || 0),
-        bigOn: document.getElementById('mat_secret_big_on').checked,
-        bigVal: Math.max(0, parseInt(document.getElementById('mat_secret_big_val').value) || 0),
-        shinyOn: document.getElementById('mat_secret_shiny_on').checked,
-        shinyVal: Math.max(0, parseInt(document.getElementById('mat_secret_shiny_val').value) || 0),
-        mutasiOn: document.getElementById('mat_secret_mutasi_on').checked,
-        mutasiVal: Math.max(0, parseInt(document.getElementById('mat_secret_mutasi_val').value) || 0)
+        base: Math.max(0, parseInt(document.getElementById('mat_secret_base')?.value) || 0),
+        bigOn: !!document.getElementById('mat_secret_big_on')?.checked,
+        bigVal: Math.max(0, parseInt(document.getElementById('mat_secret_big_val')?.value) || 0),
+        shinyOn: !!document.getElementById('mat_secret_shiny_on')?.checked,
+        shinyVal: Math.max(0, parseInt(document.getElementById('mat_secret_shiny_val')?.value) || 0),
+        mutasiOn: !!document.getElementById('mat_secret_mutasi_on')?.checked,
+        mutasiVal: Math.max(0, parseInt(document.getElementById('mat_secret_mutasi_val')?.value) || 0)
       },
       khusus: {
         nama: (document.getElementById('mat_khusus_nama')?.value || '').trim(),
@@ -8444,7 +8489,7 @@
       }
     };
 
-    const waktuBinBaru = Math.max(0, parseInt(document.getElementById('inputWaktuBinMenit').value) || 0);
+    const waktuBinBaru = Math.max(0, parseInt(document.getElementById('inputWaktuBinMenit')?.value) || 0);
     db.warnaPoin = {
       bonusBin: bonusBinBaru,
       waktuBinMenit: waktuBinBaru,
@@ -9656,7 +9701,8 @@
   });
 
   async function jalankanAutoAddFriend() {
-    const rawInput = document.getElementById('inputUserRoblox').value.trim().replace(/^@+/, '').trim();
+    const elRob = document.getElementById('inputUserRoblox');
+    const rawInput = (elRob ? elRob.value : '').trim().replace(/^@+/, '').trim();
     const btnAdd = document.getElementById('btnAutoAddFriend');
     const statusEl = document.getElementById('modalSearchStatus');
 
@@ -9668,8 +9714,10 @@
       return;
     }
 
-    btnAdd.disabled = true;
-    btnAdd.innerText = "⏳ Memproses...";
+    if (btnAdd) {
+      btnAdd.disabled = true;
+      btnAdd.innerText = "⏳ Memproses...";
+    }
     if (statusEl) {
       statusEl.style.color = '#38bdf8';
       statusEl.innerText = `Mencari & memproses akun @${rawInput}...`;
@@ -9691,12 +9739,12 @@
         av3d = hasilProfil.avatar3dUrl || avUrl;
         uid = hasilProfil.userId || '';
 
-        document.getElementById('inputUserRoblox').value = uname;
-        document.getElementById('inputDisplayName').value = dname;
+        if (elRob) elRob.value = uname;
+        const elDisp = document.getElementById('inputDisplayName');
+        if (elDisp) elDisp.value = dname;
 
-
-
-        document.getElementById('inputAvatarUrl').value = avUrl;
+        const elAv = document.getElementById('inputAvatarUrl');
+        if (elAv) elAv.value = avUrl;
         const elUid = document.getElementById('inputUserId');
         if (elUid) elUid.value = uid;
         const el3d = document.getElementById('inputAvatar3dUrl');
@@ -9733,55 +9781,65 @@
       } catch (_) {}
     }
 
-    btnAdd.disabled = false;
+    if (btnAdd) btnAdd.disabled = false;
 
     if (responseData) {
       const statusRelasi = responseData.status || "";
       const pesanServer = (responseData.pesan || "").toLowerCase();
 
       if (statusRelasi === "FRIENDS" || pesanServer.includes("sudah berteman") || pesanServer.includes("already a friend")) {
-        btnAdd.innerText = "✔ Berteman";
-        btnAdd.style.background = "#0b1928";
-        btnAdd.style.color = "#38bdf8";
-        btnAdd.style.borderColor = "#38bdf8";
+        if (btnAdd) {
+          btnAdd.innerText = "✔ Berteman";
+          btnAdd.style.background = "#0b1928";
+          btnAdd.style.color = "#38bdf8";
+          btnAdd.style.borderColor = "#38bdf8";
+        }
         if (statusEl) {
           statusEl.style.color = '#22c55e';
           statusEl.innerHTML = `✔ <b>@${uname}</b> (${dname}) sudah terdaftar sebagai teman di Roblox. Klik <b>💾 Simpan Data</b> untuk mengunci kursi!`;
         }
       } else if (statusRelasi === "SENT_SUCCESS") {
-        btnAdd.innerText = "⏳ Terkirim";
-        btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
-        btnAdd.style.color = "#22c55e";
-        btnAdd.style.borderColor = "#22c55e";
+        if (btnAdd) {
+          btnAdd.innerText = "⏳ Terkirim";
+          btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
+          btnAdd.style.color = "#22c55e";
+          btnAdd.style.borderColor = "#22c55e";
+        }
         if (statusEl) {
           statusEl.style.color = '#4ade80';
           statusEl.innerHTML = `Permintaan pertemanan terkirim ke <b>@${uname}</b>! Klik <b>💾 Simpan Data</b>.`;
         }
         tambahLogAktivitas('ROBLOX', `Permintaan pertemanan dikirim ke ${uname}`, 'system');
       } else if (statusRelasi === "PENDING_SENT") {
-        btnAdd.innerText = "⏳ Pending";
-        btnAdd.style.background = "rgba(245, 158, 11, 0.15)";
-        btnAdd.style.color = "#f59e0b";
-        btnAdd.style.borderColor = "#f59e0b";
+        if (btnAdd) {
+          btnAdd.innerText = "⏳ Pending";
+          btnAdd.style.background = "rgba(245, 158, 11, 0.15)";
+          btnAdd.style.color = "#f59e0b";
+          btnAdd.style.borderColor = "#f59e0b";
+        }
         if (statusEl) {
           statusEl.style.color = '#f59e0b';
           statusEl.innerHTML = `Permintaan pertemanan ke <b>@${uname}</b> sudah pernah dikirim (Pending). Klik <b>💾 Simpan Data</b>.`;
         }
       } else {
-        btnAdd.innerText = "✔ Terpasang";
-        btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
-        btnAdd.style.color = "#22c55e";
-        btnAdd.style.borderColor = "#22c55e";
+        if (btnAdd) {
+          btnAdd.innerText = "✔ Terpasang";
+          btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
+          btnAdd.style.color = "#22c55e";
+          btnAdd.style.borderColor = "#22c55e";
+        }
         if (statusEl) {
           statusEl.style.color = '#4ade80';
           statusEl.innerHTML = `Akun terverifikasi: <b>@${uname}</b> (${dname}) ✔ Klik <b>💾 Simpan Data</b> untuk mengunci kursi!`;
         }
       }
     } else {
-      btnAdd.innerText = "✔ Terpasang";
-      btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
-      btnAdd.style.color = "#22c55e";
-      btnAdd.style.borderColor = "#22c55e";
+      if (btnAdd) {
+        btnAdd.innerText = "✔ Terpasang";
+        btnAdd.style.background = "rgba(34, 197, 94, 0.2)";
+        btnAdd.style.color = "#22c55e";
+        btnAdd.style.borderColor = "#22c55e";
+      }
       if (statusEl) {
         statusEl.style.color = '#4ade80';
         statusEl.innerHTML = `Akun terverifikasi: <b>@${uname}</b> (${dname}) ✔ Klik <b>💾 Simpan Data</b> untuk mengunci kursi!`;
@@ -9792,7 +9850,10 @@
   // ========================================================
   // PENGATURAN COOKIE ROBLOX (.ROBLOSECURITY)
   // ========================================================
-  let cookieRobloxAktif = localStorage.getItem('roblox_cookie') || '';
+  let cookieRobloxAktif = '';
+  try {
+    cookieRobloxAktif = localStorage.getItem('roblox_cookie') || '';
+  } catch(_) {}
   let cookieLihatMode = false;
   let botRobloxInfo = null;
 
@@ -9896,7 +9957,7 @@
   }
 
   async function tesValiditasCookieRoblox() {
-    const rawVal = document.getElementById('inputKodeCookie').value.trim();
+    const rawVal = (document.getElementById('inputKodeCookie')?.value || '').trim();
     const msg = document.getElementById('msgStatusSimpanCookie');
     const btnTes = document.getElementById('btnTesCookie');
 
@@ -9955,7 +10016,7 @@
   }
 
   async function simpanCookieRoblox() {
-    const rawVal = document.getElementById('inputKodeCookie').value.trim();
+    const rawVal = (document.getElementById('inputKodeCookie')?.value || '').trim();
     const msg = document.getElementById('msgStatusSimpanCookie');
     const btnSimpan = document.getElementById('btnSimpanCookie');
 
@@ -10020,7 +10081,7 @@
   async function hapusCookieRoblox() {
     if (!confirm('Apakah Anda yakin ingin menghapus cookie Roblox?')) return;
     cookieRobloxAktif = '';
-    localStorage.removeItem('roblox_cookie');
+    try { localStorage.removeItem('roblox_cookie'); } catch(_) {}
     const inp = document.getElementById('inputKodeCookie');
     if (inp) inp.value = '';
 
@@ -10208,11 +10269,13 @@
   // INISIALISASI TEMA BIOLUMINESCENT CRYSTAL CLEAR
   window.addEventListener('DOMContentLoaded', () => {
     document.body.classList.remove('light-mode', 'club-mode');
-    localStorage.removeItem('galatama_active_theme_mode');
-    localStorage.removeItem('galatama_light_mode');
-    localStorage.removeItem('galatama_club_mode_active');
-    localStorage.removeItem('galatama_active_font_name');
-    localStorage.removeItem('galatama_active_font_css');
+    try {
+      localStorage.removeItem('galatama_active_theme_mode');
+      localStorage.removeItem('galatama_light_mode');
+      localStorage.removeItem('galatama_club_mode_active');
+      localStorage.removeItem('galatama_active_font_name');
+      localStorage.removeItem('galatama_active_font_css');
+    } catch(_) {}
     const dynamicFont = document.getElementById('dynamicActiveFontStyling');
     if (dynamicFont) dynamicFont.remove();
   });
@@ -10495,7 +10558,7 @@
 
           <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
             <input type="file" id="file_fish_${safeKey}" accept="image/*" style="display:none;" onchange="unggahFotoIkan('${f.key}', event)">
-            <button type="button" class="btn-action-soft" style="padding:4px 8px; font-size:10.5px; font-weight:800;" onclick="document.getElementById('file_fish_${safeKey}').click()" title="Unggah Screenshot/Foto">📁 Unggah</button>
+            <button type="button" class="btn-action-soft" style="padding:4px 8px; font-size:10.5px; font-weight:800;" onclick="document.getElementById('file_fish_${safeKey}')?.click()" title="Unggah Screenshot/Foto">📁 Unggah</button>
             <button type="button" class="btn-action-soft" style="padding:4px 8px; font-size:10.5px; font-weight:800;" onclick="gantiUrlIkan('${f.key}')" title="Masukkan URL Gambar">🔗 Link</button>
             ${isCustom ? `<button type="button" class="btn-action-soft" style="padding:4px 8px; font-size:10.5px; font-weight:800; color:#ef4444;" onclick="resetFotoIkan('${f.key}')" title="Kembalikan Default">🔄</button>` : ''}
             <button type="button" class="btn-action-soft" style="padding:4px 8px; font-size:10.5px; font-weight:800; color:#0284c7; background:#e0f2fe;" onclick="tesNotifIkan('${f.name}', '${f.tier}')" title="Tes Tampilkan di Notif">⚡ Tes</button>
@@ -10588,11 +10651,14 @@
   let bgmMasterVolume = 0.5;
   let bgmCurrentZone = '';
   let bgmAudioCurrent = null;
-  let bgmAudioNext = null;
+  let bgmCrossfadeOldAudio = null;
   let bgmFadeInterval = null;
+  let bgmVolumeInterval = null;
+  let bgmDuckRestoreTimer = null;
   let bgmIsDucked = false;
   let bgmPreDuckVolume = 0.5;
   let bgmTestAudio = null;
+  let bgmTestTimer = null;
 
   try {
     const _be = localStorage.getItem('bgm_enabled');
@@ -10609,7 +10675,7 @@
     if (elBgmOn) bgmEnabled = elBgmOn.checked;
 
     const elBgmVol = document.getElementById('sliderBgmVolume');
-    if (elBgmVol) bgmMasterVolume = parseInt(elBgmVol.value, 10) / 100;
+    if (elBgmVol) bgmMasterVolume = Math.max(0, Math.min(1, parseInt(elBgmVol.value, 10) / 100));
   }
 
   // --- BGM: Populate UI from state ---
@@ -10649,6 +10715,13 @@
     muatBgmDariUi();
     try { localStorage.setItem('bgm_enabled', String(bgmEnabled)); } catch(_) {}
     try { localStorage.setItem('bgm_volume', String(bgmMasterVolume)); } catch(_) {}
+    if (!bgmEnabled) {
+      bgmStopAll();
+    } else if (bgmAudioCurrent && !bgmAudioCurrent.paused) {
+      try { bgmAudioCurrent.volume = bgmIsDucked ? bgmMasterVolume * 0.3 : bgmMasterVolume; } catch(_) {}
+    } else if (isMatchSedangJalan && !isMatchDijeda) {
+      bgmStartMatch();
+    }
   }
 
   // --- BGM: Bind UI sliders live update ---
@@ -10658,6 +10731,13 @@
       elBgmVol.addEventListener('input', function() {
         const lbl = document.getElementById('labelBgmVolume');
         if (lbl) lbl.textContent = elBgmVol.value + '%';
+        const liveVol = Math.max(0, Math.min(1, parseInt(elBgmVol.value, 10) / 100));
+        if (bgmTestAudio) {
+          try { bgmTestAudio.volume = liveVol; } catch(_) {}
+        }
+        if (bgmAudioCurrent && !bgmAudioCurrent.paused) {
+          try { bgmAudioCurrent.volume = bgmIsDucked ? liveVol * 0.3 : liveVol; } catch(_) {}
+        }
       });
     }
     const elBgmOn = document.getElementById('toggleBgmEnabled');
@@ -10725,24 +10805,31 @@
     }
   }
 
-  function tesBgmFile(zone) {
+  function stopBgmTestAudio() {
+    if (bgmTestTimer) {
+      clearTimeout(bgmTestTimer);
+      bgmTestTimer = null;
+    }
     if (bgmTestAudio) {
-      bgmTestAudio.pause();
+      try { bgmTestAudio.pause(); bgmTestAudio.src = ''; } catch(_) {}
       bgmTestAudio = null;
     }
+  }
+
+  function tesBgmFile(zone) {
+    stopBgmTestAudio();
     const dataUrl = bgmGetDataUrl(zone);
     if (!dataUrl) {
       alert('Belum ada file BGM untuk zona ' + zone.toUpperCase());
       return;
     }
+    const elBgmVol = document.getElementById('sliderBgmVolume');
+    const vol = elBgmVol ? Math.max(0, Math.min(1, parseInt(elBgmVol.value, 10) / 100)) : bgmMasterVolume;
     bgmTestAudio = new Audio(dataUrl);
-    bgmTestAudio.volume = bgmMasterVolume;
+    bgmTestAudio.volume = vol;
     bgmTestAudio.play().catch(function() {});
-    setTimeout(function() {
-      if (bgmTestAudio) {
-        bgmTestAudio.pause();
-        bgmTestAudio = null;
-      }
+    bgmTestTimer = setTimeout(function() {
+      stopBgmTestAudio();
     }, 8000);
   }
 
@@ -10757,6 +10844,17 @@
     if (timerSec <= 60) return 'kritis';
     if (timerSec <= 600) return 'tegang';
     return 'normal';
+  }
+
+  function bgmClearFadeInterval() {
+    if (bgmFadeInterval) {
+      clearInterval(bgmFadeInterval);
+      bgmFadeInterval = null;
+    }
+    if (bgmCrossfadeOldAudio) {
+      try { bgmCrossfadeOldAudio.pause(); bgmCrossfadeOldAudio.src = ''; } catch(_) {}
+      bgmCrossfadeOldAudio = null;
+    }
   }
 
   function bgmPlay(zone) {
@@ -10780,7 +10878,7 @@
     newAudio.volume = 0;
 
     if (bgmAudioCurrent && !bgmAudioCurrent.paused) {
-      // Crossfade
+      bgmClearFadeInterval();
       const oldAudio = bgmAudioCurrent;
       bgmAudioCurrent = newAudio;
       newAudio.play().catch(function() {});
@@ -10788,6 +10886,10 @@
       const targetVol = bgmIsDucked ? bgmMasterVolume * 0.3 : bgmMasterVolume;
       bgmCrossfade(oldAudio, newAudio, targetVol, 2000);
     } else {
+      bgmClearFadeInterval();
+      if (bgmAudioCurrent) {
+        try { bgmAudioCurrent.pause(); bgmAudioCurrent.src = ''; } catch(_) {}
+      }
       bgmAudioCurrent = newAudio;
       const targetVol = bgmIsDucked ? bgmMasterVolume * 0.3 : bgmMasterVolume;
       newAudio.play().catch(function() {});
@@ -10800,8 +10902,8 @@
     const interval = durationMs / steps;
     let step = 0;
     const oldStartVol = oldAudio.volume;
+    bgmCrossfadeOldAudio = oldAudio;
 
-    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgmFadeInterval = setInterval(function() {
       step++;
       const progress = step / steps;
@@ -10813,8 +10915,8 @@
       if (step >= steps) {
         clearInterval(bgmFadeInterval);
         bgmFadeInterval = null;
-        oldAudio.pause();
-        try { oldAudio.src = ''; } catch(_) {}
+        try { oldAudio.pause(); oldAudio.src = ''; } catch(_) {}
+        if (bgmCrossfadeOldAudio === oldAudio) bgmCrossfadeOldAudio = null;
       }
     }, interval);
   }
@@ -10824,7 +10926,6 @@
     const interval = durationMs / steps;
     let step = 0;
 
-    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgmFadeInterval = setInterval(function() {
       step++;
       const progress = step / steps;
@@ -10843,13 +10944,14 @@
       if (callback) callback();
       return;
     }
+    bgmClearFadeInterval();
     const audio = bgmAudioCurrent;
+    bgmCrossfadeOldAudio = audio;
     const startVol = audio.volume;
     const steps = 20;
     const interval = 100; // 2s total
     let step = 0;
 
-    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgmFadeInterval = setInterval(function() {
       step++;
       try {
@@ -10858,21 +10960,26 @@
       if (step >= steps) {
         clearInterval(bgmFadeInterval);
         bgmFadeInterval = null;
-        audio.pause();
-        try { audio.src = ''; } catch(_) {}
+        try { audio.pause(); audio.src = ''; } catch(_) {}
+        if (bgmCrossfadeOldAudio === audio) bgmCrossfadeOldAudio = null;
+        if (bgmAudioCurrent === audio) bgmAudioCurrent = null;
         if (callback) callback();
       }
     }, interval);
   }
 
   function bgmStopAll() {
-    if (bgmFadeInterval) {
-      clearInterval(bgmFadeInterval);
-      bgmFadeInterval = null;
+    bgmClearFadeInterval();
+    if (bgmVolumeInterval) {
+      clearInterval(bgmVolumeInterval);
+      bgmVolumeInterval = null;
+    }
+    if (bgmDuckRestoreTimer) {
+      clearTimeout(bgmDuckRestoreTimer);
+      bgmDuckRestoreTimer = null;
     }
     if (bgmAudioCurrent) {
-      bgmAudioCurrent.pause();
-      try { bgmAudioCurrent.src = ''; } catch(_) {}
+      try { bgmAudioCurrent.pause(); bgmAudioCurrent.src = ''; } catch(_) {}
       bgmAudioCurrent = null;
     }
     bgmCurrentZone = '';
@@ -10889,6 +10996,8 @@
     if (!bgmEnabled) return;
     if (bgmAudioCurrent && bgmAudioCurrent.paused && bgmAudioCurrent.src) {
       bgmAudioCurrent.play().catch(function() {});
+    } else if (!bgmAudioCurrent) {
+      bgmStartMatch();
     }
   }
 
@@ -10905,33 +11014,56 @@
   }
 
   // --- Auto-Ducking ---
+  function bgmTriggerAutoDuck(durationMs) {
+    if (!bgmEnabled || !bgmAudioCurrent || bgmAudioCurrent.paused) return;
+    bgmDuck(true);
+    if (bgmDuckRestoreTimer) clearTimeout(bgmDuckRestoreTimer);
+    bgmDuckRestoreTimer = setTimeout(function() {
+      bgmDuckRestoreTimer = null;
+      bgmDuck(false);
+    }, durationMs || 1500);
+  }
+
   function bgmDuck(isDucking) {
     if (!bgmAudioCurrent || bgmAudioCurrent.paused) return;
 
     if (isDucking) {
+      if (!bgmIsDucked) {
+        bgmPreDuckVolume = bgmMasterVolume;
+      }
       bgmIsDucked = true;
-      bgmPreDuckVolume = bgmAudioCurrent.volume;
-      const targetVol = bgmPreDuckVolume * 0.3;
-      bgmSmoothVolume(bgmAudioCurrent, targetVol, 300);
+      const targetVol = bgmMasterVolume * 0.3;
+      bgmSmoothVolume(bgmAudioCurrent, targetVol, 250);
     } else {
+      if (bgmDuckRestoreTimer) {
+        clearTimeout(bgmDuckRestoreTimer);
+        bgmDuckRestoreTimer = null;
+      }
       bgmIsDucked = false;
       const restoreVol = bgmMasterVolume;
-      bgmSmoothVolume(bgmAudioCurrent, restoreVol, 500);
+      bgmSmoothVolume(bgmAudioCurrent, restoreVol, 450);
     }
   }
 
   function bgmSmoothVolume(audio, targetVol, durationMs) {
     if (!audio) return;
+    if (bgmVolumeInterval) {
+      clearInterval(bgmVolumeInterval);
+      bgmVolumeInterval = null;
+    }
     const startVol = audio.volume;
     const steps = 10;
     const interval = durationMs / steps;
     let step = 0;
-    const smoothTimer = setInterval(function() {
+    bgmVolumeInterval = setInterval(function() {
       step++;
       try {
         audio.volume = Math.max(0, Math.min(1, startVol + (targetVol - startVol) * (step / steps)));
       } catch(_) {}
-      if (step >= steps) clearInterval(smoothTimer);
+      if (step >= steps) {
+        clearInterval(bgmVolumeInterval);
+        bgmVolumeInterval = null;
+      }
     }, interval);
   }
 
