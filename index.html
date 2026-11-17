@@ -3212,6 +3212,7 @@
     var isCountdownRunning = false;
     var modeTampilanSaatIni = 'MATCH';
     var hasReceivedInitialSync = false;
+    var lastNtfyTimerBroadcast = 0;
 
     /* =========================================================
        ENGINE SINKRONISASI KILAT: HIVEMQ SECURE WSS + BROADCASTCHANNEL
@@ -3373,15 +3374,27 @@
         localStorage.setItem('auto_skor_event_bus', JSON.stringify(data));
       } catch (_) {}
 
-      // Siarkan ke Live Cloud Bus (ntfy.sh) agar link Web di TikTok LIVE Studio otomatis menerima update real-time
+      // Siarkan ke Live Cloud Bus (ntfy.sh) dengan smart rate-limit guard agar terbebas dari HTTP 429
       if (data.type && !data._fromCloud) {
-        try {
-          fetch('https://ntfy.sh/galatama_auto_skor_live_bus_v1', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Priority': 'urgent' },
-            body: JSON.stringify(data)
-          }).catch(() => {});
-        } catch (_) {}
+        let bolehKirimNtfy = true;
+        const now = Date.now();
+        if (data.type === 'SYNC_TIMER') {
+          // Kirim tick countdown ke ntfy per 5 detik atau saat waktu darurat (<= 5 detik)
+          const isCritical = (typeof data.timerSec === 'number' && data.timerSec <= 5);
+          if (!isCritical && (now - lastNtfyTimerBroadcast < 4500)) {
+            bolehKirimNtfy = false;
+          }
+        }
+        if (bolehKirimNtfy) {
+          if (data.type === 'SYNC_TIMER') lastNtfyTimerBroadcast = now;
+          try {
+            fetch('https://ntfy.sh/galatama_auto_skor_live_bus_v1', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Priority': 'urgent' },
+              body: JSON.stringify(data)
+            }).catch(() => {});
+          } catch (_) {}
+        }
       }
     }
 
@@ -5157,9 +5170,9 @@
   let tipeResetPending = null;
   let sudahCatatMemberSesiIni = false;
 
-  let isCountdownRunning = false;
-  let isMatchSedangJalan = false; 
-  let isMatchDijeda = false;        
+  isCountdownRunning = false;
+  isMatchSedangJalan = false; 
+  isMatchDijeda = false;        
   let isWaitingWinnerAfterQueue = false;
   let isExtraTimeBin = false;
   let extraTimerSec = 0;
@@ -5608,7 +5621,7 @@
     setModeTampilan(mode);
   }
 
-  let modeTampilanSaatIni = 'PREPARE';
+  modeTampilanSaatIni = 'PREPARE';
   function setModeTampilan(mode, broadcast = true) {
     const raw = String(mode || 'PREPARE').trim().toUpperCase();
     const m = (raw === 'SETUP') ? 'PREPARE' : raw;
@@ -5661,19 +5674,25 @@
     }
 
     if (isMatchSedangJalan) {
-      btnTrigger.innerText = "JEDA";
-      btnTrigger.classList.add('running');
-      btnStop.style.display = "inline-flex";
+      if (btnTrigger) {
+        btnTrigger.innerText = "JEDA";
+        btnTrigger.classList.add('running');
+      }
+      if (btnStop) btnStop.style.display = "inline-flex";
       kirimStatusMatchKePython("MATCH");
     } else if (isMatchDijeda) {
-      btnTrigger.innerText = "LANJUT";
-      btnTrigger.classList.remove('running');
-      btnStop.style.display = "inline-flex";
+      if (btnTrigger) {
+        btnTrigger.innerText = "LANJUT";
+        btnTrigger.classList.remove('running');
+      }
+      if (btnStop) btnStop.style.display = "inline-flex";
       kirimStatusMatchKePython("PAUSED");
     } else {
-      btnTrigger.innerText = "MULAI";
-      btnTrigger.classList.remove('running');
-      btnStop.style.display = "none";
+      if (btnTrigger) {
+        btnTrigger.innerText = "MULAI";
+        btnTrigger.classList.remove('running');
+      }
+      if (btnStop) btnStop.style.display = "none";
       kirimStatusMatchKePython("SETUP");
     }
     renderIsiTabel(); 
@@ -5771,9 +5790,8 @@
 
   function kirimStatusMatchKePython(status) {
     if (window.location.protocol === 'https:') return;
-    const isLokalHost = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
-    const endpoint = isLokalHost ? '/set-mode' : 'http://127.0.0.1:5000/set-mode';
-    fetch(endpoint, {
+    if (window.location.port !== '5000') return;
+    fetch('/set-mode', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode: status })
@@ -7974,7 +7992,7 @@
             <div class="avatar-placeholder" style="color:var(--host-text); background:#111a2e;">H</div>
           </div>
           <div style="display:flex; align-items:baseline; gap:6px; overflow:hidden; min-width:0;">
-            <span class="name-roblox-display host-nick" style="color:#ffffff; font-weight:900; font-size:14px;">Host</span>
+            <span class="name-roblox-display host-nick" style="color:#0369a1; font-weight:900; font-size:14px;">Host</span>
             <span class="host-user-handle" style="color:#ff6a00; font-size:12px; font-weight:700;">@username</span>
           </div>
         </div>
@@ -8187,6 +8205,7 @@
   }
 
   function renderIsiTabel() {
+    if (document.documentElement.classList.contains('mode-timer')) return;
     renderHeroPodium();
     const s = getSesi();
     const isModeMatchTampil = document.body.classList.contains('view-match') || isMatchSedangJalan;
@@ -8875,9 +8894,9 @@
   function inisialisasiSSE() {
     const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:');
     
-    // Hubungkan ke Cloud Bus Vercel hanya jika online di cloud
     // Selalu hubungkan ke Cloud Bus (ntfy.sh) agar Master Laptop dan Link Web TikTok Studio tersinkron dua arah
     inisialisasiCloudSSE();
+    if (isLokal) {
       updateSyncBadge(true);
       setStatusSystem(true);
     }
