@@ -20,8 +20,6 @@
         document.documentElement.classList.add('mode-notif');
       } else if (['timer', 'countdown', 'waktu', 'clock'].includes(raw)) {
         document.documentElement.classList.add('mode-timer');
-      } else if (['video', 'animasi', 'vid'].includes(raw)) {
-        document.documentElement.classList.add('mode-video');
       } else {
         document.documentElement.classList.add('mode-admin');
       }
@@ -3220,54 +3218,6 @@
       padding: 0 4px !important;
       user-select: none !important;
     }
-
-
-    /* 5. Mode Video Animasi Ikan Saja (?view=video) */
-    html.mode-video, html.mode-video body {
-      background: transparent !important;
-      background-image: none !important;
-      background-color: transparent !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      overflow: hidden !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      scrollbar-width: none !important;
-    }
-    html.mode-video::-webkit-scrollbar, html.mode-video body::-webkit-scrollbar {
-      display: none !important;
-    }
-    html.mode-video .container,
-    html.mode-video .modal-overlay,
-    html.mode-video .quick-point-popover,
-    html.mode-video .color-picker-mini,
-    html.mode-video #winnerOverlay,
-    html.mode-video #countdownOverlay,
-    html.mode-video #dynamicPillBanner,
-    html.mode-video .esports-toast-hud,
-    html.mode-video .btn-close-fish-video {
-      display: none !important;
-    }
-    html.mode-video #fishVideoOverlay {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      width: 100vw !important;
-      height: 100vh !important;
-    }
-    html.mode-video #fishVideoOverlay.active {
-      display: flex !important;
-      opacity: 1 !important;
-    }
-    html.mode-video .fish-video-wrap {
-      max-width: 96vw;
-      max-height: 96vh;
-    }
-    html.mode-video .fish-video-wrap video {
-      max-width: 96vw;
-      max-height: 94vh;
-    }
-
     /* Indikator Sinkronisasi Real-Time */
     .sync-live-pill {
       display: inline-flex;
@@ -3439,55 +3389,6 @@
       animation: capsuleDangerPulse 0.9s infinite ease-in-out !important;
     }
 
-  
-    /* ========================================================
-       CUSTOM FISH CATCH VIDEO ANIMATION OVERLAY
-       ======================================================== */
-    .fish-video-overlay {
-      position: fixed; inset: 0;
-      display: none; align-items: center; justify-content: center;
-      z-index: 99998;
-      background: radial-gradient(circle at center, rgba(4, 14, 34, 0.55) 0%, rgba(2, 6, 18, 0.72) 100%);
-      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-      pointer-events: none;
-      animation: videoOverlayFadeIn 0.28s ease-out;
-    }
-    .fish-video-overlay.active { display: flex; }
-    @keyframes videoOverlayFadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .fish-video-wrap {
-      position: relative;
-      max-width: 82vw; max-height: 82vh;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: auto;
-    }
-    .fish-video-wrap video {
-      max-width: 82vw; max-height: 80vh;
-      border-radius: 22px;
-      border: 2.5px solid #00f0ff;
-      box-shadow: 0 0 55px rgba(0, 240, 255, 0.55), 0 20px 60px rgba(0, 0, 0, 0.85);
-      background: transparent;
-      object-fit: contain;
-    }
-    .btn-close-fish-video {
-      position: absolute; top: -12px; right: -12px;
-      width: 34px; height: 34px; border-radius: 50%;
-      background: rgba(15, 23, 42, 0.92); color: #fff;
-      border: 2px solid #00f0ff; font-size: 15px; font-weight: 900;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 14px rgba(0, 240, 255, 0.6);
-      transition: all 0.2s;
-    }
-    .btn-close-fish-video:hover { background: #ef4444; border-color: #ef4444; transform: scale(1.1); }
-    html.mode-timer #fishVideoOverlay,
-    html.mode-tabel #fishVideoOverlay,
-    html.mode-top3 #fishVideoOverlay,
-    html.mode-podium #fishVideoOverlay {
-      display: none !important;
-    }
-
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
   <script src="three.min.js"></script>
@@ -3606,8 +3507,7 @@
               document.documentElement.classList.contains('mode-top3') ||
               document.documentElement.classList.contains('mode-podium') ||
               document.documentElement.classList.contains('mode-notif') ||
-              document.documentElement.classList.contains('mode-timer') ||
-              document.documentElement.classList.contains('mode-video')) {
+              document.documentElement.classList.contains('mode-timer')) {
             siarkanSync({ type: 'REQUEST_STATE' });
             let reqAttempt = 0;
             const reqTimer = setInterval(() => {
@@ -3703,8 +3603,7 @@
             !document.documentElement.classList.contains('mode-top3') &&
             !document.documentElement.classList.contains('mode-podium') &&
             !document.documentElement.classList.contains('mode-notif') &&
-            !document.documentElement.classList.contains('mode-timer') &&
-            !document.documentElement.classList.contains('mode-video')) {
+            !document.documentElement.classList.contains('mode-timer')) {
           siarkanSync({
             type: 'SYNC_FULL_STATE',
             db: (db || (function() { try { return JSON.parse(localStorage.getItem('galatama_modern_light_v1') || 'null'); } catch(_) { return null; } })()),
@@ -3826,12 +3725,6 @@
         if (typeof tutupLayarPemenang === 'function') {
           tutupLayarPemenang(false);
         }
-      } else if (msg.type === 'SYNC_VIDEO') {
-        if (msg.videoUrl && typeof putarVideoAnimasiDariUrl === 'function') {
-          putarVideoAnimasiDariUrl(msg.videoUrl, msg.withSound !== false);
-        } else if (msg.ruleId && typeof putarVideoAnimasiLokalDariIDB === 'function') {
-          putarVideoAnimasiLokalDariIDB(msg.ruleId, msg.withSound !== false);
-        }
       } else if (msg.type === 'SYNC_NOTIF') {
         if (typeof tampilkanDynamicPill === 'function') {
           tampilkanDynamicPill(msg.player, msg.rincian, msg.delta, msg.tier, msg.avatar, msg.fishName, false, msg.duration || 2000);
@@ -3879,8 +3772,7 @@
     window.addEventListener('resize', periksaDanAutoFitOverlay);
     window.addEventListener('DOMContentLoaded', () => {
       // BULLETPROOF ISOLASI MODE: Hapus elemen yang dilarang dari DOM agar 100% bersih tanpa interferensi
-      if (document.documentElement.classList.contains('mode-timer') ||
-              document.documentElement.classList.contains('mode-video')) {
+      if (document.documentElement.classList.contains('mode-timer')) {
         // Mode timer HANYA menyajikan kapsul waktu countdown di latar transparan (TikTok Studio & OBS)
         const stg = document.getElementById('podiumHeroStage');
         if (stg) stg.remove();
@@ -4980,14 +4872,6 @@
 </div>
 
 <!-- OVERLAY PODIUM WINNER (LUXURY BRIGHT AWARDS CEREMONY THEME) -->
-
-<!-- OVERLAY VIDEO ANIMASI IKAN TERTENTU -->
-<div class="fish-video-overlay" id="fishVideoOverlay">
-  <div class="fish-video-wrap">
-    <video id="fishCatchVideoPlayer" playsinline autoplay preload="auto"></video>
-    <button type="button" class="btn-close-fish-video" onclick="tutupVideoAnimasiIkan()" title="Tutup Video">✕</button>
-  </div>
-</div>
 
 <div class="winner-overlay" id="winnerOverlay">
   <div class="winner-light-beams"></div>
@@ -6341,7 +6225,6 @@
     const urlTimer = `${base}?view=timer`;
     const urlPodium = `${base}?view=podium`;
     const urlNotif = `${base}?view=notif`;
-    const urlVideo = `${base}?view=video`;
 
     const elTabel = document.getElementById('linkOverlayTabel');
     const elTop3 = document.getElementById('linkOverlayTop3');
@@ -10195,7 +10078,6 @@
       if (btnVideo) btnVideo.classList.add('active');
       if (contentVideo) contentVideo.style.display = 'block';
       if (modalBox) modalBox.style.width = '540px';
-      renderDaftarVideoIkan();
     } else {
       if (btnAudio) btnAudio.classList.add('active');
       if (contentAudio) contentAudio.style.display = 'block';
@@ -10438,222 +10320,7 @@
   
 
 
-  /* =========================================================
-     ENGINE VIDEO ANIMASI IKAN TERTENTU (INDEXEDDB + AUTO-PLAY)
-     ========================================================= */
-  const FISH_VIDEO_RULES_KEY = 'galatama_fish_video_rules_v1';
-  let fishVideoRules = [];
-  try {
-    fishVideoRules = JSON.parse(localStorage.getItem(FISH_VIDEO_RULES_KEY) || '[]');
-    if (!Array.isArray(fishVideoRules)) fishVideoRules = [];
-  } catch(_) { fishVideoRules = []; }
-
-  function bukaVideoIndexedDB() {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open('AutoSkorVideoDB', 1);
-      req.onupgradeneeded = (e) => {
-        const dbv = e.target.result;
-        if (!dbv.objectStoreNames.contains('videos')) {
-          dbv.createObjectStore('videos');
-        }
-      };
-      req.onsuccess = (e) => resolve(e.target.result);
-      req.onerror = (e) => reject(e.target.error);
-    });
-  }
-
-  async function simpanBlobVideoIDB(id, blob) {
-    const dbv = await bukaVideoIndexedDB();
-    return new Promise((resolve, reject) => {
-      const tx = dbv.transaction('videos', 'readwrite');
-      tx.objectStore('videos').put(blob, id);
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = (e) => reject(e.target.error);
-    });
-  }
-
-  async function ambilBlobVideoIDB(id) {
-    const dbv = await bukaVideoIndexedDB();
-    return new Promise((resolve, reject) => {
-      const tx = dbv.transaction('videos', 'readonly');
-      const req = tx.objectStore('videos').get(id);
-      req.onsuccess = () => resolve(req.result || null);
-      req.onerror = (e) => reject(e.target.error);
-    });
-  }
-
-  async function hapusBlobVideoIDB(id) {
-    const dbv = await bukaVideoIndexedDB();
-    return new Promise((resolve) => {
-      const tx = dbv.transaction('videos', 'readwrite');
-      tx.objectStore('videos').delete(id);
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    });
-  }
-
-  async function tambahVideoAnimasiIkan() {
-    const triggerInput = document.getElementById('inputVideoTriggerFish');
-    const urlInput = document.getElementById('inputVideoUrl');
-    const fileInput = document.getElementById('inputVideoFile');
-    const chkSound = document.getElementById('chkVideoWithSound');
-
-    const keyword = (triggerInput ? triggerInput.value : '').trim();
-    const videoUrl = (urlInput ? urlInput.value : '').trim();
-    const file = (fileInput && fileInput.files) ? fileInput.files[0] : null;
-    if (!keyword) {
-      alert('Isi nama ikan atau tier pemicu terlebih dahulu (misal: Kraken atau Secret)!');
-      return;
-    }
-    if (!videoUrl && !file) {
-      alert('Masukkan Link URL Video atau pilih File Video dari PC terlebih dahulu!');
-      return;
-    }
-
-    const vidId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-    try {
-      if (file) {
-        await simpanBlobVideoIDB(vidId, file);
-      }
-      fishVideoRules.push({
-        id: vidId,
-        keyword: keyword,
-        videoUrl: videoUrl || '',
-        fileName: videoUrl ? 'URL Online' : file.name,
-        withSound: chkSound ? chkSound.checked : true
-      });
-      localStorage.setItem(FISH_VIDEO_RULES_KEY, JSON.stringify(fishVideoRules));
-      if (triggerInput) triggerInput.value = '';
-      if (urlInput) urlInput.value = '';
-      if (fileInput) fileInput.value = '';
-      renderDaftarVideoIkan();
-      tambahLogAktivitas('VIDEO', `Video animasi dipasang untuk ikan "${keyword}"`, 'system');
-    } catch (err) {
-      alert('Gagal menyimpan video: ' + err);
-    }
-  }
-
-  function renderDaftarVideoIkan() {
-    const listEl = document.getElementById('daftarVideoIkanList');
-    if (!listEl) return;
-    if (!fishVideoRules || fishVideoRules.length === 0) {
-      listEl.innerHTML = '<div style="font-size:12px; color:#94a3b8; text-align:center; padding:14px; border:1px dashed #cbd5e1; border-radius:10px;">Belum ada video animasi ikan yang dipasang.</div>';
-      return;
-    }
-    listEl.innerHTML = fishVideoRules.map(r => {
-      const isOnline = Boolean(r.videoUrl);
-      const syncHint = isOnline
-        ? '🌐 URL Online (Tampil di ?view=video TikTok Studio)'
-        : '💻 File Lokal (Gunakan link http://127.0.0.1:5000/?view=video di TikTok Studio)';
-      return `
-      <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 12px; gap:8px;">
-        <div style="min-width:0;">
-          <div style="font-weight:900; font-size:12.5px; color:#0f172a;">🐟 ${escapeHtml(r.keyword)}</div>
-          <div style="font-size:10.5px; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(r.fileName)} · ${r.withSound ? '🔊 Bersuara' : '🔇 Bisukan'}</div>
-          <div style="font-size:10px; font-weight:700; color:${isOnline ? '#059669' : '#d97706'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${syncHint}</div>
-        </div>
-        <div style="display:flex; gap:6px; flex-shrink:0;">
-          <button type="button" onclick="putarVideoAnimasiById('${r.id}')" style="background:#e0f2fe; color:#0284c7; border:none; border-radius:8px; padding:5px 10px; font-weight:800; font-size:11px; cursor:pointer;">▶ Tes</button>
-          <button type="button" onclick="hapusVideoAnimasiIkan('${r.id}')" style="background:#fee2e2; color:#dc2626; border:none; border-radius:8px; padding:5px 10px; font-weight:800; font-size:11px; cursor:pointer;">🗑️</button>
-        </div>
-      </div>
-    `;
-    }).join('');
-  }
-
-  async function hapusVideoAnimasiIkan(id) {
-    fishVideoRules = fishVideoRules.filter(r => r.id !== id);
-    localStorage.setItem(FISH_VIDEO_RULES_KEY, JSON.stringify(fishVideoRules));
-    await hapusBlobVideoIDB(id);
-    renderDaftarVideoIkan();
-  }
-
-  let activeVideoObjectUrl = null;
-  function putarVideoAnimasiDariUrl(srcUrl, withSound = true) {
-    const overlay = document.getElementById('fishVideoOverlay');
-    const player = document.getElementById('fishCatchVideoPlayer');
-    if (!overlay || !player || !srcUrl) return;
-    player.playsInline = true;
-    player.preload = 'auto';
-    player.src = srcUrl;
-    player.muted = !withSound;
-    player.currentTime = 0;
-    overlay.classList.add('active');
-    player.onended = () => tutupVideoAnimasiIkan();
-    player.onerror = () => {
-      console.warn('Video animasi gagal dimuat:', srcUrl);
-      tutupVideoAnimasiIkan();
-    };
-    const playPromise = player.play();
-    if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise.catch(() => {
-        // Browser Source (TikTok LIVE Studio / OBS) memblokir autoplay bersuara sebelum interaksi;
-        // fallback otomatis ke muted agar video tetap tampil & berputar mulus.
-        player.muted = true;
-        player.play().catch(() => {});
-      });
-    }
-  }
-
-  async function putarVideoAnimasiLokalDariIDB(id, withSound = true) {
-    try {
-      const blob = await ambilBlobVideoIDB(id);
-      if (!blob) return;
-      if (activeVideoObjectUrl) {
-        try { URL.revokeObjectURL(activeVideoObjectUrl); } catch(_) {}
-      }
-      activeVideoObjectUrl = URL.createObjectURL(blob);
-      putarVideoAnimasiDariUrl(activeVideoObjectUrl, withSound);
-    } catch (_) {}
-  }
-
-  async function putarVideoAnimasiById(id) {
-    const rule = fishVideoRules.find(r => r.id === id);
-    if (!rule) return;
-
-    // Jika memakai URL Online, siarkan ke TikTok Studio (?view=video) agar ikut memutar!
-    if (rule.videoUrl) {
-      if (typeof siarkanSync === 'function') {
-        siarkanSync({ type: 'SYNC_VIDEO', videoUrl: rule.videoUrl, withSound: rule.withSound });
-      }
-      putarVideoAnimasiDariUrl(rule.videoUrl, rule.withSound);
-      return;
-    }
-
-    // Jika memakai file lokal PC, siarkan ruleId untuk link lokal (http://127.0.0.1:5000/?view=video)
-    if (typeof siarkanSync === 'function') {
-      siarkanSync({ type: 'SYNC_VIDEO', ruleId: rule.id, withSound: rule.withSound });
-    }
-    await putarVideoAnimasiLokalDariIDB(id, rule.withSound);
-  }
-
-  function tutupVideoAnimasiIkan() {
-    const overlay = document.getElementById('fishVideoOverlay');
-    const player = document.getElementById('fishCatchVideoPlayer');
-    if (player) {
-      try { player.pause(); player.removeAttribute('src'); player.load(); } catch(_) {}
-    }
-    if (overlay) overlay.classList.remove('active');
-    if (activeVideoObjectUrl) {
-      try { URL.revokeObjectURL(activeVideoObjectUrl); } catch(_) {}
-      activeVideoObjectUrl = null;
-    }
-  }
-
-  function cekDanPutarVideoIkan(namaIkan, tierKey) {
-    if (!fishVideoRules || fishVideoRules.length === 0) return;
-    const fLower = String(namaIkan || '').toLowerCase().trim();
-    const tLower = String(tierKey || '').toLowerCase().trim();
-    const match = fishVideoRules.find(r => {
-      const kw = String(r.keyword || '').toLowerCase().trim();
-      if (!kw) return false;
-      return (fLower && fLower.includes(kw)) || (tLower && tLower === kw);
-    });
-    if (match) {
-      putarVideoAnimasiById(match.id);
-    }
-  }
-
+  
 </script>
 </body>
 </html>
