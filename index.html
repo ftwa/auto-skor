@@ -145,15 +145,12 @@
     }
     @media (max-width: 1080px) {
       .top-bar {
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        padding-bottom: 8px !important;
-        scrollbar-width: none !important;
+        flex-wrap: wrap !important;
+        overflow: visible !important;
+        padding-bottom: 10px !important;
       }
-      .top-bar::-webkit-scrollbar { display: none; }
-      .top-left {
-        flex-wrap: nowrap !important;
-        flex-shrink: 0 !important;
+      .top-left, .top-right {
+        flex-wrap: wrap !important;
       }
       .btn-action-soft, .btn-mode-tab {
         white-space: nowrap !important;
@@ -3635,11 +3632,11 @@
         localStorage.setItem('auto_skor_event_bus', JSON.stringify(data));
       } catch (_) {}
 
-      // Siarkan ke Live Cloud Bus (ntfy.sh) dengan smart rate-limit guard agar terbebas dari HTTP 429
+      // Siarkan ke Live Cloud Bus (ntfy.sh) dengan smart rate-limit & 429 backoff guard
       if (data.type && !data._fromCloud) {
-        let bolehKirimNtfy = true;
         const now = Date.now();
-        if (data.type === 'SYNC_TIMER') {
+        let bolehKirimNtfy = !(window._ntfyBackoffUntil && now < window._ntfyBackoffUntil);
+        if (bolehKirimNtfy && data.type === 'SYNC_TIMER') {
           // Kirim langsung jika ini adalah aksi (Play/Pause/Stop/Edit) atau waktu darurat (<= 5 detik)
           const isCritical = (typeof data.timerSec === 'number' && data.timerSec <= 5);
           const isActionEvent = Boolean(data.isAction || data.isMatchDijeda || !data.isMatchSedangJalan);
@@ -3654,6 +3651,10 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Priority': 'urgent' },
               body: JSON.stringify(data)
+            }).then(res => {
+              if (res && res.status === 429) {
+                window._ntfyBackoffUntil = Date.now() + 60000;
+              }
             }).catch(() => {});
           } catch (_) {}
         }
@@ -4885,37 +4886,6 @@
         <!-- Diisi dinamis oleh renderDaftarIkanSettings() -->
       </div>
     </div> <!-- END TAB CONTENT IKAN -->
-    <!-- TAB CONTENT 3: VIDEO ANIMASI IKAN TERTENTU -->
-    <div id="settingsTabContentVideo" style="display: none; margin-bottom: 18px;">
-      <div style="background: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%); border: 1.5px solid #38bdf8; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;">
-        <div style="font-weight: 900; font-size: 13px; color: #0369a1; margin-bottom: 4px;">🎬 Video Animasi Saat Ikan Tertangkap</div>
-        <div style="font-size: 11px; color: #475569; line-height: 1.45;">
-          Upload video <b>.mp4</b> atau <b>.webm</b> untuk diputar otomatis saat ikan tertentu tertangkap! Video disimpan aman berkapasitas besar di database lokal browser.
-        </div>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px;">
-        <label style="font-size: 11px; font-weight: 900; color: #0284c7; text-transform: uppercase;">1. Nama Ikan / Tier Pemicu</label>
-        <input type="text" id="inputVideoTriggerFish" placeholder="Contoh: Kraken, Megalodon, Sea Eater, atau Secret" style="width:100%; padding:8px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:12.5px; font-weight:700;">
-
-        <label style="font-size: 11px; font-weight: 900; color: #0284c7; text-transform: uppercase; margin-top:4px;">2A. Link URL Video Online (.mp4 / .webm) — <span style="color:#7e22ce;">Wajib agar tampil di Link TikTok Studio</span></label>
-        <input type="text" id="inputVideoUrl" placeholder="https://contoh.com/animasi_kraken.mp4" style="width:100%; padding:8px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:12px;">
-
-        <label style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-top:2px;">2B. Atau Pilih File Video Lokal PC (Layar Remote Saja)</label>
-        <input type="file" id="inputVideoFile" accept="video/mp4,video/webm,video/*" style="font-size:11.5px;">
-
-        <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#334155; margin-top:4px; cursor:pointer;">
-          <input type="checkbox" id="chkVideoWithSound" checked> 🔊 Putar dengan suara bawaan video
-        </label>
-
-        <button type="button" onclick="tambahVideoAnimasiIkan()" style="margin-top:6px; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color:#fff; border:none; border-radius:10px; padding:9px 14px; font-weight:900; font-size:12px; cursor:pointer;">
-          ➕ Simpan & Pasang Video Ikan
-        </button>
-      </div>
-
-      <div style="font-size: 11.5px; font-weight: 900; color: #0284c7; text-transform: uppercase; margin-bottom: 6px;">Daftar Video Terpasang:</div>
-      <div id="daftarVideoIkanList" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;"></div>
-    </div>
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
       <button type="button" class="btn-action-soft" style="padding: 10px; border-radius: 12px; font-weight: 800; font-size: 12.5px;" onclick="batalPengaturanNotifSuara()">Batal</button>
