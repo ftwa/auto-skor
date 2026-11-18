@@ -4043,6 +4043,7 @@
       <button class="btn-action-soft btn-cookie-roblox" id="btnTopBarCookie" onclick="bukaModalCookieRoblox()" title="Atur Cookie Roblox (.ROBLOSECURITY) untuk fitur Auto Add Friend">🍪 Cookie <span id="topBarCookieDot" style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#94a3b8; margin-left:3px; vertical-align:middle;"></span></button>
       <button class="btn-action-soft" id="btnSyncAbsenTop" onclick="sinkronkanAbsenDariServerLokal(true)" title="Auto Absen Server: Klik untuk sinkronkan langsung pemain di server dengan Display Name di papan skor" style="display:inline-flex; align-items:center; gap:5px; border-color:#22c55e; color:#15803d; background:#f0fdf4;"><span id="dotAbsenServerTop" style="width:7px; height:7px; border-radius:50%; background:#22c55e; display:inline-block;"></span><span id="labelCounterAbsenTop">Hadir: 0/0</span></button>
       <button class="btn-action-soft btn-stream-link" onclick="bukaModalLinkStream()" title="Salin Link Modular untuk TikTok LIVE Studio & OBS">🔗 Link Stream</button>
+      <button class="btn-action-soft" id="btnTopBarPython" onclick="bukaModalKontrolPython()" title="Buka Panel Kontrol & Monitor Server Python Lokal (127.0.0.1:5000)" style="border-color:#0ea5e9; color:#0369a1; background:#f0f9ff;">🐍 Python</button>
       <a href="portal.html" target="_blank" class="btn-action-soft" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Buka Website Portal Pusat Kendali & PratinjauSemua Layar">🌐 Portal</a>
       
       <div class="dropdown" id="dropdownReset">
@@ -5177,7 +5178,78 @@
   </div>
 </div>
 
-  <!-- MODAL PENGATURAN COOKIE ROBLOX (.ROBLOSECURITY) -->
+  <!-- MODAL KONTROL & MONITOR PYTHON LOKAL -->
+<div class="modal-overlay" id="modalKontrolPython" onclick="tutupModalDiLuar(event)">
+  <div class="modal-box" style="width: 620px; max-width: 95vw; padding: 22px 24px; border-radius: 24px; background: #ffffff; border: 2.5px solid #0ea5e9; box-shadow: 0 25px 65px rgba(0, 50, 100, 0.3); max-height: 90vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 2px solid #e0f2fe; margin-bottom: 14px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 38px; height: 38px; border-radius: 10px; background: #e0f2fe; border: 1.5px solid #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 19px;">🐍</div>
+        <div>
+          <div style="font-size: 16px; font-weight: 900; color: #0284c7; text-transform: uppercase;">Kontrol &amp; Monitor Python</div>
+          <div style="font-size: 11px; font-weight: 700; color: #64748b;">Kendali Langsung Server Lokal (http://127.0.0.1:5000) &amp; Bridge inject.lua</div>
+        </div>
+      </div>
+      <button type="button" onclick="tutupModalKontrolPython()" style="width: 30px; height: 30px; border-radius: 50%; background: #f1f5f9; color: #64748b; font-weight: 900; border: none; cursor: pointer;">✕</button>
+    </div>
+
+    <!-- Status Bar Python -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px;">
+      <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 8px 10px;">
+        <div style="font-size: 10px; font-weight: 800; color: #64748b;">STATUS SERVER</div>
+        <div id="pyStatusOnline" style="font-size: 13px; font-weight: 900; color: #64748b; margin-top: 2px;">⚪ Memeriksa...</div>
+      </div>
+      <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 8px 10px;">
+        <div style="font-size: 10px; font-weight: 800; color: #64748b;">MODE PYTHON</div>
+        <div id="pyStatusMode" style="font-size: 13px; font-weight: 900; color: #0284c7; margin-top: 2px;">-</div>
+      </div>
+      <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 8px 10px;">
+        <div style="font-size: 10px; font-weight: 800; color: #64748b;">PEMAIN DI MAP</div>
+        <div id="pyStatusOnlineCount" style="font-size: 13px; font-weight: 900; color: #16a34a; margin-top: 2px;">0 Player</div>
+      </div>
+      <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 8px 10px;">
+        <div style="font-size: 10px; font-weight: 800; color: #64748b;">GAMBAR IKAN</div>
+        <div id="pyStatusFishCount" style="font-size: 13px; font-weight: 900; color: #7c3aed; margin-top: 2px;">0 File</div>
+      </div>
+    </div>
+
+    <!-- Tombol Aksi Kontrol Python -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px;">
+      <button type="button" class="btn-action-soft" style="padding: 9px 12px; font-weight: 800; background: #dcfce7; color: #15803d; border-color: #22c55e;" onclick="kontrolPythonSetMode('MATCH')">▶ Mode MATCH (Terima Tangkapan)</button>
+      <button type="button" class="btn-action-soft" style="padding: 9px 12px; font-weight: 800; background: #fef3c7; color: #b45309; border-color: #f59e0b;" onclick="kontrolPythonSetMode('PAUSED')">⏸ Mode PAUSED (Jeda Tangkapan)</button>
+      <button type="button" class="btn-action-soft" style="padding: 8px 12px; font-weight: 800;" onclick="kontrolPythonSyncSemua()">🔄 Sinkronkan Poin &amp; Absen</button>
+      <button type="button" class="btn-action-soft" style="padding: 8px 12px; font-weight: 800;" onclick="kontrolPythonReloadGambar()">🖼️ Reload Cache Gambar Ikan</button>
+      <button type="button" class="btn-action-soft" style="padding: 8px 12px; font-weight: 800; color: #0284c7;" onclick="kontrolPythonTesCatch()">🧪 Tes Kirim Tangkapan ke Python</button>
+      <button type="button" class="btn-action-soft" style="padding: 8px 12px; font-weight: 800; color: #7c3aed;" onclick="kontrolPythonSalinInjectLua()">📋 Salin Script inject.lua</button>
+    </div>
+
+    <div id="pyControlFeedback" style="font-size: 11.5px; font-weight: 800; color: #0284c7; margin-bottom: 10px; min-height: 16px;"></div>
+
+    <!-- Monitor 2 Kolom: Pemain di Map & Tangkapan Terakhir Python -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 10px;">
+        <div style="font-size: 11px; font-weight: 900; color: #0f172a; margin-bottom: 6px; display: flex; justify-content: space-between;">
+          <span>👥 Pemain Terdeteksi di Server</span>
+          <span id="pyOnlineBadge" style="color: #16a34a;">0</span>
+        </div>
+        <div id="pyOnlineList" style="max-height: 150px; overflow-y: auto; font-size: 11px; color: #475569; display: flex; flex-direction: column; gap: 4px;">
+          <div style="color: #94a3b8; font-style: italic;">Belum ada data pemain dari inject.lua...</div>
+        </div>
+      </div>
+
+      <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 10px;">
+        <div style="font-size: 11px; font-weight: 900; color: #0f172a; margin-bottom: 6px; display: flex; justify-content: space-between;">
+          <span>🐟 Tangkapan Masuk Python</span>
+          <button type="button" onclick="kontrolPythonClearAntrean()" style="border:none; background:none; color:#ef4444; font-size:10px; font-weight:800; cursor:pointer;">Bersihkan</button>
+        </div>
+        <div id="pyRecentCatchList" style="max-height: 150px; overflow-y: auto; font-size: 11px; color: #475569; display: flex; flex-direction: column; gap: 4px;">
+          <div style="color: #94a3b8; font-style: italic;">Belum ada tangkapan masuk...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PENGATURAN COOKIE ROBLOX (.ROBLOSECURITY) -->
   <div class="modal-overlay" id="modalCookieRoblox" onclick="tutupModalDiLuar(event)">
     <div class="modal-card modal-stream-card" style="max-width: 560px;">
       <div class="modal-stream-header">
@@ -8580,6 +8652,7 @@
     if (e.target.id === 'modalEditMemberStat') tutupModalEditMember();
     if (e.target.id === 'modalCookieRoblox') tutupModalCookieRoblox();
     if (e.target.id === 'modalLinkStream') tutupModalLinkStream();
+    if (e.target.id === 'modalKontrolPython') tutupModalKontrolPython();
   }
 
   function simpanPoinWarna() {
@@ -11547,6 +11620,175 @@
   // ===================================================================
 
 
+  // ===================================================================
+  // ============== KONTROL & MONITOR PYTHON LOKAL ====================
+  // ===================================================================
+  let pyMonitorTimer = null;
+
+  function bukaModalKontrolPython() {
+    tutupSemuaDropdown();
+    const modal = document.getElementById('modalKontrolPython');
+    if (modal) modal.style.display = 'flex';
+    muatStatusKontrolPython();
+    if (pyMonitorTimer) clearInterval(pyMonitorTimer);
+    pyMonitorTimer = setInterval(muatStatusKontrolPython, 2500);
+  }
+
+  function tutupModalKontrolPython() {
+    const modal = document.getElementById('modalKontrolPython');
+    if (modal) modal.style.display = 'none';
+    if (pyMonitorTimer) {
+      clearInterval(pyMonitorTimer);
+      pyMonitorTimer = null;
+    }
+  }
+
+  async function muatStatusKontrolPython() {
+    const elOnline = document.getElementById('pyStatusOnline');
+    const elMode = document.getElementById('pyStatusMode');
+    const elCount = document.getElementById('pyStatusOnlineCount');
+    const elFish = document.getElementById('pyStatusFishCount');
+    const elOnlineList = document.getElementById('pyOnlineList');
+    const elOnlineBadge = document.getElementById('pyOnlineBadge');
+    const elCatchList = document.getElementById('pyRecentCatchList');
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/python-status', {
+        headers: { 'Cache-Control': 'no-cache' },
+        signal: AbortSignal.timeout(1800)
+      });
+      if (!res.ok) throw new Error('Offline');
+      const data = await res.json();
+
+      if (elOnline) { elOnline.textContent = '🟢 AKTIF'; elOnline.style.color = '#16a34a'; }
+      if (elMode) {
+        elMode.textContent = data.mode || 'MATCH';
+        elMode.style.color = data.mode === 'PAUSED' ? '#d97706' : '#0284c7';
+      }
+      if (elCount) elCount.textContent = `${data.totalOnlineServer || 0} Player`;
+      if (elFish) elFish.textContent = `${data.fishImageCount || 0} File`;
+      if (elOnlineBadge) elOnlineBadge.textContent = String(data.totalOnlineServer || 0);
+
+      if (elOnlineList) {
+        const plrs = data.onlinePlayers || [];
+        if (plrs.length === 0) {
+          elOnlineList.innerHTML = '<div style="color:#94a3b8; font-style:italic;">Belum ada pemain terdeteksi dari inject.lua...</div>';
+        } else {
+          elOnlineList.innerHTML = plrs.map(p => `
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; color:#0f172a;">${escapeHtml(p.displayName || p.username)}</span>
+              <span style="font-size:10px; color:#64748b;">@${escapeHtml(p.username)}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (elCatchList) {
+        const catches = data.recentCatches || [];
+        if (catches.length === 0) {
+          elCatchList.innerHTML = '<div style="color:#94a3b8; font-style:italic;">Belum ada tangkapan masuk...</div>';
+        } else {
+          elCatchList.innerHTML = catches.map(c => `
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:165px;">${escapeHtml(c.displayName || c.user)} • ${escapeHtml(c.ikan || c.fish)}</span>
+              <span style="font-size:10px; font-weight:900; color:#16a34a;">+${c.poin}</span>
+            </div>
+          `).join('');
+        }
+      }
+      setStatusSystem(true);
+    } catch (_) {
+      if (elOnline) { elOnline.textContent = '🔴 OFFLINE'; elOnline.style.color = '#ef4444'; }
+      if (elMode) elMode.textContent = '-';
+    }
+  }
+
+  async function kontrolPythonSetMode(modeBaru) {
+    const fb = document.getElementById('pyControlFeedback');
+    try {
+      const res = await fetch('http://127.0.0.1:5000/set-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: modeBaru })
+      });
+      if (res.ok) {
+        if (fb) fb.textContent = `✔ Mode Python diubah ke ${modeBaru}`;
+        muatStatusKontrolPython();
+      }
+    } catch (_) {
+      if (fb) fb.textContent = '✖ Gagal terhubung ke Python (pastikan MasterAutoSkor_Lokal.exe berjalan).';
+    }
+  }
+
+  function kontrolPythonSyncSemua() {
+    const fb = document.getElementById('pyControlFeedback');
+    syncKePython(true);
+    sinkronkanAbsenDariServerLokal(true);
+    if (fb) fb.textContent = '✔ Sinkronisasi aturan poin, peserta & absen dijalankan!';
+    setTimeout(muatStatusKontrolPython, 400);
+  }
+
+  async function kontrolPythonReloadGambar() {
+    const fb = document.getElementById('pyControlFeedback');
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/reload-fish-db', { method: 'POST' });
+      const data = await res.json();
+      if (fb) fb.textContent = `✔ Cache gambar ikan dimuat ulang (${data.fishImageCount || 0} file ditemukan).`;
+      muatStatusKontrolPython();
+    } catch (_) {
+      if (fb) fb.textContent = '✖ Server Python sedang offline.';
+    }
+  }
+
+  async function kontrolPythonClearAntrean() {
+    const fb = document.getElementById('pyControlFeedback');
+    try {
+      await fetch('http://127.0.0.1:5000/api/clear-catches', { method: 'POST' });
+      if (fb) fb.textContent = '✔ Riwayat tangkapan di antrean Python dibersihkan.';
+      muatStatusKontrolPython();
+    } catch (_) {}
+  }
+
+  async function kontrolPythonTesCatch() {
+    const fb = document.getElementById('pyControlFeedback');
+    const s = getSesi();
+    const pFirst = s && s.players ? s.players.find(p => p.nick && p.nick !== '-') : null;
+    const targetDisp = pFirst ? pFirst.nick : 'KingFisher_ID';
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/catch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player: targetDisp,
+          displayName: targetDisp,
+          fish: 'Megalodon',
+          variant: 'Big',
+          tier: 'SECRET'
+        })
+      });
+      if (res.ok) {
+        if (fb) fb.textContent = `✔ Tes tangkapan Megalodon untuk "${targetDisp}" terkirim ke Python!`;
+        muatStatusKontrolPython();
+      }
+    } catch (_) {
+      if (fb) fb.textContent = '✖ Server Python offline. Jalankan MasterAutoSkor_Lokal.exe terlebih dahulu.';
+    }
+  }
+
+  async function kontrolPythonSalinInjectLua() {
+    const fb = document.getElementById('pyControlFeedback');
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/inject-lua');
+      const data = await res.json();
+      if (data && data.code && navigator.clipboard) {
+        await navigator.clipboard.writeText(data.code);
+        if (fb) fb.textContent = '✔ Script inject.lua berhasil disalin ke Clipboard! Tinggal paste ke Executor.';
+        if (typeof tampilkanToastModern === 'function') tampilkanToastModern('📋 Script inject.lua disalin!');
+        return;
+      }
+    } catch (_) {}
+    if (fb) fb.textContent = 'ℹ️ Buka file inject.lua di folder D:\\galatamaapp\\AUTO_SKOR\\inject.lua untuk menyalin.';
+  }
   
 </script>
 </body>
