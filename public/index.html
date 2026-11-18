@@ -7272,6 +7272,7 @@
   function pilihSesiSpesifik(i) {
     db.current = i;
     sudahCatatMemberSesiIni = Boolean(getSesi().sudahCatatMember);
+    isMatchSelesai = false;
     simpanDB();
     renderIsiTabel(); 
     syncKePython(true);
@@ -7287,6 +7288,7 @@
     timerSec = (db.durasiMenitDefault || 15) * 60;
     isMatchSedangJalan = false;
     isMatchDijeda = false;
+    isMatchSelesai = false;
     isWaitingWinnerAfterQueue = false;
     isExtraTimeBin = false;
     extraTimerSec = 0;
@@ -7396,6 +7398,7 @@
       tambahLogAktivitas('RESET', `Semua poin Sesi ${db.current} direset (OB=0, BIN=${bonusBin})`, 'system');
     } else if (tipeResetPending === 'SEMUA') {
       db.sessions[db.current] = buatSesiKosong();
+      isMatchSelesai = false;
       simpanDB();
       renderIsiTabel(); 
       syncKePython(true);
@@ -7496,6 +7499,7 @@
     timerSec = (db.durasiMenitDefault || 15) * 60; 
     isMatchSedangJalan = false;
     isMatchDijeda = false;
+    isMatchSelesai = false;
     isWaitingWinnerAfterQueue = false;
     isExtraTimeBin = false;
     extraTimerSec = 0;
@@ -7507,8 +7511,9 @@
     simpanDB();
     perbaruiStatusMatchUI();
     updateTimer(); 
+    kirimStatusMatchKePython("STOPPED");
     tambahLogAktivitas('TIMER', 'Timer berhasil di-reset', 'system');
-    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false, isAction: true });
+    siarkanSync({ type: "SYNC_TIMER", timerSec, isMatchSedangJalan: false, isMatchDijeda: false, isMatchSelesai: false, isAction: true });
     tutupModalKonfirmasiResetTimer();
   }
 
