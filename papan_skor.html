@@ -8250,8 +8250,9 @@
       pasangAvatarPodium(`winAvatarBox${rank}`, avUrl, namaDisplay, rank, pData.avatar || dapatkanFotoProfilRoblox(pData), pData.robloxUser || pData.user);
 
       // Jika belum punya avatar 3D direct URL tapi punya username Roblox, cari secara async
-      if (pData.robloxUser && (!pData.avatar3d || pData.avatar3d.includes('AvatarHeadshot') || pData.avatar3d.includes('ui-avatars'))) {
-        const u = pData.robloxUser.replace(/^@+/, '').trim();
+      const targetUser = (pData.robloxUser || pData.user || '').replace(/^@+/, '').trim();
+      if (targetUser && (!pData.avatar3d || pData.avatar3d.includes('AvatarHeadshot') || pData.avatar3d.includes('ui-avatars'))) {
+        const u = targetUser;
         if (u && !u.toLowerCase().startsWith('host') && !u.includes('...')) {
           fetchCariRoblox(u)
             .then(data => {
@@ -9325,7 +9326,7 @@
       }
       return pData.avatar;
     }
-    const u = (pData.robloxUser || pData.nick || '').replace(/^@+/, '').trim();
+    const u = (pData.robloxUser || pData.user || pData.nick || '').replace(/^@+/, '').trim();
     if (u && typeof avatarRobloxCache !== 'undefined') {
       const cached = avatarRobloxCache[u] || avatarRobloxCache[u.toLowerCase()];
       if (cached && cached !== 'FAILED' && cached.startsWith('http')) return cached;
@@ -9384,7 +9385,7 @@
 
       if (pData) {
         const displayName = pData.nick || pData.user || pData.robloxUser || defaultLabel;
-        const uName = pData.robloxUser ? `@${pData.robloxUser.replace(/^@+/, '')}` : (pData.user ? `@${pData.user}` : '');
+        const uName = pData.robloxUser ? `@${pData.robloxUser.replace(/^@+/, '')}` : (pData.user ? `@${pData.user.replace(/^@+/, '')}` : '');
         const points = pData.poin !== undefined ? pData.poin : 0;
 
         if (nameEl) nameEl.innerText = displayName;
@@ -9395,7 +9396,7 @@
           const inisial = displayName ? displayName.charAt(0).toUpperCase() : `${cardIdx}`;
           let avUrl = dapatkanFotoProfilRoblox(pData);
           if (avUrl) {
-            ringEl.innerHTML = `<img src="${escapeHtml(avUrl)}" class="podium-3d-avatar-img" alt="${escapeHtml(displayName)}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling ? this.nextElementSibling.style.display='inline' : null;">`;
+            ringEl.innerHTML = `<img src="${escapeHtml(avUrl)}" class="podium-3d-avatar-img" alt="${escapeHtml(displayName)}" loading="lazy" onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='inline';"><span class="podium-3d-placeholder" style="display:none;">${inisial}</span>`;
           } else {
             ringEl.innerHTML = `<span class="podium-3d-placeholder">${inisial}</span>`;
           }
