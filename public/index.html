@@ -5888,7 +5888,7 @@
       if (mVal > 0) labelParts.push(`mutasi +${mVal}`);
     }
 
-    if (total <= 0 && fallbackPoinPython > 0) {
+    if (mat.base === undefined && total <= 0 && fallbackPoinPython > 0) {
       total = parseInt(fallbackPoinPython) || 1;
     }
 
@@ -8730,6 +8730,7 @@
 
     simpanDB();
     urutkanOtomatis();
+    syncKePython(true);
     tambahLogAktivitas('POIN', `Aturan BIN: Poin(${bonusBinOnBaru ? '+'+bonusBinBaru : 'OFF'}) | Waktu(${waktuBinOnBaru ? waktuBinBaru+'m' : 'OFF'})`, 'system');
   }
 
