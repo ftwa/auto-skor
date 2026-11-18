@@ -6622,6 +6622,13 @@
   }
 
   function putarSuaraNotif(tierKey) {
+    // Overlay modes (notif, tabel, overlay, top3, podium, timer) TIDAK memutar suara
+    // agar tidak terdengar dobel saat Admin dan overlay aktif bersamaan
+    const cl = document.documentElement.classList;
+    if (cl.contains('mode-notif') || cl.contains('mode-tabel') || cl.contains('mode-overlay') ||
+        cl.contains('mode-top3') || cl.contains('mode-podium') || cl.contains('mode-timer')) {
+      return;
+    }
     if (typeof bgmTriggerAutoDuck === 'function') bgmTriggerAutoDuck(1500);
     const customData = customAudioTierData[tierKey];
     if (customData) {
@@ -9156,8 +9163,12 @@
     const s = getSesi();
     if (!s || !s.players) return;
 
-    // Ambil pemain yang terdaftar (punya nama / poin) dan urutkan berdasarkan poin terbanyak (tie breaker: Poin -> Secret -> Mythic -> Ready)
-    const sorted = [...s.players].filter(p => (p.user || p.robloxUser || p.nick || (p.poin && p.poin > 0))).sort((a, b) => {
+    // Ambil pemain yang terdaftar (punya nama / poin) DAN Host, lalu urutkan berdasarkan poin terbanyak (tie breaker: Poin -> Secret -> Mythic -> Ready)
+    const allPeserta = [...s.players];
+    if (s.host && (s.host.nick || s.host.robloxUser || s.host.user || (s.host.poin && s.host.poin > 0))) {
+      allPeserta.push(s.host);
+    }
+    const sorted = allPeserta.filter(p => (p.user || p.robloxUser || p.nick || (p.poin && p.poin > 0))).sort((a, b) => {
       const pA = a.poin || 0;
       const pB = b.poin || 0;
       if (pB !== pA) return pB - pA;
@@ -10084,6 +10095,10 @@
               ev._fromLocalHub = true;
               if (ev.type === 'SYNC_DB' || ev.type === 'SYNC_FULL_STATE' || ev.type === 'SYNC_SCORE') {
                 if (evTs > maxDbSyncTs) maxDbSyncTs = evTs;
+              }
+              // Admin sudah memproses tangkapan langsung dari data.catches, jadi skip SYNC_CATCH di events agar tidak dobel
+              if (isModeAdmin && (ev.type === 'SYNC_CATCH' || (!ev.type && ev.user && ev.poin !== undefined))) {
+                return;
               }
               if (ev.type === 'SYNC_CATCH' || (!ev.type && ev.user && ev.poin !== undefined)) {
                 tanganiCatchMasuk(ev);
