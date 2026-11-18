@@ -4569,11 +4569,12 @@
         </thead>
         <tbody>
           <!-- ROW LEGEND -->
-          <tr style="background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border-radius: 12px;">
+          <tr id="rowMat_legend" style="background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border-radius: 12px; transition: opacity 0.2s;">
             <td style="padding: 8px 12px; border-radius: 12px 0 0 12px; border-left: 3.5px solid #eab308;">
-              <span style="font-weight: 900; font-size: 12px; color: #ca8a04; display: inline-flex; align-items: center; gap: 5px;">
-                🟡 LEGEND
-              </span>
+              <label for="mat_legend_on" style="font-weight: 900; font-size: 12px; color: #ca8a04; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="mat_legend_on" checked class="point-checkbox" style="width:16px;height:16px;accent-color:#ca8a04;cursor:pointer;" onchange="simpanPoinWarna()">
+                <span>🟡 LEGEND</span>
+              </label>
             </td>
             <td style="padding: 8px; text-align: center;">
               <input type="number" id="mat_legend_base" class="point-modern-input" min="0" value="1" onchange="simpanPoinWarna()">
@@ -4602,11 +4603,12 @@
           </tr>
 
           <!-- ROW MITOS -->
-          <tr style="background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border-radius: 12px;">
+          <tr id="rowMat_mitos" style="background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border-radius: 12px; transition: opacity 0.2s;">
             <td style="padding: 8px 12px; border-radius: 12px 0 0 12px; border-left: 3.5px solid #ef4444;">
-              <span style="font-weight: 900; font-size: 12px; color: #dc2626; display: inline-flex; align-items: center; gap: 5px;">
-                🔴 MITOS
-              </span>
+              <label for="mat_mitos_on" style="font-weight: 900; font-size: 12px; color: #dc2626; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="mat_mitos_on" checked class="point-checkbox" style="width:16px;height:16px;accent-color:#dc2626;cursor:pointer;" onchange="simpanPoinWarna()">
+                <span>🔴 MITOS</span>
+              </label>
             </td>
             <td style="padding: 8px; text-align: center;">
               <input type="number" id="mat_mitos_base" class="point-modern-input" min="0" value="2" onchange="simpanPoinWarna()">
@@ -4635,11 +4637,12 @@
           </tr>
 
           <!-- ROW SECRET -->
-          <tr style="background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border-radius: 12px;">
+          <tr id="rowMat_secret" style="background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border-radius: 12px; transition: opacity 0.2s;">
             <td style="padding: 8px 12px; border-radius: 12px 0 0 12px; border-left: 3.5px solid #22c55e;">
-              <span style="font-weight: 900; font-size: 12px; color: #16a34a; display: inline-flex; align-items: center; gap: 5px;">
-                🟢 SECRET
-              </span>
+              <label for="mat_secret_on" style="font-weight: 900; font-size: 12px; color: #16a34a; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="mat_secret_on" checked class="point-checkbox" style="width:16px;height:16px;accent-color:#16a34a;cursor:pointer;" onchange="simpanPoinWarna()">
+                <span>🟢 SECRET</span>
+              </label>
             </td>
             <td style="padding: 8px; text-align: center;">
               <input type="number" id="mat_secret_base" class="point-modern-input" min="0" value="3" onchange="simpanPoinWarna()">
@@ -4668,12 +4671,13 @@
           </tr>
 
           <!-- ROW IKAN KHUSUS (FLEKSIBEL) -->
-          <tr style="background: linear-gradient(90deg, #fdf4ff 0%, #ffffff 100%); box-shadow: 0 2px 8px rgba(168, 85, 247, 0.08); border-radius: 12px;">
+          <tr id="rowMat_khusus" style="background: linear-gradient(90deg, #fdf4ff 0%, #ffffff 100%); box-shadow: 0 2px 8px rgba(168, 85, 247, 0.08); border-radius: 12px; transition: opacity 0.2s;">
             <td style="padding: 8px 12px; border-radius: 12px 0 0 12px; border-left: 3.5px solid #a855f7;">
               <div style="display: flex; flex-direction: column; gap: 4px;">
-                <span style="font-weight: 900; font-size: 11.5px; color: #9333ea; display: inline-flex; align-items: center; gap: 4px;">
-                  ⭐ IKAN KHUSUS
-                </span>
+                <label for="mat_khusus_on" style="font-weight: 900; font-size: 11.5px; color: #9333ea; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
+                  <input type="checkbox" id="mat_khusus_on" checked class="point-checkbox" style="width:16px;height:16px;accent-color:#9333ea;cursor:pointer;" onchange="simpanPoinWarna()">
+                  <span>⭐ IKAN KHUSUS</span>
+                </label>
                 <input type="text" id="mat_khusus_nama" class="point-modern-input" style="width: 135px; font-size: 11px; text-align: left; padding: 4px 8px; border: 1.5px solid #d8b4fe; background: #faf5ff;" placeholder="Nama (cth: Megalodon)" onchange="simpanPoinWarna()" title="Ketik nama ikan turnamen khusus di sini">
               </div>
             </td>
@@ -5519,11 +5523,11 @@
   }
 
   const DEFAULT_MATRIKS_TIER = {
-    forgotten: { base: 4, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 },
-    legend: { base: 1, bigOn: false, bigVal: 0, shinyOn: false, shinyVal: 0, mutasiOn: false, mutasiVal: 0 },
-    mitos:  { base: 2, bigOn: true,  bigVal: 1, shinyOn: true,  shinyVal: 1, mutasiOn: true,  mutasiVal: 1 },
-    secret: { base: 3, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 },
-    khusus: { nama: '', base: 5, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 }
+    forgotten: { on: true, base: 4, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 },
+    legend: { on: true, base: 1, bigOn: false, bigVal: 0, shinyOn: false, shinyVal: 0, mutasiOn: false, mutasiVal: 0 },
+    mitos:  { on: true, base: 2, bigOn: true,  bigVal: 1, shinyOn: true,  shinyVal: 1, mutasiOn: true,  mutasiVal: 1 },
+    secret: { on: true, base: 3, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 },
+    khusus: { on: true, nama: '', base: 5, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 }
   };
 
   const DEFAULT_CONFIG_POIN = {
@@ -5761,7 +5765,7 @@
     const namaIkanClean = String(namaIkan || '').toLowerCase().trim();
 
     let isMatchKhusus = false;
-    if (targetKhususNama && namaIkanClean) {
+    if (matKhusus && matKhusus.on !== false && targetKhususNama && namaIkanClean) {
       const daftarKhusus = targetKhususNama.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
       if (daftarKhusus.some(k => namaIkanClean.includes(k))) {
         isMatchKhusus = true;
@@ -5775,6 +5779,18 @@
     const mat = (db.warnaPoin && db.warnaPoin.matrix && db.warnaPoin.matrix[tierKey])
       ? db.warnaPoin.matrix[tierKey]
       : (DEFAULT_MATRIKS_TIER[tierKey] || DEFAULT_MATRIKS_TIER.legend);
+
+    // Jika tier ini di-OFF-kan oleh admin, abaikan tangkapan (0 poin)
+    if (mat.on === false) {
+      return {
+        tierKey,
+        poinTotal: 0,
+        rincianFormatted: `${tierKey.toUpperCase()} (OFF)`,
+        gotBig: false,
+        gotShiny: false,
+        gotMutasi: false
+      };
+    }
 
     let total = parseInt(mat.base) || 0;
     const rincianLow = String(rincianRaw || '').toLowerCase();
@@ -8464,6 +8480,7 @@
 
     setChk('chkWaktuBinOn', db.warnaPoin.waktuBinOn !== false);
     setVal('inputWaktuBinMenit', db.warnaPoin.waktuBinMenit !== undefined ? db.warnaPoin.waktuBinMenit : 15);
+    setChk('mat_legend_on', m.legend.on !== false);
     setVal('mat_legend_base', m.legend.base ?? 1);
     setChk('mat_legend_big_on', m.legend.bigOn);
     setVal('mat_legend_big_val', m.legend.bigVal ?? 0);
@@ -8472,6 +8489,7 @@
     setChk('mat_legend_mutasi_on', m.legend.mutasiOn);
     setVal('mat_legend_mutasi_val', m.legend.mutasiVal ?? 0);
 
+    setChk('mat_mitos_on', m.mitos.on !== false);
     setVal('mat_mitos_base', m.mitos.base ?? 2);
     setChk('mat_mitos_big_on', m.mitos.bigOn);
     setVal('mat_mitos_big_val', m.mitos.bigVal ?? 1);
@@ -8480,6 +8498,7 @@
     setChk('mat_mitos_mutasi_on', m.mitos.mutasiOn);
     setVal('mat_mitos_mutasi_val', m.mitos.mutasiVal ?? 1);
 
+    setChk('mat_secret_on', m.secret.on !== false);
     setVal('mat_secret_base', m.secret.base ?? 3);
     setChk('mat_secret_big_on', m.secret.bigOn);
     setVal('mat_secret_big_val', m.secret.bigVal ?? 2);
@@ -8488,7 +8507,8 @@
     setChk('mat_secret_mutasi_on', m.secret.mutasiOn);
     setVal('mat_secret_mutasi_val', m.secret.mutasiVal ?? 3);
 
-    const k = m.khusus || { nama: '', base: 5, bigOn: true, bigVal: 2, shinyOn: true, shinyVal: 2, mutasiOn: true, mutasiVal: 3 };
+    const k = m.khusus || { on: true, nama: '', base: 5, bigOn: true, bigVal: 2, shinyOn: true, shinyVal: 2, mutasiOn: true, mutasiVal: 3 };
+    setChk('mat_khusus_on', k.on !== false);
     setVal('mat_khusus_nama', k.nama || '');
     setVal('mat_khusus_base', k.base ?? 5);
     setChk('mat_khusus_big_on', k.bigOn);
@@ -8508,10 +8528,24 @@
 
   function sinkronkanInputMatriksUI() {
     ['legend', 'mitos', 'secret', 'khusus'].forEach(t => {
+      const tierChk = document.getElementById(`mat_${t}_on`);
+      const tierOn = tierChk ? !!tierChk.checked : true;
+      const rowEl = document.getElementById(`rowMat_${t}`);
+      if (rowEl) rowEl.style.opacity = tierOn ? '1' : '0.48';
+
+      const baseInp = document.getElementById(`mat_${t}_base`);
+      if (baseInp) baseInp.disabled = !tierOn;
+
+      if (t === 'khusus') {
+        const namaInp = document.getElementById('mat_khusus_nama');
+        if (namaInp) namaInp.disabled = !tierOn;
+      }
+
       ['big', 'shiny', 'mutasi'].forEach(b => {
         const chk = document.getElementById(`mat_${t}_${b}_on`);
         const inp = document.getElementById(`mat_${t}_${b}_val`);
-        if (chk && inp) inp.disabled = !chk.checked;
+        if (chk) chk.disabled = !tierOn;
+        if (inp) inp.disabled = !tierOn || (chk ? !chk.checked : false);
       });
     });
 
@@ -8559,7 +8593,9 @@
     const selisihBin = bonusBinEfektifBaru - bonusBinLama;
 
     const matrixBaru = {
+      forgotten: Object.assign({}, DEFAULT_MATRIKS_TIER.forgotten, db.warnaPoin?.matrix?.forgotten || {}),
       legend: {
+        on: document.getElementById('mat_legend_on')?.checked ?? true,
         base: Math.max(0, parseInt(document.getElementById('mat_legend_base')?.value) || 0),
         bigOn: !!document.getElementById('mat_legend_big_on')?.checked,
         bigVal: Math.max(0, parseInt(document.getElementById('mat_legend_big_val')?.value) || 0),
@@ -8569,6 +8605,7 @@
         mutasiVal: Math.max(0, parseInt(document.getElementById('mat_legend_mutasi_val')?.value) || 0)
       },
       mitos: {
+        on: document.getElementById('mat_mitos_on')?.checked ?? true,
         base: Math.max(0, parseInt(document.getElementById('mat_mitos_base')?.value) || 0),
         bigOn: !!document.getElementById('mat_mitos_big_on')?.checked,
         bigVal: Math.max(0, parseInt(document.getElementById('mat_mitos_big_val')?.value) || 0),
@@ -8578,6 +8615,7 @@
         mutasiVal: Math.max(0, parseInt(document.getElementById('mat_mitos_mutasi_val')?.value) || 0)
       },
       secret: {
+        on: document.getElementById('mat_secret_on')?.checked ?? true,
         base: Math.max(0, parseInt(document.getElementById('mat_secret_base')?.value) || 0),
         bigOn: !!document.getElementById('mat_secret_big_on')?.checked,
         bigVal: Math.max(0, parseInt(document.getElementById('mat_secret_big_val')?.value) || 0),
@@ -8587,6 +8625,7 @@
         mutasiVal: Math.max(0, parseInt(document.getElementById('mat_secret_mutasi_val')?.value) || 0)
       },
       khusus: {
+        on: document.getElementById('mat_khusus_on')?.checked ?? true,
         nama: (document.getElementById('mat_khusus_nama')?.value || '').trim(),
         base: Math.max(0, parseInt(document.getElementById('mat_khusus_base')?.value) || 0),
         bigOn: document.getElementById('mat_khusus_big_on')?.checked ?? true,
