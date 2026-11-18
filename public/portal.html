@@ -1146,6 +1146,12 @@
           signal: AbortSignal.timeout(2500)
         });
         if (res.ok) {
+          const resJson = await res.json().catch(() => ({}));
+          if (resJson.status === 'inactive') {
+            if (statusEl) statusEl.textContent = `⚠️ Mode: ${resJson.mode || 'SETUP'} (${resJson.pesan || 'Pertandingan belum dimulai'}). Ubah ke MATCH agar poin bertambah!`;
+            tampilkanToast(`⚠️ Pertandingan dalam mode ${resJson.mode || 'SETUP'}`);
+            return;
+          }
           if (statusEl) statusEl.textContent = `✔ Simulasi ${sampleFish} (${tierName}) terkirim ke Server Lokal!`;
           tampilkanToast(`🎣 Tangkapan ${sampleFish} terkirim!`);
           return;
