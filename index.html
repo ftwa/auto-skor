@@ -3697,30 +3697,37 @@
         localStorage.setItem('auto_skor_event_bus', JSON.stringify(data));
       } catch (_) {}
 
-      // Siarkan ke Live Cloud Bus (ntfy.sh) dengan smart rate-limit & 429 backoff guard
-      if (data.type && !data._fromCloud) {
+      // Siarkan ke Live Cloud Bus (ntfy.sh) hanya sebagai fallback darurat jika MQTT WebSocket sedang terputus
+      // Saat MQTT aktif, sinkronisasi antar tab/overlay sudah terkirim instan via HiveMQ WSS + BroadcastChannel + LocalStorage
+      if (data.type && !data._fromCloud && !isMqttConnected && data.type !== 'SYNC_DB' && data.type !== 'REQUEST_STATE') {
         const now = Date.now();
+        if (!window._lastNtfyPostTs) window._lastNtfyPostTs = 0;
         let bolehKirimNtfy = !(window._ntfyBackoffUntil && now < window._ntfyBackoffUntil);
+        if (bolehKirimNtfy && (now - window._lastNtfyPostTs < 4000)) {
+          bolehKirimNtfy = false;
+        }
         if (bolehKirimNtfy && data.type === 'SYNC_TIMER') {
-          // Kirim langsung jika ini adalah aksi (Play/Pause/Stop/Edit) atau waktu darurat (<= 5 detik)
           const isCritical = (typeof data.timerSec === 'number' && data.timerSec <= 5);
           const isActionEvent = Boolean(data.isAction || data.isMatchDijeda || !data.isMatchSedangJalan);
-          if (!isActionEvent && !isCritical && (now - lastNtfyTimerBroadcast < 8000)) {
+          if (!isActionEvent && !isCritical && (now - lastNtfyTimerBroadcast < 15000)) {
             bolehKirimNtfy = false;
           }
         }
         if (bolehKirimNtfy) {
+          window._lastNtfyPostTs = now;
           if (data.type === 'SYNC_TIMER') lastNtfyTimerBroadcast = now;
           try {
             fetch('https://ntfy.sh/galatama_auto_skor_live_bus_v1', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Priority': 'urgent' },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data)
             }).then(res => {
-              if (res && res.status === 429) {
+              if (res && (res.status === 429 || res.status >= 400)) {
                 window._ntfyBackoffUntil = Date.now() + 60000;
               }
-            }).catch(() => {});
+            }).catch(() => {
+              window._ntfyBackoffUntil = Date.now() + 30000;
+            });
           } catch (_) {}
         }
       }
@@ -3732,8 +3739,8 @@
     function tanganiPesanSync(msg) {
       if (!msg || !msg.type) return;
 
-      // STABILITY: Dedup pesan yang sama dalam waktu singkat (mencegah echo storm)
-      const dedupKey = msg.type + (msg.ses || '') + (msg.chair || '');
+      // STABILITY: Dedup pesan yang sama dalam waktu singkat (mencegah echo storm tanpa memblokir pemain berbeda)
+      const dedupKey = `${msg.type}_${msg.ses ?? ''}_${msg.chair ?? ''}_${msg.id || msg.player || msg.user || msg.mode || ''}`;
       const now = Date.now();
       if (_lastSyncMsgTs[dedupKey] && (now - _lastSyncMsgTs[dedupKey] < SYNC_DEDUP_MS)) {
         return; // Tolak duplikat
@@ -7007,10 +7014,19 @@
     } catch (_) {}
   }
 
+  let _simpanDbSyncTimer = null;
   function simpanDB() {
     try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(_) {}
-    syncKePython();
-    siarkanSync({ type: "SYNC_DB", db: db });
+    if (_simpanDbSyncTimer) clearTimeout(_simpanDbSyncTimer);
+    _simpanDbSyncTimer = setTimeout(() => {
+      _simpanDbSyncTimer = null;
+      syncKePython();
+      siarkanSync({ type: "SYNC_DB", db: db });
+    }, 80);
+  }
+
+  function apakahServerApiSamaOrigin() {
+    return window.location.port === '5000' || window.location.hostname.includes('vercel.app');
   }
 
   function getSesi() {
@@ -7641,8 +7657,13 @@
     const cleanUser = (robloxUser || playerName || '').replace(/^@+/, '').trim();
 
     // 4. MEMUAT MODEL 3D RESMI PEMAIN DARI ROBLOX API
-    if (cleanUser && !window.location.hostname.includes('github.io')) {
-      fetch(`/api/roblox-3d-model?username=${encodeURIComponent(cleanUser)}`)
+    if (cleanUser) {
+      const url3dEndpoint = apakahServerApiSamaOrigin()
+        ? `/api/roblox-3d-model?username=${encodeURIComponent(cleanUser)}`
+        : ((window.location.protocol !== 'https:' && window._localPythonOnline)
+            ? `http://127.0.0.1:5000/api/roblox-3d-model?username=${encodeURIComponent(cleanUser)}`
+            : `https://auto-skor.vercel.app/api/roblox-3d-model?username=${encodeURIComponent(cleanUser)}`);
+      fetch(url3dEndpoint)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (!data) return;
@@ -8226,34 +8247,36 @@
     const cleanUser = String(rawInput || '').trim().replace(/^@+/, '').trim();
     if (!cleanUser) return null;
 
-    // 1. Coba endpoint internal / same-origin (/api/cari-roblox & /cari-roblox)
-    const sameOriginEndpoints = ['/api/cari-roblox', '/cari-roblox'];
-    for (const ep of sameOriginEndpoints) {
-      try {
-        const r = await fetch(`${ep}?username=${encodeURIComponent(cleanUser)}`, {
-          signal: AbortSignal.timeout(3500)
-        });
-        if (r.ok) {
-          const d = await r.json();
-          if (d && (d.sukses || d.success) && (d.userName || d.username || d.displayName)) {
-            const finalUname = d.userName || d.username || cleanUser;
-            const finalDname = d.displayName || finalUname;
-            return {
-              sukses: true,
-              userId: d.userId || 0,
-              userName: finalUname,
-              username: finalUname,
-              displayName: finalDname,
-              avatarUrl: d.avatarUrl || '',
-              avatar3dUrl: d.avatar3dUrl || d.avatarUrl || ''
-            };
+    // 1. Coba endpoint internal / same-origin hanya jika server saat ini memang memiliki endpoint API (Port 5000 / Vercel)
+    if (apakahServerApiSamaOrigin()) {
+      const sameOriginEndpoints = ['/api/cari-roblox', '/cari-roblox'];
+      for (const ep of sameOriginEndpoints) {
+        try {
+          const r = await fetch(`${ep}?username=${encodeURIComponent(cleanUser)}`, {
+            signal: AbortSignal.timeout(3500)
+          });
+          if (r.ok) {
+            const d = await r.json();
+            if (d && (d.sukses || d.success) && (d.userName || d.username || d.displayName)) {
+              const finalUname = d.userName || d.username || cleanUser;
+              const finalDname = d.displayName || finalUname;
+              return {
+                sukses: true,
+                userId: d.userId || 0,
+                userName: finalUname,
+                username: finalUname,
+                displayName: finalDname,
+                avatarUrl: d.avatarUrl || '',
+                avatar3dUrl: d.avatar3dUrl || d.avatarUrl || ''
+              };
+            }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
     }
 
-    // 2. Jika bukan protokol HTTPS dan port bukan 5000, coba http://127.0.0.1:5000
-    if (window.location.protocol !== 'https:' && window.location.port !== '5000') {
+    // 2. Jika bukan protokol HTTPS, port bukan 5000, dan server Python lokal terdeteksi aktif, coba http://127.0.0.1:5000
+    if (window.location.protocol !== 'https:' && window.location.port !== '5000' && window._localPythonOnline) {
       try {
         const rLocal = await fetch(`http://127.0.0.1:5000/cari-roblox?username=${encodeURIComponent(cleanUser)}`, {
           signal: AbortSignal.timeout(2500)
@@ -9501,6 +9524,7 @@
         document.documentElement.classList.contains('mode-timer')) return;
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (!isLocalhost) return; // Mencegah network polling & lag saat berjalan di Vercel Cloud
+    if (window.location.port !== '5000' && !window._localPythonOnline && !force) return; // Hindari ERR_CONNECTION_REFUSED saat Python belum menyala
 
     const s = getSesi();
     const daftarUser = [];
@@ -9533,10 +9557,12 @@
     fetch('http://127.0.0.1:5000/sync-peserta', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: currentHash
+      body: currentHash,
+      signal: AbortSignal.timeout(2000)
     })
     .then(async res => {
       if (res.ok) {
+        window._localPythonOnline = true;
         lastSyncPayloadHash = currentHash;
         try {
           const data = await res.json();
@@ -9547,7 +9573,10 @@
       }
       setStatusSystem(res.ok);
     })
-    .catch(() => setStatusSystem(false));
+    .catch(() => {
+      window._localPythonOnline = false;
+      setStatusSystem(false);
+    });
   }
 
   function setStatusSystem(online) {
@@ -10006,14 +10035,21 @@
 
   let pollIntervalId = null;
   let cloudEventSource = null;
+  let _cloudSseReconnectTimer = null;
   const processedCatchIds = new Set();
 
   function inisialisasiCloudSSE() {
     try {
+      if (_cloudSseReconnectTimer) {
+        clearTimeout(_cloudSseReconnectTimer);
+        _cloudSseReconnectTimer = null;
+      }
       if (cloudEventSource) {
         try { cloudEventSource.close(); } catch(_) {}
+        cloudEventSource = null;
       }
-      cloudEventSource = new EventSource('https://ntfy.sh/galatama_auto_skor_live_bus_v1/sse?since=now');
+      // ntfy.sh /sse tanpa ?since=now (karena ?since=now menghasilkan HTTP 400 di ntfy.sh)
+      cloudEventSource = new EventSource('https://ntfy.sh/galatama_auto_skor_live_bus_v1/sse');
       
       cloudEventSource.onopen = () => {
         console.log('⚡ [Cloud Bus] Terhubung ke Vercel Live Catch Bus (ntfy.sh)');
@@ -10086,13 +10122,21 @@
         }
       };
 
-      cloudEventSource.onerror = (evt) => {
-        console.warn('[Cloud Bus] SSE error, browser will auto-reconnect');
-        // SSE otomatis reconnect oleh browser
+      cloudEventSource.onerror = () => {
+        try {
+          if (cloudEventSource) {
+            cloudEventSource.close();
+            cloudEventSource = null;
+          }
+        } catch (_) {}
+        if (!_cloudSseReconnectTimer) {
+          _cloudSseReconnectTimer = setTimeout(() => {
+            _cloudSseReconnectTimer = null;
+            inisialisasiCloudSSE();
+          }, 15000);
+        }
       };
-    } catch (err) {
-      console.warn('[Cloud Bus] Init error:', err);
-    }
+    } catch (_) {}
   }
 
   function inisialisasiSSE() {
@@ -10105,7 +10149,7 @@
       setStatusSystem(true);
     }
 
-    // Jalankan ultra-fast polling non-blocking di localhost (0ms latency, zero thread lock)
+    // Jalankan adaptive polling non-blocking di localhost (400ms saat Python aktif, backoff 5000ms saat Python belum nyala)
     if (isLokal && window.location.protocol !== 'https:') {
       mulaiPollingLokal();
     }
@@ -10113,9 +10157,12 @@
 
   let localFastPollInterval = null;
   function mulaiPollingLokal() {
-    if (localFastPollInterval) clearInterval(localFastPollInterval);
+    if (localFastPollInterval) {
+      clearTimeout(localFastPollInterval);
+      clearInterval(localFastPollInterval);
+      localFastPollInterval = null;
+    }
     pollPoinFallback();
-    localFastPollInterval = setInterval(pollPoinFallback, 400);
   }
 
   let isPolling = false;
@@ -10124,6 +10171,7 @@
     if (isPolling) return;
     if (window.location.protocol === 'https:') return;
     isPolling = true;
+    let nextDelayMs = 400;
     try {
       const pollUrl = lastPollTimestamp > 0
         ? `http://127.0.0.1:5000/ambil-poin-baru?since=${lastPollTimestamp}`
@@ -10133,8 +10181,13 @@
         signal: AbortSignal.timeout(900)
       });
       if (res.ok) {
+        const wasOffline = !window._localPythonOnline;
+        window._localPythonOnline = true;
         setStatusSystem(true);
         updateSyncBadge(true);
+        if (wasOffline) {
+          syncKePython(true);
+        }
         const list = await res.json();
         if (Array.isArray(list) && list.length > 0) {
           list.forEach(item => {
@@ -10174,10 +10227,17 @@
             tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan || item.fish, kategoriStr, item.displayName, item.userId);
           });
         }
+      } else {
+        window._localPythonOnline = false;
+        nextDelayMs = 5000;
       }
     } catch (_) {
+      window._localPythonOnline = false;
+      nextDelayMs = 5000;
     } finally {
       isPolling = false;
+      if (localFastPollInterval) clearTimeout(localFastPollInterval);
+      localFastPollInterval = setTimeout(pollPoinFallback, nextDelayMs);
     }
   }
 
@@ -10272,12 +10332,16 @@
     } catch (_) {}
 
     // 2. Hubungi endpoint pertemanan (/auto-add-friend) dengan menyertakan cookie aktif jika ada
-    const isLokal = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
-    const endpoints = [
-      isLokal ? '/auto-add-friend' : 'http://127.0.0.1:5000/auto-add-friend',
-      'https://auto-skor.vercel.app/api/auto-add-friend',
-      '/api/auto-add-friend'
-    ];
+    const endpoints = [];
+    if (window.location.port === '5000') {
+      endpoints.push('/auto-add-friend');
+    } else if (window.location.protocol !== 'https:' && window._localPythonOnline) {
+      endpoints.push('http://127.0.0.1:5000/auto-add-friend');
+    }
+    endpoints.push('https://auto-skor.vercel.app/api/auto-add-friend');
+    if (window.location.hostname.includes('vercel.app')) {
+      endpoints.push('/api/auto-add-friend');
+    }
 
     let addSuccess = false;
     let responseData = null;
@@ -10417,11 +10481,16 @@
     const imgAv = document.getElementById('imgAvatarBotCookie');
     const labelKursi = document.getElementById('namaBotCookieKursi');
 
-    const endpoints = [
-      'http://127.0.0.1:5000/api/cookie-roblox',
-      '/api/cookie-roblox',
-      'https://auto-skor.vercel.app/api/cookie-roblox'
-    ];
+    const endpoints = [];
+    if (window.location.protocol !== 'https:' && (window.location.port === '5000' || window._localPythonOnline)) {
+      endpoints.push('http://127.0.0.1:5000/api/cookie-roblox');
+    }
+    if (apakahServerApiSamaOrigin()) {
+      endpoints.push('/api/cookie-roblox');
+    }
+    if (cookieRobloxAktif || endpoints.length === 0) {
+      endpoints.push('https://auto-skor.vercel.app/api/cookie-roblox');
+    }
 
     let data = null;
     for (const ep of endpoints) {
@@ -10489,11 +10558,16 @@
     if (btnTes) { btnTes.disabled = true; btnTes.innerText = '⏳ Menguji...'; }
     if (msg) { msg.style.color = '#0284c7'; msg.innerText = 'Menghubungkan ke Roblox...'; }
 
-    const endpoints = [
-      'http://127.0.0.1:5000/api/cookie-roblox',
-      '/api/cookie-roblox',
-      'https://auto-skor.vercel.app/api/cookie-roblox'
-    ];
+    const endpoints = [];
+    if (window.location.protocol !== 'https:' && (window.location.port === '5000' || window._localPythonOnline)) {
+      endpoints.push('http://127.0.0.1:5000/api/cookie-roblox');
+    }
+    if (apakahServerApiSamaOrigin()) {
+      endpoints.push('/api/cookie-roblox');
+    }
+    if (cookieRobloxAktif || endpoints.length === 0) {
+      endpoints.push('https://auto-skor.vercel.app/api/cookie-roblox');
+    }
 
     let hasil = null;
     for (const ep of endpoints) {
@@ -10553,11 +10627,16 @@
     try { localStorage.setItem('roblox_cookie', rawVal); } catch(_) {}
 
     // Kirim ke backend lokal dan cloud
-    const endpoints = [
-      'http://127.0.0.1:5000/api/cookie-roblox',
-      '/api/cookie-roblox',
-      'https://auto-skor.vercel.app/api/cookie-roblox'
-    ];
+    const endpoints = [];
+    if (window.location.protocol !== 'https:' && (window.location.port === '5000' || window._localPythonOnline)) {
+      endpoints.push('http://127.0.0.1:5000/api/cookie-roblox');
+    }
+    if (apakahServerApiSamaOrigin()) {
+      endpoints.push('/api/cookie-roblox');
+    }
+    if (cookieRobloxAktif || endpoints.length === 0) {
+      endpoints.push('https://auto-skor.vercel.app/api/cookie-roblox');
+    }
 
     let hasil = null;
     for (const ep of endpoints) {
@@ -10602,11 +10681,16 @@
     const inp = document.getElementById('inputKodeCookie');
     if (inp) inp.value = '';
 
-    const endpoints = [
-      'http://127.0.0.1:5000/api/cookie-roblox',
-      '/api/cookie-roblox',
-      'https://auto-skor.vercel.app/api/cookie-roblox'
-    ];
+    const endpoints = [];
+    if (window.location.protocol !== 'https:' && (window.location.port === '5000' || window._localPythonOnline)) {
+      endpoints.push('http://127.0.0.1:5000/api/cookie-roblox');
+    }
+    if (apakahServerApiSamaOrigin()) {
+      endpoints.push('/api/cookie-roblox');
+    }
+    if (cookieRobloxAktif || endpoints.length === 0) {
+      endpoints.push('https://auto-skor.vercel.app/api/cookie-roblox');
+    }
 
     for (const ep of endpoints) {
       try {
