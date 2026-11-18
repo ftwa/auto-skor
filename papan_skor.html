@@ -3921,6 +3921,11 @@
                 if (timerSec > 0) {
                   timerSec--;
                   updateTimer();
+                  if (timerSec === 0) {
+                    isMatchSedangJalan = false;
+                    isMatchSelesai = true;
+                    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                  }
                 }
               }, 1000);
             }
@@ -3990,6 +3995,11 @@
                       if (timerSec <= 60 && timerSec > 0) elDisp.classList.add('timer-danger');
                       else elDisp.classList.remove('timer-danger');
                     }
+                  }
+                  if (timerSec === 0) {
+                    isMatchSedangJalan = false;
+                    isMatchSelesai = true;
+                    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
                   }
                 }
               }, 1000);
@@ -9647,6 +9657,7 @@
       timerSec: (typeof timerSec !== 'undefined') ? timerSec : 900,
       isMatchSedangJalan: !!isMatchSedangJalan,
       isMatchDijeda: !!isMatchDijeda,
+      isMatchSelesai: !!isMatchSelesai,
       modeTampilan: (typeof modeTampilanSaatIni !== 'undefined' && modeTampilanSaatIni) ? modeTampilanSaatIni : 'PREPARE',
       winnerActive: Boolean(document.getElementById('winnerOverlay')?.classList.contains('active'))
     });
