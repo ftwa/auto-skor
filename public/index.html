@@ -716,12 +716,11 @@
 
     .podium-hero-card.m4-holo-unit {
       position: relative;
-      background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, rgba(8, 51, 68, 0.65) 60%, rgba(6, 182, 212, 0.28) 100%) !important;
-      border: 2.5px solid #06b6d4 !important;
-      border-radius: 36px !important;
-      box-shadow: 0 0 26px rgba(6, 182, 212, 0.42), inset 0 0 20px rgba(6, 182, 212, 0.25), inset 0 8px 16px rgba(255, 255, 255, 0.22) !important;
-      backdrop-filter: blur(12px);
-      padding: 16px 12px 14px 12px !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      padding: 8px 4px 6px 4px !important;
       cursor: default !important;
       text-align: center;
       display: flex;
@@ -732,65 +731,34 @@
       transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
-    /* Efek Lapisan Kaca & Refraksi Air Laut (Water Caustics Glow) */
-    .podium-hero-card.m4-holo-unit::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: radial-gradient(circle at 50% 15%, rgba(103, 232, 249, 0.35) 0%, transparent 65%),
-                  linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 40%, rgba(6, 182, 212, 0.18) 100%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Gelembung Udara Akuarium Mengapung Naik */
+    /* Hilangkan layer kotak pembungkus & tabung */
+    .podium-hero-card.m4-holo-unit::before,
     .podium-hero-card.m4-holo-unit::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 10%; right: 10%;
-      height: 95%;
-      border-radius: inherit;
-      background-image: 
-        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.6) 2px, transparent 3px),
-        radial-gradient(circle at 60% 70%, rgba(103,232,249,0.7) 3px, transparent 4px),
-        radial-gradient(circle at 40% 50%, rgba(255,255,255,0.5) 2.5px, transparent 3.5px),
-        radial-gradient(circle at 80% 30%, rgba(103,232,249,0.6) 3px, transparent 4px),
-        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.7) 2px, transparent 3px);
-      background-size: 100% 120px;
-      animation: waterBubblesRise 5s linear infinite;
-      opacity: 0.65;
-      pointer-events: none;
-      z-index: 1;
+      display: none !important;
     }
 
-    @keyframes waterBubblesRise {
-      0% { transform: translateY(0); opacity: 0.3; }
-      50% { opacity: 0.75; }
-      100% { transform: translateY(-80px); opacity: 0.1; }
-    }
-
-    /* Juara 1: Tabung Akuarium Emas Utama */
+    /* Juara 1: Bebas Tanpa Kotak Pembungkus (Frameless Hero) */
     .podium-hero-card.m4-holo-unit.hero-rank-1 {
-      background: linear-gradient(180deg, rgba(34, 211, 238, 0.18) 0%, rgba(10, 60, 80, 0.78) 55%, rgba(250, 204, 21, 0.22) 100%) !important;
-      border: 3.2px solid #22d3ee !important;
-      outline: 2px solid rgba(254, 240, 138, 0.65);
-      box-shadow: 0 0 38px rgba(34, 211, 238, 0.62), inset 0 0 26px rgba(34, 211, 238, 0.38), inset 0 10px 22px rgba(255, 255, 255, 0.38) !important;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
       transform: scale(1.08) translateY(-14px);
       z-index: 10;
     }
 
-    /* Juara 2: Tabung Akuarium Cyan */
+    /* Juara 2: Bebas Tanpa Kotak Pembungkus */
     .podium-hero-card.m4-holo-unit.hero-rank-2 {
-      border-color: #00f0ff !important;
-      box-shadow: 0 0 28px rgba(0, 240, 255, 0.45), inset 0 0 20px rgba(0, 240, 255, 0.25) !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
-    /* Juara 3: Tabung Akuarium Deep Aqua */
+    /* Juara 3: Bebas Tanpa Kotak Pembungkus */
     .podium-hero-card.m4-holo-unit.hero-rank-3 {
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 28px rgba(56, 189, 248, 0.45), inset 0 0 20px rgba(56, 189, 248, 0.25) !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
     /* 3D Aquatic Chamber Stage - Bebas Luas & Dinamis */
