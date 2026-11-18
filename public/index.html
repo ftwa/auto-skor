@@ -5680,16 +5680,17 @@
   }
 
   let _syncDebounceTimer = null;
-  const SYNC_THROTTLE_MS = 150;
-  // Debounced sync message handler: mencegah flood dari BroadcastChannel / MQTT
+  const SYNC_THROTTLE_MS = 120;
+  // Debounced sync message handler: mencegah flood SYNC_DB dari BroadcastChannel / MQTT tanpa memblokir event penting
   function tanganiPesanSyncDebounced(msg) {
-    // Pesan kritis (timer, score, notif) langsung proses, sisanya debounce
-    if (msg && (msg.type === 'SYNC_TIMER' || msg.type === 'SYNC_SCORE' || msg.type === 'SYNC_NOTIF' || msg.type === 'CLOSE_WINNER' || msg.type === 'SYNC_PRESENCE')) {
+    if (!msg) return;
+    if (msg.type !== 'SYNC_DB') {
       if (typeof tanganiPesanSync === 'function') tanganiPesanSync(msg);
       return;
     }
     if (_syncDebounceTimer) clearTimeout(_syncDebounceTimer);
     _syncDebounceTimer = setTimeout(() => {
+      _syncDebounceTimer = null;
       if (typeof tanganiPesanSync === 'function') tanganiPesanSync(msg);
     }, SYNC_THROTTLE_MS);
   }
@@ -6009,8 +6010,8 @@
     }
 
     box.innerHTML = cocok.map(m => `
-      <div class="member-suggest-item" onclick="pilihMemberDariAutoComplete('${m.key}')">
-        <span><b>${m.nick || m.robloxUser}</b> <small style="color:#64748b;">(${m.user || m.robloxUser})</small></span>
+      <div class="member-suggest-item" onclick="pilihMemberDariAutoComplete('${escapeHtml(m.key)}')">
+        <span><b>${escapeHtml(m.nick || m.robloxUser)}</b> <small style="color:#64748b;">(${escapeHtml(m.user || m.robloxUser)})</small></span>
         <span style="font-size:10px; color:var(--primary);">${m.plays || 0}x Main</span>
       </div>
     `).join('');
@@ -7009,13 +7010,18 @@
   function pilihSesiSpesifik(i) {
     db.current = i;
     sudahCatatMemberSesiIni = Boolean(getSesi().sudahCatatMember);
+    if (typeof sinkronkanKursiDenganServerMemory === 'function') {
+      sinkronkanKursiDenganServerMemory(false);
+    }
     simpanDB();
     renderIsiTabel(); 
+    syncKePython(true);
     tutupSemuaDropdown();
     tambahLogAktivitas('SESI', `Pindah ke Sesi ${i}`, 'system');
   }
 
   function tambahSesi() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     db.total += 1; 
     db.sessions[db.total] = buatSesiKosong(); 
     db.current = db.total;
@@ -7023,12 +7029,17 @@
     isMatchSedangJalan = false;
     isMatchDijeda = false;
     isWaitingWinnerAfterQueue = false;
+    isExtraTimeBin = false;
+    extraTimerSec = 0;
     sudahCatatMemberSesiIni = false;
+    tutupGyro10DetikTerakhir();
+    if (typeof bgmStopAll === 'function') bgmStopAll();
     perbaruiStatusMatchUI();
     simpanDB(); 
     renderIsiTabel();  
     updateTimer();
     renderDropdownSesi();
+    syncKePython(true);
     tambahLogAktivitas('SESI', `Sesi baru ditambahkan: Sesi ${db.total}`, 'system');
   }
 
@@ -7043,6 +7054,7 @@
       return;
     }
 
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     const newSessions = {};
     let newCounter = 1;
 
@@ -7065,13 +7077,21 @@
     isMatchSedangJalan = false;
     isMatchDijeda = false;
     isWaitingWinnerAfterQueue = false;
+    isExtraTimeBin = false;
+    extraTimerSec = 0;
     sudahCatatMemberSesiIni = Boolean(getSesi().sudahCatatMember);
+    tutupGyro10DetikTerakhir();
+    if (typeof bgmStopAll === 'function') bgmStopAll();
+    if (typeof sinkronkanKursiDenganServerMemory === 'function') {
+      sinkronkanKursiDenganServerMemory(false);
+    }
 
     perbaruiStatusMatchUI();
     simpanDB();
     renderIsiTabel(); 
     updateTimer();
     renderDropdownSesi();
+    syncKePython(true);
 
     tambahLogAktivitas('SESI', `Sesi ${targetIndex} dihapus. Sesi aktif: Sesi ${db.current}`, 'system');
   }
@@ -7122,6 +7142,7 @@
       db.sessions[db.current] = buatSesiKosong();
       simpanDB();
       renderIsiTabel(); 
+      syncKePython(true);
       tambahLogAktivitas('RESET', `Seluruh data tabel pada Sesi ${db.current} dikosongkan`, 'system');
     }
     tutupModalKonfirmasiResetTabel();
@@ -8995,7 +9016,7 @@
         const binBadgeHtml = `<span class="badge-bin-inline ${p.isBin ? 'bin-active' : 'ob-active'}" onclick="toggleBinStatus(${idx}, event)" title="${p.isBin ? 'Status BIN (+Bonus Poin)' : 'Status OB'}">${p.isBin ? 'BIN' : 'OB'}</span>`;
         cellNama.innerHTML = `
           <div class="cell-nama-wrap">
-            <span class="name-tiktok ${!p.user ? 'name-empty' : ''}">${p.user || '(Kosong)'}</span>
+            <span class="name-tiktok ${!p.user ? 'name-empty' : ''}">${escapeHtml(p.user || '(Kosong)')}</span>
             ${binBadgeHtml}
           </div>`;
       }
@@ -9007,7 +9028,7 @@
         const dotHtml = hasPlayer
           ? `<span class="presence-dot-badge ${p.isHadir ? 'online' : 'offline'}" title="${p.isHadir ? 'Hadir di Server Roblox' : 'Belum terdeteksi di Server'}"></span>`
           : '';
-        const nickHtml = `<span class="name-roblox-display ${!p.nick ? 'name-empty' : ''}">${p.nick || '-'}</span>`;
+        const nickHtml = `<span class="name-roblox-display ${!p.nick ? 'name-empty' : ''}">${escapeHtml(p.nick || '-')}</span>`;
         const absenBadgeHtml = hasPlayer
           ? `<span class="badge-absen-inline ${p.isHadir ? 'hadir' : 'belum'}" onclick="toggleAbsenMatch(${idx}, event)" title="Status Kehadiran Server: ${p.isHadir ? 'HADIR DI SERVER (Klik untuk ubah)' : 'BELUM HADIR (Klik untuk ubah manual)'}">${p.isHadir ? '✔ HADIR' : 'ABSEN'}</span>`
           : '';
@@ -9891,10 +9912,12 @@
             return; // Abaikan pesan lama yang tertunda / replay dari server (> 2 menit)
           }
 
-          // Teruskan juga ke handler state sync (Timer, Mode, Score, Winner, DB)
-          if (typeof tanganiPesanSync === 'function') {
+          // Teruskan ke handler state sync khusus untuk event sinkronisasi UI (Timer, Mode, Score, Winner, DB)
+          const isCatchOrPresence = (item.type === 'PLAYER_PRESENCE' || item.type === 'PLAYER_PRESENCE_LIST' || item.type === 'SYNC_CATCH' || item.type === 'WEATHER_EVENT' || (!item.type && item.user && item.poin !== undefined));
+          if (!isCatchOrPresence && typeof tanganiPesanSync === 'function') {
             item._fromCloud = true;
             tanganiPesanSyncDebounced(item);
+            return;
           }
 
           // Deduplikasi tangkapan
