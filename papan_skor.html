@@ -2494,6 +2494,57 @@
     .stat-absen-pill:hover {
       transform: scale(1.15);
     }
+    .badge-absen-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 9.5px;
+      font-weight: 900;
+      padding: 1.5px 6px;
+      border-radius: 999px;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-left: auto;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .badge-absen-inline.hadir {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1.5px solid #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.35);
+    }
+    .badge-absen-inline.belum {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1.5px solid #cbd5e1;
+    }
+    .badge-absen-inline:hover {
+      transform: scale(1.06);
+    }
+    .avatar-wrap {
+      position: relative;
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+    .presence-dot-badge {
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 1.5px solid #ffffff;
+      z-index: 3;
+    }
+    .presence-dot-badge.online {
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+    .presence-dot-badge.offline {
+      background: #94a3b8;
+    }
 
     /* ========================================================
        MODERN CYBER ESPORTS POINT STUDIO MODAL
@@ -3831,13 +3882,17 @@
           if (!processedCatchIds.has(eventId)) {
             processedCatchIds.add(eventId);
             if (typeof tambahPoinOtomatis === 'function') {
-              tambahPoinOtomatis(msg.user, msg.poin, msg.rincian, msg.ikan || msg.fish, msg.kategori || msg.tier);
+              tambahPoinOtomatis(msg.user, msg.poin, msg.rincian, msg.ikan || msg.fish, msg.kategori || msg.tier, msg.displayName, msg.userId);
             }
           }
         }
       } else if (msg.type === 'PLAYER_PRESENCE') {
         if (typeof tanganiPlayerPresence === 'function') {
           tanganiPlayerPresence(msg);
+        }
+      } else if (msg.type === 'PLAYER_PRESENCE_LIST') {
+        if (typeof tanganiPlayerPresenceList === 'function') {
+          tanganiPlayerPresenceList(msg.players || []);
         }
       }
     }
@@ -3986,6 +4041,7 @@
       <button class="btn-action-soft" onclick="bukaModalPoin()">Point</button>
       <button class="btn-action-soft" onclick="bukaModalNotifSuara(event)">Settings</button>
       <button class="btn-action-soft btn-cookie-roblox" id="btnTopBarCookie" onclick="bukaModalCookieRoblox()" title="Atur Cookie Roblox (.ROBLOSECURITY) untuk fitur Auto Add Friend">🍪 Cookie <span id="topBarCookieDot" style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#94a3b8; margin-left:3px; vertical-align:middle;"></span></button>
+      <button class="btn-action-soft" id="btnSyncAbsenTop" onclick="sinkronkanAbsenDariServerLokal(true)" title="Auto Absen Server: Klik untuk sinkronkan langsung pemain di server dengan Display Name di papan skor" style="display:inline-flex; align-items:center; gap:5px; border-color:#22c55e; color:#15803d; background:#f0fdf4;"><span id="dotAbsenServerTop" style="width:7px; height:7px; border-radius:50%; background:#22c55e; display:inline-block;"></span><span id="labelCounterAbsenTop">Hadir: 0/0</span></button>
       <button class="btn-action-soft btn-stream-link" onclick="bukaModalLinkStream()" title="Salin Link Modular untuk TikTok LIVE Studio & OBS">🔗 Link Stream</button>
       <a href="portal.html" target="_blank" class="btn-action-soft" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Buka Website Portal Pusat Kendali & PratinjauSemua Layar">🌐 Portal</a>
       
@@ -4010,6 +4066,7 @@
           <button onclick="tesMunculkanNotifBg('forgotten')">Tes Notif 🌌 Forgotten</button>
           <button onclick="putarSuaraPengingatWaktu('10m'); tutupSemuaDropdown();">Tes Suara ⏰ Sisa 10 Menit</button>
           <button onclick="putarSuaraPengingatWaktu('1m'); tutupSemuaDropdown();">Tes Suara 🚨 Sisa 1 Menit</button>
+          <button onclick="tesSimulasiAutoAbsenServer(); tutupSemuaDropdown();">🟢 Tes Auto Absen Server</button>
           <button onclick="tesLayarPemenang()">🏆 Tes Winner</button>
         </div>
       </div>
@@ -8365,6 +8422,9 @@
       tambahLogAktivitas('EDIT', `Kursi ${idx + 1} diperbarui: ${p.nick || p.user || '(Kosong)'}`, 'system');
     }
 
+    if (typeof sinkronkanKursiDenganServerMemory === 'function') {
+      sinkronkanKursiDenganServerMemory(false);
+    }
     simpanDB();
     tutupModalNama();
     urutkanOtomatis();
@@ -8944,11 +9004,17 @@
       if (cellRoblox) {
         cellRoblox.onclick = () => bukaModalInputNama(idx);
         const avHtml = renderAvatarHtml(p.avatar, p.nick || p.user);
+        const dotHtml = hasPlayer
+          ? `<span class="presence-dot-badge ${p.isHadir ? 'online' : 'offline'}" title="${p.isHadir ? 'Hadir di Server Roblox' : 'Belum terdeteksi di Server'}"></span>`
+          : '';
         const nickHtml = `<span class="name-roblox-display ${!p.nick ? 'name-empty' : ''}">${p.nick || '-'}</span>`;
+        const absenBadgeHtml = hasPlayer
+          ? `<span class="badge-absen-inline ${p.isHadir ? 'hadir' : 'belum'}" onclick="toggleAbsenMatch(${idx}, event)" title="Status Kehadiran Server: ${p.isHadir ? 'HADIR DI SERVER (Klik untuk ubah)' : 'BELUM HADIR (Klik untuk ubah manual)'}">${p.isHadir ? '✔ HADIR' : 'ABSEN'}</span>`
+          : '';
         cellRoblox.innerHTML = `
-          <div style="display:flex; align-items:center; gap:6px;">
-            <div class="avatar-wrap">${avHtml}</div>
-            <div style="flex:1; min-width:0; display:flex; align-items:center;">${nickHtml}${badgeRajaSecretHtml}</div>
+          <div style="display:flex; align-items:center; gap:6px; width:100%;">
+            <div class="avatar-wrap">${avHtml}${dotHtml}</div>
+            <div style="flex:1; min-width:0; display:flex; align-items:center; gap:4px;">${nickHtml}${badgeRajaSecretHtml}${absenBadgeHtml}</div>
           </div>
         `;
       }
@@ -9006,15 +9072,36 @@
       const hostHandleEl = trHost.querySelector('.host-user-handle');
       if (hostHandleEl) {
         const uName = h.robloxUser || h.user || '';
-        hostHandleEl.innerText = uName ? `@${uName.replace(/^@+/, '')}` : '';
+        const hostAbsenBadge = `<span class="badge-absen-inline ${h.isHadir ? 'hadir' : 'belum'}" onclick="toggleAbsenMatch(19, event)" style="margin-left:6px;" title="Status Kehadiran Host di Server">${h.isHadir ? '✔ HADIR' : 'ABSEN'}</span>`;
+        hostHandleEl.innerHTML = `${uName ? `@${escapeHtml(uName.replace(/^@+/, ''))}` : ''}${hostAbsenBadge}`;
       }
 
       const hostAvWrap = trHost.querySelector('.host-avatar-wrap');
       if (hostAvWrap) {
-        hostAvWrap.innerHTML = h.avatar 
+        hostAvWrap.style.position = 'relative';
+        const hostDot = `<span class="presence-dot-badge ${h.isHadir ? 'online' : 'offline'}"></span>`;
+        hostAvWrap.innerHTML = (h.avatar 
           ? `<img class="avatar-mini" src="${h.avatar}" alt="Avatar">` 
-          : `<div class="avatar-placeholder" style="color:#ffffff; background:#111a2e; font-weight:900;">${(h.nick || h.user || 'H').charAt(0).toUpperCase()}</div>`;
+          : `<div class="avatar-placeholder" style="color:#ffffff; background:#111a2e; font-weight:900;">${(h.nick || h.user || 'H').charAt(0).toUpperCase()}</div>`) + hostDot;
       }
+    }
+
+    // Update counter Hadir di Top Bar
+    const lblAbsenTop = document.getElementById('labelCounterAbsenTop');
+    if (lblAbsenTop) {
+      let totalTerisi = 0;
+      let totalHadir = 0;
+      s.players.forEach(p => {
+        if (p.user || p.robloxUser || p.nick) {
+          totalTerisi++;
+          if (p.isHadir) totalHadir++;
+        }
+      });
+      if (h.robloxUser || (h.nick && h.nick !== 'Host') || (h.user && h.user !== 'Host Turnamen')) {
+        totalTerisi++;
+        if (h.isHadir) totalHadir++;
+      }
+      lblAbsenTop.innerText = `Hadir: ${totalHadir}/${totalTerisi}`;
     }
   }
 
@@ -9288,8 +9375,16 @@
       headers: { 'Content-Type': 'application/json' },
       body: currentHash
     })
-    .then(res => {
-      if (res.ok) lastSyncPayloadHash = currentHash;
+    .then(async res => {
+      if (res.ok) {
+        lastSyncPayloadHash = currentHash;
+        try {
+          const data = await res.json();
+          if (data && Array.isArray(data.onlinePlayers) && data.onlinePlayers.length > 0) {
+            tanganiPlayerPresenceList(data.onlinePlayers, true);
+          }
+        } catch (_) {}
+      }
       setStatusSystem(res.ok);
     })
     .catch(() => setStatusSystem(false));
@@ -9309,7 +9404,7 @@
     }
   }
 
-  function tambahPoinOtomatis(targetUser, poinDariPython, rincianKategori, namaIkan, tierKategori) {
+  function tambahPoinOtomatis(targetUser, poinDariPython, rincianKategori, namaIkan, tierKategori, targetDisplayName = '', targetUserId = 0) {
     if (!isMatchSedangJalan && !isExtraTimeBin) return;
 
     const hasilMatriks = hitungPoinDariMatriks(tierKategori, rincianKategori, poinDariPython, namaIkan);
@@ -9319,14 +9414,22 @@
 
     const s = getSesi();
     const targetKanon = bersihkanNamaKanonikal(targetUser);
+    const displayKanon = bersihkanNamaKanonikal(targetDisplayName || targetUser);
 
     if (s.host) {
       const hRobloxKanon = bersihkanNamaKanonikal(s.host.robloxUser);
       const hNickKanon = bersihkanNamaKanonikal(s.host.nick);
       const hUserKanon = bersihkanNamaKanonikal(s.host.user);
 
-      if (hRobloxKanon === targetKanon || hNickKanon === targetKanon || hUserKanon === targetKanon) {
-        const displayTampil = s.host.nick || s.host.robloxUser || s.host.user || 'Host';
+      const cocokHost = (targetKanon && (hRobloxKanon === targetKanon || hNickKanon === targetKanon || hUserKanon === targetKanon)) ||
+                        (displayKanon && (hRobloxKanon === displayKanon || hNickKanon === displayKanon || hUserKanon === displayKanon));
+
+      if (cocokHost) {
+        s.host.isHadir = true;
+        if (targetDisplayName && (!s.host.nick || s.host.nick === '-' || s.host.nick === 'Host')) {
+          s.host.nick = targetDisplayName;
+        }
+        const displayTampil = s.host.nick || targetDisplayName || s.host.robloxUser || s.host.user || 'Host';
         const poinAwal = s.host.poin;
         s.host.poin += delta;
         const poinAkhir = s.host.poin;
@@ -9349,13 +9452,23 @@
       const pNickKanon = bersihkanNamaKanonikal(p.nick);
       const pUserKanon = bersihkanNamaKanonikal(p.user);
 
-      if (pRobloxKanon === targetKanon || pNickKanon === targetKanon || pUserKanon === targetKanon) {
+      const cocokKursi = (targetKanon && (pRobloxKanon === targetKanon || pNickKanon === targetKanon || pUserKanon === targetKanon)) ||
+                         (displayKanon && (pRobloxKanon === displayKanon || pNickKanon === displayKanon || pUserKanon === displayKanon)) ||
+                         (targetUserId && p.userId && String(p.userId) === String(targetUserId));
+
+      if (cocokKursi) {
         pemainDitemukan = true;
-        const displayTampil = p.nick || p.robloxUser || p.user || targetUser;
+        p.isHadir = true;
+        if (targetDisplayName && (!p.nick || p.nick === '-')) {
+          p.nick = targetDisplayName;
+        }
+        if (targetUser && !p.robloxUser) {
+          p.robloxUser = targetUser;
+        }
+        const displayTampil = p.nick || targetDisplayName || p.robloxUser || p.user || targetUser;
 
         if (!p.isReady) {
-          tambahLogAktivitas(displayTampil, `Menangkap ${namaIkan}, poin pending (status BELUM READY)`, 'system');
-          return;
+          p.isReady = true;
         }
 
         const waktuUtamaHabisCek = (timerSec <= 0 && isExtraTimeBin);
@@ -9386,10 +9499,12 @@
 
       if (kursiKosongIndex !== -1) {
         const pBaru = s.players[kursiKosongIndex];
+        const dispBaru = targetDisplayName || targetUser;
         pBaru.robloxUser = targetUser;
-        pBaru.nick = targetUser; 
-        pBaru.user = '';         
-        pBaru.avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(targetUser)}&background=0284c7&color=fff&rounded=true&bold=true`;
+        pBaru.nick = dispBaru; 
+        pBaru.user = dispBaru;         
+        if (targetUserId) pBaru.userId = targetUserId;
+        pBaru.avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(dispBaru)}&background=0284c7&color=fff&rounded=true&bold=true`;
         pBaru.isReady = true;        
         pBaru.isBin = false;
         pBaru.isHadir = true;
@@ -9405,88 +9520,342 @@
         const indexBaru = s.players.findIndex(pl => pl.id === pBaru.id);
         if (indexBaru !== -1) triggerKedipHijau(`row-kursi-${indexBaru}`);
 
-        tambahLogAktivitas(targetUser, `[BETA] Auto-register Kursi ${kursiKosongIndex + 1} | ${namaIkan} (+${delta} Poin)`, 'system', 0, delta, delta);
-        enqueueNotif(targetUser, rincianFinal, delta, delta, hasilMatriks.tierKey, pBaru.avatar, namaIkan);
+        tambahLogAktivitas(dispBaru, `[BETA] Auto-register Kursi ${kursiKosongIndex + 1} | ${namaIkan} (+${delta} Poin)`, 'system', 0, delta, delta);
+        enqueueNotif(dispBaru, rincianFinal, delta, delta, hasilMatriks.tierKey, pBaru.avatar, namaIkan);
       } else {
-        tambahLogAktivitas(targetUser, `[BETA] Gagal auto-register: 19 Kursi sudah penuh!`, 'system');
+        tambahLogAktivitas(targetDisplayName || targetUser, `[BETA] Gagal auto-register: 19 Kursi sudah penuh!`, 'system');
       }
     }
   }
 
   // ============================================================
-  // FITUR AUTO ABSEN TURNAMEN (PRESENCE JOIN/LEAVE DETECTOR)
+  // FITUR AUTO ABSEN TURNAMEN & SINKRONISASI DISPLAY NAME SERVER
   // ============================================================
+  const serverOnlinePlayersMap = new Map();
+
+  function apakahCocokPemainDenganServer(p, srv) {
+    if (!p || !srv) return false;
+    const srvUname = String(srv.username || srv.player || '').toLowerCase().replace(/^@+/, '').trim();
+    const srvDisp = String(srv.displayName || srvUname).toLowerCase().replace(/^@+/, '').trim();
+    const srvUnameKanon = bersihkanNamaKanonikal(srvUname);
+    const srvDispKanon = bersihkanNamaKanonikal(srvDisp);
+
+    if (p.userId && srv.userId && Number(p.userId) > 0 && Number(p.userId) === Number(srv.userId)) {
+      return true;
+    }
+
+    const ru = (p.robloxUser || '').toLowerCase().replace(/^@+/, '').trim();
+    const rn = (p.nick || '').toLowerCase().replace(/^@+/, '').trim();
+    const tu = (p.user || '').toLowerCase().replace(/^@+/, '').trim();
+
+    const ruKanon = bersihkanNamaKanonikal(ru);
+    const rnKanon = bersihkanNamaKanonikal(rn);
+    const tuKanon = bersihkanNamaKanonikal(tu);
+
+    // 1. Prioritas Utama: Cocokkan Display Name di papan skor (rn) dengan Display Name / Username di server
+    if (rn && rn !== '-' && rn !== 'host') {
+      if (rn === srvDisp || rn === srvUname) return true;
+      if (rnKanon && (rnKanon === srvDispKanon || rnKanon === srvUnameKanon)) return true;
+    }
+
+    // 2. Cocokkan Username Roblox di papan skor (ru) dengan Username / Display Name di server
+    if (ru && ru !== '-') {
+      if (ru === srvUname || ru === srvDisp) return true;
+      if (ruKanon && (ruKanon === srvUnameKanon || ruKanon === srvDispKanon)) return true;
+    }
+
+    // 3. Cocokkan Nama Pemain di papan skor (tu) dengan Display Name / Username di server
+    if (tu && tu !== '(kosong)' && tu !== 'host turnamen') {
+      if (tu === srvDisp || tu === srvUname) return true;
+      if (tuKanon && (tuKanon === srvDispKanon || tuKanon === srvUnameKanon)) return true;
+    }
+
+    return false;
+  }
+
+  function sinkronkanDataIdentitasServerKeKursi(p, idx, srv) {
+    if (!p || !srv) return false;
+    let adaPerubahanData = false;
+    const srvUname = String(srv.username || srv.player || '').replace(/^@+/, '').trim();
+    const srvDisp = String(srv.displayName || srvUname).trim();
+    const srvUid = Number(srv.userId) || 0;
+
+    // Sinkronkan Display Name dari server ke kolom DISPLAY NAME (p.nick) di papan skor
+    if (srvDisp && (!p.nick || p.nick === '-' || p.nick.toLowerCase() === srvUname.toLowerCase())) {
+      if (p.nick !== srvDisp) {
+        p.nick = srvDisp;
+        adaPerubahanData = true;
+      }
+    }
+    // Lengkapi Username Roblox asli jika di papan skor baru diisi Display Name saja
+    if (srvUname && (!p.robloxUser || p.robloxUser.toLowerCase() === srvDisp.toLowerCase())) {
+      if (p.robloxUser !== srvUname) {
+        p.robloxUser = srvUname;
+        adaPerubahanData = true;
+      }
+    }
+    if (srvUid > 0 && !p.userId) {
+      p.userId = srvUid;
+      adaPerubahanData = true;
+    }
+    // Muat foto profil Roblox asli jika belum ada
+    if (srvUname && (!p.avatar || p.avatar.includes('ui-avatars.com'))) {
+      perbaruiAvatarRobloxAsync(idx, srvUname);
+    }
+    return adaPerubahanData;
+  }
+
+  function sinkronkanKursiDenganServerMemory(tampilkanNotif = false) {
+    const s = getSesi();
+    if (!s || serverOnlinePlayersMap.size === 0) return 0;
+
+    let jumlahCocok = 0;
+    let adaPerubahan = false;
+    const onlineArr = Array.from(serverOnlinePlayersMap.values());
+
+    if (s.players) {
+      s.players.forEach((p, idx) => {
+        const hasPlayer = Boolean(p.user || p.robloxUser || (p.nick && p.nick !== '-'));
+        if (!hasPlayer) return;
+
+        const matchSrv = onlineArr.find(srv => apakahCocokPemainDenganServer(p, srv));
+        if (matchSrv) {
+          jumlahCocok++;
+          const baruHadir = !p.isHadir || !p.isReady;
+          p.isHadir = true;
+          p.isReady = true;
+          const idChanged = sinkronkanDataIdentitasServerKeKursi(p, idx, matchSrv);
+          if (baruHadir || idChanged) {
+            adaPerubahan = true;
+            if (baruHadir) {
+              const noKursi = `Kursi ${idx + 1}`;
+              const labelDisp = p.nick || matchSrv.displayName || matchSrv.username;
+              tambahLogAktivitas('ABSEN', `✔ ${labelDisp} (@${matchSrv.username}) terdeteksi di server ➔ ${noKursi} HADIR & READY`, 'success');
+              triggerKedipHijau(`row-kursi-${idx}`);
+              if (tampilkanNotif && typeof tampilkanToastModern === 'function') {
+                tampilkanToastModern(`🟢 [AUTO ABSEN] ${labelDisp} hadir di server (${noKursi})`);
+              }
+            }
+          }
+        }
+      });
+    }
+
+    if (s.host) {
+      const matchHost = onlineArr.find(srv => apakahCocokPemainDenganServer(s.host, srv));
+      if (matchHost) {
+        jumlahCocok++;
+        const baruHadir = !s.host.isHadir;
+        s.host.isHadir = true;
+        s.host.isReady = true;
+        const idChanged = sinkronkanDataIdentitasServerKeKursi(s.host, 19, matchHost);
+        if (baruHadir || idChanged) {
+          adaPerubahan = true;
+          if (baruHadir) {
+            const labelDisp = s.host.nick || matchHost.displayName || matchHost.username;
+            tambahLogAktivitas('ABSEN', `✔ Host ${labelDisp} (@${matchHost.username}) hadir di server!`, 'success');
+            triggerKedipHijau('row-kursi-19');
+          }
+        }
+      }
+    }
+
+    if (adaPerubahan) {
+      simpanDB();
+      renderIsiTabel();
+      siarkanSync({ type: 'SYNC_DB', db: db });
+    }
+    return jumlahCocok;
+  }
+
+  function tanganiPlayerPresenceList(playersList, silent = false) {
+    if (!Array.isArray(playersList)) return;
+    serverOnlinePlayersMap.clear();
+    playersList.forEach(item => {
+      if (!item) return;
+      const uname = String(item.username || item.player || '').trim();
+      if (!uname) return;
+      const dname = String(item.displayName || uname).trim();
+      serverOnlinePlayersMap.set(uname.toLowerCase(), {
+        username: uname,
+        player: uname,
+        displayName: dname,
+        userId: Number(item.userId) || 0,
+        timestamp: item.timestamp || Date.now()
+      });
+    });
+
+    const s = getSesi();
+    let adaYangKeluar = false;
+    const onlineArr = Array.from(serverOnlinePlayersMap.values());
+    if (s && s.players && onlineArr.length > 0) {
+      s.players.forEach(p => {
+        const hasPlayer = Boolean(p.user || p.robloxUser || (p.nick && p.nick !== '-'));
+        if (!hasPlayer) return;
+        const masihAda = onlineArr.some(srv => apakahCocokPemainDenganServer(p, srv));
+        if (p.isHadir && !masihAda) {
+          p.isHadir = false;
+          adaYangKeluar = true;
+        }
+      });
+    }
+
+    const cocok = sinkronkanKursiDenganServerMemory(!silent);
+    if (adaYangKeluar) {
+      simpanDB();
+      renderIsiTabel();
+      siarkanSync({ type: 'SYNC_DB', db: db });
+    }
+    return cocok;
+  }
+
   function tanganiPlayerPresence(item) {
-    if (!item || (!item.player && !item.username)) return;
-    const targetUname = String(item.player || item.username || '').toLowerCase().replace(/^@+/, '').trim();
-    const targetDisplay = String(item.displayName || '').toLowerCase().trim();
+    if (!item) return;
+    if (item.type === 'PLAYER_PRESENCE_LIST' || Array.isArray(item.players)) {
+      tanganiPlayerPresenceList(item.players || []);
+      return;
+    }
+    if (!item.player && !item.username && !item.displayName) return;
+
+    const rawUname = String(item.player || item.username || item.displayName || '').replace(/^@+/, '').trim();
+    const rawDisp = String(item.displayName || rawUname).trim();
     const event = String(item.event || 'JOIN').toUpperCase();
+    const srvObj = {
+      username: rawUname,
+      player: rawUname,
+      displayName: rawDisp,
+      userId: Number(item.userId) || 0,
+      timestamp: item.timestamp || Date.now()
+    };
+
+    if (event === 'LEAVE') {
+      serverOnlinePlayersMap.delete(rawUname.toLowerCase());
+    } else {
+      serverOnlinePlayersMap.set(rawUname.toLowerCase(), srvObj);
+    }
+
     const s = getSesi();
     if (!s) return;
 
     let targetIdx = -1;
     let targetPemain = null;
 
-    // 1. Cek Kursi 1 sampai 19
+    // 1. Cek Kursi 1 sampai 19 (Cocokkan dengan Display Name / Username / Nama Pemain)
     if (s.players) {
       for (let i = 0; i < s.players.length; i++) {
-        const p = s.players[i];
-        const ru = (p.robloxUser || '').toLowerCase().replace(/^@+/, '').trim();
-        const rn = (p.nick || '').toLowerCase().trim();
-        const tu = (p.user || '').toLowerCase().replace(/^@+/, '').trim();
-
-        if (ru && (ru === targetUname || ru === targetDisplay)) {
-          targetIdx = i; targetPemain = p; break;
-        } else if (rn && rn !== '-' && (rn === targetUname || rn === targetDisplay)) {
-          targetIdx = i; targetPemain = p; break;
-        } else if (tu && (tu === targetUname || tu === targetDisplay)) {
-          targetIdx = i; targetPemain = p; break;
+        if (apakahCocokPemainDenganServer(s.players[i], srvObj)) {
+          targetIdx = i;
+          targetPemain = s.players[i];
+          break;
         }
       }
     }
 
     // 2. Cek Kursi 20 (Host)
-    if (targetIdx === -1 && s.host) {
-      const hru = (s.host.robloxUser || '').toLowerCase().replace(/^@+/, '').trim();
-      const hrn = (s.host.nick || '').toLowerCase().trim();
-      const htu = (s.host.user || '').toLowerCase().replace(/^@+/, '').trim();
-      if (hru && (hru === targetUname || hru === targetDisplay)) {
-        targetIdx = 19; targetPemain = s.host;
-      } else if (hrn && hrn !== '-' && (hrn === targetUname || hrn === targetDisplay)) {
-        targetIdx = 19; targetPemain = s.host;
-      } else if (htu && (htu === targetUname || htu === targetDisplay)) {
-        targetIdx = 19; targetPemain = s.host;
-      }
+    if (targetIdx === -1 && s.host && apakahCocokPemainDenganServer(s.host, srvObj)) {
+      targetIdx = 19;
+      targetPemain = s.host;
     }
 
     if (targetIdx !== -1 && targetPemain) {
       const noKursi = targetIdx === 19 ? "Kursi 20 (Host)" : `Kursi ${targetIdx + 1}`;
-      const namaLabel = targetPemain.nick || targetPemain.robloxUser || targetPemain.user || noKursi;
 
       if (event === 'JOIN') {
+        const baruHadir = !targetPemain.isHadir || !targetPemain.isReady;
         targetPemain.isHadir = true;
-        if (!targetPemain.isReady) {
-          targetPemain.isReady = true;
+        targetPemain.isReady = true;
+        const idChanged = sinkronkanDataIdentitasServerKeKursi(targetPemain, targetIdx, srvObj);
+        const labelTampil = targetPemain.nick || rawDisp || rawUname;
+
+        if (baruHadir || idChanged) {
           simpanDB();
           renderIsiTabel();
           siarkanSync({ type: 'SYNC_DB', db: db });
-          tambahLogAktivitas('ABSEN', `✔ @${targetUname} hadir di server! ${noKursi} otomatis READY`, 'success');
+        }
+        if (baruHadir) {
+          tambahLogAktivitas('ABSEN', `✔ ${labelTampil} (@${rawUname}) hadir di server! ${noKursi} otomatis HADIR & READY`, 'success');
           triggerKedipHijau(`row-kursi-${targetIdx}`);
           if (typeof putarSuaraNotif === 'function') {
             putarSuaraNotif('khusus');
           }
           if (typeof tampilkanToastModern === 'function') {
-            tampilkanToastModern(`🟢 [AUTO ABSEN] @${targetUname} masuk server (${noKursi} READY)`);
+            tampilkanToastModern(`🟢 [AUTO ABSEN] ${labelTampil} masuk server (${noKursi} HADIR)`);
           }
         }
       } else if (event === 'LEAVE') {
-        targetPemain.isHadir = false;
-        tambahLogAktivitas('ABSEN', `⚠️ @${targetUname} (${noKursi}) keluar / terputus dari game`, 'system');
+        if (targetPemain.isHadir) {
+          targetPemain.isHadir = false;
+          simpanDB();
+          renderIsiTabel();
+          siarkanSync({ type: 'SYNC_DB', db: db });
+        }
+        const labelTampil = targetPemain.nick || rawDisp || rawUname;
+        tambahLogAktivitas('ABSEN', `⚠️ ${labelTampil} (${noKursi}) keluar / terputus dari server`, 'system');
         if (typeof tampilkanToastModern === 'function') {
-          tampilkanToastModern(`⚠️ @${targetUname} (${noKursi}) terputus dari game`);
+          tampilkanToastModern(`⚠️ [AUTO ABSEN] ${labelTampil} (${noKursi}) keluar dari server`);
         }
       }
     }
+  }
+
+  async function sinkronkanAbsenDariServerLokal(tampilkanFeedback = false) {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/online-players', {
+        headers: { 'Cache-Control': 'no-cache' },
+        signal: AbortSignal.timeout(2000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.players)) {
+          const totalServer = data.players.length;
+          const cocok = tanganiPlayerPresenceList(data.players, false);
+          if (tampilkanFeedback && typeof tampilkanToastModern === 'function') {
+            tampilkanToastModern(`🟢 Sinkron Absen: ${cocok} peserta cocok dari ${totalServer} pemain di server!`);
+          }
+          return;
+        }
+      }
+    } catch (_) {}
+
+    const cocokMem = sinkronkanKursiDenganServerMemory(true);
+    if (tampilkanFeedback && typeof tampilkanToastModern === 'function') {
+      tampilkanToastModern(`🟢 Sinkron Absen selesai (${cocokMem} peserta hadir di server).`);
+    }
+  }
+
+  function tesSimulasiAutoAbsenServer() {
+    const s = getSesi();
+    if (!s || !s.players) return;
+
+    let sampleIdx = s.players.findIndex(p => p.nick || p.robloxUser || p.user);
+    if (sampleIdx === -1) {
+      sampleIdx = 0;
+      s.players[0].user = 'Pemain_Galatama';
+      s.players[0].nick = 'KingFisher_ID';
+      s.players[0].robloxUser = 'kingfisher_rbx';
+      s.players[0].isReady = false;
+      s.players[0].isHadir = false;
+      simpanDB();
+      renderIsiTabel();
+    }
+
+    const pTarget = s.players[sampleIdx];
+    pTarget.isHadir = false;
+    renderIsiTabel();
+
+    const simDisplayName = (pTarget.nick && pTarget.nick !== '-') ? pTarget.nick : (pTarget.user || pTarget.robloxUser || 'KingFisher_ID');
+    const simUsername = pTarget.robloxUser || simDisplayName.replace(/\s+/g, '_');
+
+    setTimeout(() => {
+      tanganiPlayerPresence({
+        type: 'PLAYER_PRESENCE',
+        event: 'JOIN',
+        player: simUsername,
+        username: simUsername,
+        displayName: simDisplayName,
+        userId: pTarget.userId || 100001
+      });
+    }, 150);
   }
 
   let pollIntervalId = null;
@@ -9537,7 +9906,7 @@
             processedCatchIds.delete(first);
           }
 
-          if (item.type === 'PLAYER_PRESENCE') {
+          if (item.type === 'PLAYER_PRESENCE' || item.type === 'PLAYER_PRESENCE_LIST') {
             setStatusSystem(true);
             tanganiPlayerPresence(item);
           } else if (item.type === 'SYNC_CATCH' || (item.user && item.poin !== undefined)) {
@@ -9560,7 +9929,7 @@
             const poinMasuk = item.poin !== undefined ? item.poin : 1;
             const rincianStr = item.rincian || 'Tangkapan Ikan';
             const kategoriStr = item.kategori || item.tier || 'legend';
-            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan || item.fish, kategoriStr);
+            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan || item.fish, kategoriStr, item.displayName, item.userId);
           } else if (item.type === 'WEATHER_EVENT') {
             tambahLogAktivitas(item.player || 'Server', `Mengaktifkan ${item.weather || 'Event Cuaca'}`, 'system');
           }
@@ -9626,7 +9995,7 @@
               lastPollTimestamp = item.timestamp;
             }
 
-            if (item.type === 'PLAYER_PRESENCE') {
+            if (item.type === 'PLAYER_PRESENCE' || item.type === 'PLAYER_PRESENCE_LIST') {
               tanganiPlayerPresence(item);
               return;
             }
@@ -9654,7 +10023,7 @@
             const poinMasuk = item.poin !== undefined ? item.poin : 1;
             const rincianStr = item.rincian || 'Tangkapan Ikan';
             const kategoriStr = item.kategori || item.tier || 'legend';
-            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan || item.fish, kategoriStr);
+            tambahPoinOtomatis(item.user, poinMasuk, rincianStr, item.ikan || item.fish, kategoriStr, item.displayName, item.userId);
           });
         }
       }
