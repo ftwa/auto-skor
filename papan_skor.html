@@ -4712,37 +4712,39 @@
       <span><b>Fitur Ikan Khusus:</b> Masukkan nama ikan pilihan di baris atas (misal: <i>Megalodon</i>, <i>Golden Shark</i>). Tangkapan yang cocok otomatis mendapat poin khusus!</span>
     </div>
 
-    <!-- Kartu Pengaturan Tambahan BIN Modern -->
+    <!-- Kartu Pengaturan Tambahan BIN Modern (Dengan Ceklis ON/OFF) -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
       
       <!-- Card Bonus Poin BIN -->
-      <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <div style="font-size: 12px; font-weight: 900; color: #b45309; display: flex; align-items: center; gap: 5px;">
-            🔥 BONUS POIN BIN
+      <div id="cardBonusBinBox" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; transition: opacity 0.2s;">
+        <label for="chkBonusBinOn" style="cursor: pointer; flex: 1;">
+          <div style="font-size: 12px; font-weight: 900; color: #b45309; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="chkBonusBinOn" checked class="point-checkbox" style="width: 17px; height: 17px; accent-color: #d97706; cursor: pointer;" onchange="simpanPoinWarna()">
+            <span>🔥 BONUS POIN BIN</span>
           </div>
-          <div style="font-size: 10px; font-weight: 700; color: #92400e; margin-top: 2px;">
-            Pemain BIN otomatis tambah poin
+          <div style="font-size: 10px; font-weight: 700; color: #92400e; margin-top: 3px; padding-left: 23px;">
+            Ceklis jika BIN dapat tambah poin
           </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 4px;">
+        </label>
+        <div class="point-modifier-capsule" style="border-color: #fde68a; background: #ffffff; padding: 3px 7px;">
           <span style="font-size: 13px; font-weight: 900; color: #b45309;">+</span>
-          <input type="number" id="inputBonusBin" class="point-modern-input" style="width: 48px; border-color: #f59e0b; color: #b45309;" min="0" value="1" onchange="simpanPoinWarna()">
+          <input type="number" id="inputBonusBin" class="point-modern-input" style="width: 44px; height: 28px; border-color: #f59e0b; color: #b45309;" min="0" value="1" onchange="simpanPoinWarna()">
         </div>
       </div>
 
       <!-- Card Waktu Tambahan BIN -->
-      <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1.5px solid #bae6fd; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <div style="font-size: 12px; font-weight: 900; color: #0369a1; display: flex; align-items: center; gap: 5px;">
-            ⏳ WAKTU EKSTRA BIN
+      <div id="cardWaktuBinBox" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1.5px solid #bae6fd; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; transition: opacity 0.2s;">
+        <label for="chkWaktuBinOn" style="cursor: pointer; flex: 1;">
+          <div style="font-size: 12px; font-weight: 900; color: #0369a1; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="chkWaktuBinOn" checked class="point-checkbox" style="width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer;" onchange="simpanPoinWarna()">
+            <span>⏳ WAKTU EKSTRA BIN</span>
           </div>
-          <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 2px;">
-            Durasi babak ekstra saat waktu habis
+          <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 3px; padding-left: 23px;">
+            Ceklis jika BIN dapat waktu ekstra
           </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 4px;">
-          <input type="number" id="inputWaktuBinMenit" class="point-modern-input" style="width: 48px; border-color: #0284c7; color: #0369a1;" min="0" value="15" onchange="simpanPoinWarna()">
+        </label>
+        <div class="point-modifier-capsule" style="border-color: #bae6fd; background: #ffffff; padding: 3px 7px;">
+          <input type="number" id="inputWaktuBinMenit" class="point-modern-input" style="width: 44px; height: 28px; border-color: #0284c7; color: #0369a1;" min="0" value="15" onchange="simpanPoinWarna()">
           <span style="font-size: 10px; font-weight: 900; color: #0284c7;">M</span>
         </div>
       </div>
@@ -5525,7 +5527,9 @@
   };
 
   const DEFAULT_CONFIG_POIN = {
+    bonusBinOn: true,
     bonusBin: 1,
+    waktuBinOn: true,
     waktuBinMenit: 15,
     matrix: JSON.parse(JSON.stringify(DEFAULT_MATRIKS_TIER))
   };
@@ -5549,7 +5553,9 @@
 
   db.warnaPoin = Object.assign({}, DEFAULT_CONFIG_POIN, db.warnaPoin || {});
   delete db.warnaPoin.ikanSpesial;
+  if (db.warnaPoin.bonusBinOn === undefined) db.warnaPoin.bonusBinOn = true;
   if (db.warnaPoin.bonusBin === undefined) db.warnaPoin.bonusBin = 1;
+  if (db.warnaPoin.waktuBinOn === undefined) db.warnaPoin.waktuBinOn = true;
   if (db.warnaPoin.waktuBinMenit === undefined) db.warnaPoin.waktuBinMenit = 15;
   if (!db.warnaPoin.matrix) {
     db.warnaPoin.matrix = JSON.parse(JSON.stringify(DEFAULT_MATRIKS_TIER));
@@ -5735,7 +5741,13 @@
   }
 
   function dapatkanBonusBinAktif() {
+    if (db.warnaPoin && db.warnaPoin.bonusBinOn === false) return 0;
     return Math.max(0, parseInt(db.warnaPoin?.bonusBin ?? 1) || 0);
+  }
+
+  function dapatkanWaktuBinMenitAktif() {
+    if (db.warnaPoin && db.warnaPoin.waktuBinOn === false) return 0;
+    return Math.max(0, parseInt(db.warnaPoin?.waktuBinMenit ?? 15) || 0);
   }
 
   function hitungPoinDariMatriks(tierRaw, rincianRaw, fallbackPoinPython, namaIkan = '') {
@@ -7353,13 +7365,14 @@
             putarSuaraMenegangkan10Detik(timerSec);
           }
         } else {
-          // Waktu utama habis! Cek apakah ada pemain BIN di sesi ini
+          // Waktu utama habis! Cek apakah fitur Waktu Ekstra BIN aktif & ada pemain BIN di sesi ini
           const s = getSesi();
-          const adaBin = s.players.some(p => (p.nick || p.robloxUser || p.user) && p.isBin) || (s.host && s.host.isBin);
+          const durasiWaktuBinMenit = dapatkanWaktuBinMenitAktif();
+          const adaBin = durasiWaktuBinMenit > 0 && (s.players.some(p => (p.nick || p.robloxUser || p.user) && p.isBin) || (s.host && s.host.isBin));
           
           if (adaBin) {
             isExtraTimeBin = true;
-            extraTimerSec = (db.warnaPoin.waktuBinMenit ?? 15) * 60;
+            extraTimerSec = durasiWaktuBinMenit * 60;
             tambahLogAktivitas('TIMER', 'WAKTU UTAMA HABIS! OB Terkunci. Masuk Waktu Tambahan BIN.', 'system');
             if (typeof bgmCheckZoneSwitch === 'function') bgmCheckZoneSwitch();
             renderIsiTabel(); 
@@ -8449,6 +8462,7 @@
     const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
     const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
 
+    setChk('chkWaktuBinOn', db.warnaPoin.waktuBinOn !== false);
     setVal('inputWaktuBinMenit', db.warnaPoin.waktuBinMenit !== undefined ? db.warnaPoin.waktuBinMenit : 15);
     setVal('mat_legend_base', m.legend.base ?? 1);
     setChk('mat_legend_big_on', m.legend.bigOn);
@@ -8484,6 +8498,7 @@
     setChk('mat_khusus_mutasi_on', k.mutasiOn);
     setVal('mat_khusus_mutasi_val', k.mutasiVal ?? 3);
 
+    setChk('chkBonusBinOn', db.warnaPoin.bonusBinOn !== false);
     setVal('inputBonusBin', db.warnaPoin.bonusBin ?? 1);
 
     sinkronkanInputMatriksUI();
@@ -8492,13 +8507,29 @@
   }
 
   function sinkronkanInputMatriksUI() {
-    ['legend', 'mitos', 'secret'].forEach(t => {
+    ['legend', 'mitos', 'secret', 'khusus'].forEach(t => {
       ['big', 'shiny', 'mutasi'].forEach(b => {
         const chk = document.getElementById(`mat_${t}_${b}_on`);
         const inp = document.getElementById(`mat_${t}_${b}_val`);
         if (chk && inp) inp.disabled = !chk.checked;
       });
     });
+
+    const chkBonusBin = document.getElementById('chkBonusBinOn');
+    const inpBonusBin = document.getElementById('inputBonusBin');
+    const cardBonusBin = document.getElementById('cardBonusBinBox');
+    if (chkBonusBin && inpBonusBin) {
+      inpBonusBin.disabled = !chkBonusBin.checked;
+      if (cardBonusBin) cardBonusBin.style.opacity = chkBonusBin.checked ? '1' : '0.6';
+    }
+
+    const chkWaktuBin = document.getElementById('chkWaktuBinOn');
+    const inpWaktuBin = document.getElementById('inputWaktuBinMenit');
+    const cardWaktuBin = document.getElementById('cardWaktuBinBox');
+    if (chkWaktuBin && inpWaktuBin) {
+      inpWaktuBin.disabled = !chkWaktuBin.checked;
+      if (cardWaktuBin) cardWaktuBin.style.opacity = chkWaktuBin.checked ? '1' : '0.6';
+    }
   }
 
   function tutupModalPoin() {
@@ -8520,8 +8551,12 @@
   function simpanPoinWarna() {
     sinkronkanInputMatriksUI();
     const bonusBinLama = dapatkanBonusBinAktif();
+    const bonusBinOnBaru = document.getElementById('chkBonusBinOn') ? !!document.getElementById('chkBonusBinOn').checked : true;
     const bonusBinBaru = Math.max(0, parseInt(document.getElementById('inputBonusBin')?.value) || 0);
-    const selisihBin = bonusBinBaru - bonusBinLama;
+    const waktuBinOnBaru = document.getElementById('chkWaktuBinOn') ? !!document.getElementById('chkWaktuBinOn').checked : true;
+    const waktuBinBaru = Math.max(0, parseInt(document.getElementById('inputWaktuBinMenit')?.value) || 0);
+    const bonusBinEfektifBaru = bonusBinOnBaru ? bonusBinBaru : 0;
+    const selisihBin = bonusBinEfektifBaru - bonusBinLama;
 
     const matrixBaru = {
       legend: {
@@ -8563,9 +8598,10 @@
       }
     };
 
-    const waktuBinBaru = Math.max(0, parseInt(document.getElementById('inputWaktuBinMenit')?.value) || 0);
     db.warnaPoin = {
+      bonusBinOn: bonusBinOnBaru,
       bonusBin: bonusBinBaru,
+      waktuBinOn: waktuBinOnBaru,
       waktuBinMenit: waktuBinBaru,
       matrix: matrixBaru
     };
@@ -8582,7 +8618,7 @@
 
     simpanDB();
     urutkanOtomatis();
-    tambahLogAktivitas('POIN', `Point diperbarui: BIN(+${bonusBinBaru})`, 'system');
+    tambahLogAktivitas('POIN', `Aturan BIN: Poin(${bonusBinOnBaru ? '+'+bonusBinBaru : 'OFF'}) | Waktu(${waktuBinOnBaru ? waktuBinBaru+'m' : 'OFF'})`, 'system');
   }
 
   function stepPoin(index, delta) {
