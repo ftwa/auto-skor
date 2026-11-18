@@ -701,109 +701,153 @@
       z-index: 5;
     }
 
+    /* ========================================================
+       GAYA NO 23: FUTURISTIC AQUARIUM WATER TUBES (TABUNG AIR SILINDER)
+       ======================================================== */
+    .podium-hero-stage {
+      display: grid;
+      grid-template-columns: 1fr 1.18fr 1fr;
+      gap: 16px;
+      margin: 32px 0 20px 0;
+      align-items: flex-end;
+      position: relative;
+      z-index: 5;
+    }
+
     .podium-hero-card.m4-holo-unit {
       position: relative;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      padding: 8px 6px 4px 6px;
+      background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, rgba(8, 51, 68, 0.65) 60%, rgba(6, 182, 212, 0.28) 100%) !important;
+      border: 2.5px solid #06b6d4 !important;
+      border-radius: 36px !important;
+      box-shadow: 0 0 26px rgba(6, 182, 212, 0.42), inset 0 0 20px rgba(6, 182, 212, 0.25), inset 0 8px 16px rgba(255, 255, 255, 0.22) !important;
+      backdrop-filter: blur(12px);
+      padding: 14px 10px 12px 10px !important;
       cursor: default !important;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
       user-select: none;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    /* Opsi 8: Persona-Style All-Out Attack Comic Shard Backdrop */
+
+    /* Efek Lapisan Kaca & Refraksi Air Laut (Water Caustics Glow) */
     .podium-hero-card.m4-holo-unit::before {
       content: '';
       position: absolute;
-      inset: 14px 10px 8px 10px;
-      background-image:
-        radial-gradient(rgba(15, 23, 42, 0.16) 1.5px, transparent 1.5px),
-        linear-gradient(135deg, #ffffff 0%, #e0f7ff 58%, #00f0ff 100%);
-      background-size: 7px 7px, 100% 100%;
-      border: 3.5px solid #0f172a;
-      outline: 3px solid #ffffff;
-      box-shadow: 6px 6px 0px #0f172a;
-      transform: skewX(-7deg);
-      clip-path: polygon(4% 0%, 100% 3%, 96% 100%, 0% 97%);
-      z-index: -1;
+      inset: 0;
+      background: radial-gradient(circle at 50% 15%, rgba(103, 232, 249, 0.35) 0%, transparent 65%),
+                  linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 40%, rgba(6, 182, 212, 0.18) 100%);
       pointer-events: none;
-    }
-    .podium-hero-card.m4-holo-unit.hero-rank-1::before {
-      background-image:
-        radial-gradient(rgba(15, 23, 42, 0.16) 1.5px, transparent 1.5px),
-        linear-gradient(135deg, #fef08a 0%, #facc15 55%, #ff2a85 100%);
-      box-shadow: 7px 7px 0px #0f172a;
-    }
-    .podium-hero-card.m4-holo-unit.hero-rank-3::before {
-      background-image:
-        radial-gradient(rgba(15, 23, 42, 0.16) 1.5px, transparent 1.5px),
-        linear-gradient(135deg, #ffffff 0%, #fce7f3 55%, #ff2a85 100%);
+      z-index: 0;
     }
 
+    /* Gelembung Udara Akuarium Mengapung Naik */
+    .podium-hero-card.m4-holo-unit::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 15%; right: 15%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.6) 2px, transparent 3px),
+        radial-gradient(circle at 60% 70%, rgba(103,232,249,0.7) 3px, transparent 4px),
+        radial-gradient(circle at 40% 50%, rgba(255,255,255,0.5) 2.5px, transparent 3.5px),
+        radial-gradient(circle at 80% 30%, rgba(103,232,249,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.7) 2px, transparent 3px);
+      background-size: 100% 120px;
+      animation: waterBubblesRise 5s linear infinite;
+      opacity: 0.65;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes waterBubblesRise {
+      0% { transform: translateY(0); opacity: 0.3; }
+      50% { opacity: 0.75; }
+      100% { transform: translateY(-80px); opacity: 0.1; }
+    }
+
+    /* Juara 1: Tabung Akuarium Emas Utama */
     .podium-hero-card.m4-holo-unit.hero-rank-1 {
-      transform: scale(1.06) translateY(-8px);
+      background: linear-gradient(180deg, rgba(34, 211, 238, 0.18) 0%, rgba(10, 60, 80, 0.78) 55%, rgba(250, 204, 21, 0.22) 100%) !important;
+      border: 3.2px solid #22d3ee !important;
+      outline: 2px solid rgba(254, 240, 138, 0.65);
+      box-shadow: 0 0 38px rgba(34, 211, 238, 0.62), inset 0 0 26px rgba(34, 211, 238, 0.38), inset 0 10px 22px rgba(255, 255, 255, 0.38) !important;
+      transform: scale(1.08) translateY(-14px);
       z-index: 10;
     }
 
-    /* 3D Holographic Gyroscope Stage */
+    /* Juara 2: Tabung Akuarium Cyan */
+    .podium-hero-card.m4-holo-unit.hero-rank-2 {
+      border-color: #00f0ff !important;
+      box-shadow: 0 0 28px rgba(0, 240, 255, 0.45), inset 0 0 20px rgba(0, 240, 255, 0.25) !important;
+    }
+
+    /* Juara 3: Tabung Akuarium Deep Aqua */
+    .podium-hero-card.m4-holo-unit.hero-rank-3 {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 28px rgba(56, 189, 248, 0.45), inset 0 0 20px rgba(56, 189, 248, 0.25) !important;
+    }
+
+    /* 3D Aquatic Chamber Stage */
     .m4-gyro-stage {
       position: relative;
-      width: 146px;
-      height: 146px;
-      margin: 0 auto 12px auto;
+      width: 136px;
+      height: 136px;
+      margin: 0 auto 10px auto;
       display: flex;
       align-items: center;
       justify-content: center;
       perspective: 900px;
+      z-index: 2;
     }
     .hero-rank-1 .m4-gyro-stage {
-      width: 168px;
-      height: 168px;
-      margin-bottom: 14px;
+      width: 156px;
+      height: 156px;
+      margin-bottom: 12px;
     }
 
-    /* Outer Gyro Ring (Tilted Axis Rotation) */
+    /* Cincin Luar Berputar (Water Ring Vortex) */
     .m4-gyro-ring.ring-outer {
       position: absolute;
       inset: -2px;
       border-radius: 50%;
-      border: 2.5px dashed rgba(56, 189, 248, 0.75);
-      box-shadow: 0 0 22px rgba(56, 189, 248, 0.35);
+      border: 2px dashed rgba(103, 232, 249, 0.7);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
       animation: gyroSpin3D 14s linear infinite;
       pointer-events: none;
     }
     .hero-rank-1 .m4-gyro-ring.ring-outer {
-      border-color: rgba(250, 204, 21, 0.85);
-      box-shadow: 0 0 32px rgba(250, 204, 21, 0.45);
-      animation: gyroSpin3D 12s linear infinite;
+      border-color: rgba(254, 240, 138, 0.85);
+      box-shadow: 0 0 28px rgba(250, 204, 21, 0.55);
+      animation: gyroSpin3D 11s linear infinite;
     }
     .hero-rank-3 .m4-gyro-ring.ring-outer {
-      border-color: rgba(251, 146, 60, 0.75);
-      box-shadow: 0 0 22px rgba(251, 146, 60, 0.35);
+      border-color: rgba(56, 189, 248, 0.75);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
       animation: gyroSpin3D 15s linear infinite;
     }
 
-    /* Middle Gyro Ring (Counter-Axis Rotation) */
+    /* Cincin Tengah (Water Current Ring) */
     .m4-gyro-ring.ring-middle {
       position: absolute;
-      inset: 12px;
+      inset: 10px;
       border-radius: 50%;
-      border: 2px solid rgba(56, 189, 248, 0.5);
-      box-shadow: inset 0 0 14px rgba(56, 189, 248, 0.25);
+      border: 1.5px solid rgba(34, 211, 238, 0.6);
+      box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.3);
       animation: gyroSpinReverse 9s linear infinite;
       pointer-events: none;
     }
     .hero-rank-1 .m4-gyro-ring.ring-middle {
-      border-color: rgba(254, 240, 138, 0.6);
-      box-shadow: inset 0 0 20px rgba(250, 204, 21, 0.35);
+      border-color: rgba(250, 204, 21, 0.65);
+      box-shadow: inset 0 0 18px rgba(250, 204, 21, 0.4);
       animation: gyroSpinReverse 8s linear infinite;
     }
     .hero-rank-3 .m4-gyro-ring.ring-middle {
-      border-color: rgba(253, 186, 116, 0.5);
-      box-shadow: inset 0 0 14px rgba(251, 146, 60, 0.25);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.25);
       animation: gyroSpinReverse 10s linear infinite;
     }
 
@@ -816,13 +860,13 @@
       100% { transform: rotateX(25deg) rotateY(65deg) rotateZ(0deg); }
     }
 
-    /* Floating Holographic Crown for Champion */
+    /* Floating Crown for Champion */
     .m4-champion-crown-holo {
       position: absolute;
       top: -12px;
       font-size: 26px;
       z-index: 15;
-      filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.95));
+      filter: drop-shadow(0 0 16px rgba(250, 204, 21, 0.95)) drop-shadow(0 0 8px rgba(34, 211, 238, 0.8));
       animation: holoCrownFloat 2.4s infinite ease-in-out;
     }
     @keyframes holoCrownFloat {
@@ -830,32 +874,38 @@
       50% { transform: translateY(-6px) scale(1.15); }
     }
 
-    /* Center Gyro Core (Avatar Orbital Sphere) */
+    /* Avatar Core: Mengapung di dalam Tabung Air */
     .m4-gyro-core {
       position: relative;
-      width: 94px;
-      height: 94px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       z-index: 6;
-      border: 3.5px solid #38bdf8;
-      background: radial-gradient(circle at 35% 35%, rgba(56, 189, 248, 0.35) 0%, rgba(15, 23, 42, 0.95) 85%);
-      box-shadow: 0 0 28px rgba(56, 189, 248, 0.7), inset 0 0 18px rgba(56, 189, 248, 0.5);
+      border: 3.5px solid #a5f3fc;
+      background: radial-gradient(circle at 35% 35%, rgba(34, 211, 238, 0.45) 0%, rgba(8, 51, 68, 0.95) 85%);
+      box-shadow: 0 0 25px rgba(103, 232, 249, 0.75), inset 0 0 18px rgba(34, 211, 238, 0.5);
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      animation: aquaticLevitate 3.2s ease-in-out infinite;
     }
     .hero-rank-1 .m4-gyro-core {
-      width: 110px;
-      height: 110px;
-      border-color: #facc15;
-      background: radial-gradient(circle at 35% 35%, rgba(250, 204, 21, 0.4) 0%, rgba(15, 23, 42, 0.96) 85%);
-      box-shadow: 0 0 40px rgba(250, 204, 21, 0.85), inset 0 0 24px rgba(250, 204, 21, 0.6);
+      width: 104px;
+      height: 104px;
+      border-color: #fef08a;
+      background: radial-gradient(circle at 35% 35%, rgba(250, 204, 21, 0.45) 0%, rgba(10, 60, 80, 0.96) 85%);
+      box-shadow: 0 0 35px rgba(254, 240, 138, 0.85), inset 0 0 22px rgba(250, 204, 21, 0.6);
     }
     .hero-rank-3 .m4-gyro-core {
-      border-color: #fb923c;
-      background: radial-gradient(circle at 35% 35%, rgba(251, 146, 60, 0.35) 0%, rgba(15, 23, 42, 0.95) 85%);
-      box-shadow: 0 0 28px rgba(251, 146, 60, 0.7), inset 0 0 18px rgba(251, 146, 60, 0.5);
+      border-color: #67e8f9;
+      background: radial-gradient(circle at 35% 35%, rgba(56, 189, 248, 0.45) 0%, rgba(8, 51, 68, 0.95) 85%);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.75), inset 0 0 18px rgba(56, 189, 248, 0.5);
+    }
+
+    @keyframes aquaticLevitate {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
     }
 
     .podium-3d-avatar-img {
@@ -873,51 +923,98 @@
     }
     .hero-rank-1 .podium-3d-placeholder { color: #facc15; text-shadow: 0 0 16px rgba(250, 204, 21, 0.95); }
     .hero-rank-2 .podium-3d-placeholder { color: #38bdf8; text-shadow: 0 0 14px rgba(56, 189, 248, 0.95); }
-    .hero-rank-3 .podium-3d-placeholder { color: #fb923c; text-shadow: 0 0 14px rgba(251, 146, 60, 0.95); }
+    .hero-rank-3 .podium-3d-placeholder { color: #67e8f9; text-shadow: 0 0 14px rgba(103, 232, 249, 0.95); }
 
-    /* Neo-Pop Comic HUD Capsule (Opsi 8) */
+    /* Kapsul Info Akuarium di Dasar Tabung */
     .m4-hud-capsule {
       width: 100%;
-      max-width: 310px;
-      background: #0f172a;
-      border: 3px solid #0f172a;
-      outline: 2.5px solid #ffffff;
-      border-radius: 12px;
-      padding: 8px 12px;
+      max-width: 290px;
+      background: rgba(4, 26, 40, 0.88);
+      border: 2px solid #06b6d4;
+      border-radius: 999px;
+      padding: 7px 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 5px 5px 0px #00f0ff;
-      transform: skewX(-7deg);
+      gap: 9px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(6, 182, 212, 0.25);
+      backdrop-filter: blur(8px);
       box-sizing: border-box;
+      z-index: 3;
     }
     .m4-hud-capsule > * {
-      transform: skewX(7deg);
+      transform: none;
     }
     .hero-rank-1 .m4-hud-capsule {
-      max-width: 350px;
-      box-shadow: 6px 6px 0px #facc15;
-      padding: 10px 14px;
+      max-width: 320px;
+      border-color: #22d3ee;
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.4), inset 0 0 14px rgba(34, 211, 238, 0.25);
+      padding: 9px 14px;
     }
     .hero-rank-3 .m4-hud-capsule {
-      box-shadow: 5px 5px 0px #ff2a85;
+      border-color: #38bdf8;
     }
 
-    /* Rank Compact Comic Badge (#1, #2, #3) */
+    /* Rank Badge: Kristal Mutiara Laut */
     .m4-hud-badge {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #00f0ff;
-      border: 2.5px solid #0f172a;
-      border-radius: 8px;
-      padding: 4px 8px;
+      background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
+      border: 1.5px solid #ffffff;
+      border-radius: 999px;
+      padding: 3px 8px;
       flex-shrink: 0;
-      min-width: 34px;
-      box-shadow: 2px 2px 0px #ffffff;
+      min-width: 32px;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
     }
-    .hero-rank-1 .m4-hud-badge { background: #facc15; }
-    .hero-rank-3 .m4-hud-badge { background: #ff2a85; }
+    .hero-rank-1 .m4-hud-badge {
+      background: linear-gradient(135deg, #fef08a 0%, #eab308 100%);
+      box-shadow: 0 0 14px rgba(250, 204, 21, 0.8);
+    }
+    .hero-rank-3 .m4-hud-badge {
+      background: linear-gradient(135deg, #38bdf8 0%, #0369a1 100%);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+    }
+    .m4-badge-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+      color: #041021 !important;
+      text-shadow: none !important;
+    }
+    .hero-rank-1 .m4-badge-num { font-size: 14px; color: #000 !important; }
+    .hero-rank-3 .m4-badge-num { color: #041021 !important; }
+
+    /* Nama Pemain & Skor */
+    .podium-player-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #e0f2fe;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    }
+    .hero-rank-1 .podium-player-name {
+      font-size: 15.5px;
+      color: #fef08a;
+      text-shadow: 0 0 12px rgba(254, 240, 138, 0.6);
+    }
+    .podium-score-num {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      color: #00f0ff;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+    }
+    .hero-rank-1 .podium-score-num {
+      font-size: 21px;
+      color: #facc15;
+      text-shadow: 0 0 14px rgba(250, 204, 21, 0.85);
+    }
     .m4-badge-num {
       font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
       font-size: 15px;
