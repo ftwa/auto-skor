@@ -9550,9 +9550,9 @@
 
   let notifTimer = null;
   function enqueueNotif(displayName, rincianKategori, delta, poinAkhir, tierKey = 'legend', avatarUrl = '', namaIkan = '', siar = true) {
-    // STABILITY: Cap antrean notifikasi agar tidak menumpuk tanpa batas
-    if (notifQueue.length >= 40) {
-      notifQueue.splice(0, notifQueue.length - 15); // simpan 15 terbaru saja saat antrean berlebih
+    // STABILITY: Simpan hingga 150 notifikasi tanpa terpotong saat spam tangkapan cepat
+    if (notifQueue.length >= 150) {
+      notifQueue.splice(0, notifQueue.length - 80);
     }
     notifQueue.push({
       displayName,
@@ -9593,17 +9593,19 @@
     const item = notifQueue.shift();
     updateIndikatorAntrean();
 
-    // Durasi Notifikasi Adaptif (Anti-Delay & Anti-Menumpuk saat spam tangkapan cepat):
+    // Durasi Notifikasi Adaptif Ultra-Cepat saat lonjakan tangkapan ekstrem:
     let displayDuration = 1800;
     const qCount = notifQueue.length;
-    if (qCount >= 8) {
-      displayDuration = 400; // Spam parah: sangat cepat habiskan antrean
-    } else if (qCount >= 4) {
-      displayDuration = 600; // Spam sedang: cepat
+    if (qCount >= 20) {
+      displayDuration = 280; // Lonjakan ekstrem: 280ms
+    } else if (qCount >= 10) {
+      displayDuration = 380; // Lonjakan tinggi: 380ms
+    } else if (qCount >= 5) {
+      displayDuration = 550; // Lonjakan sedang: 550ms
     } else if (qCount >= 2) {
-      displayDuration = 850; // Ada antrean: percepat
+      displayDuration = 800; // Ada antrean: 800ms
     } else if (qCount === 1) {
-      displayDuration = 1200;
+      displayDuration = 1100;
     }
 
     putarSuaraNotif(item.tierKey);
@@ -10760,9 +10762,10 @@
     }
 
     if (dynamicPillTimer) clearTimeout(dynamicPillTimer);
+    const pillHideDelay = Math.max(duration - 60, 200);
     dynamicPillTimer = setTimeout(() => {
       pill.classList.remove('show', 'pulse-pop');
-    }, Math.max(duration - 100, 600));
+    }, pillHideDelay);
   }
 
   function klikDynamicPill() {
