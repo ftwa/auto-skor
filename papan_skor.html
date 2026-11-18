@@ -3619,6 +3619,7 @@
     var timerInterval = null;
     var isMatchSedangJalan = false;
     var isMatchDijeda = false;
+    var isMatchSelesai = false;
     var isCountdownRunning = false;
     var modeTampilanSaatIni = 'MATCH';
     var hasReceivedInitialSync = false;
@@ -3912,6 +3913,7 @@
           timerSec = Math.floor(msg.timerSec);
           isMatchSedangJalan = !!msg.isMatchSedangJalan;
           isMatchDijeda = !!msg.isMatchDijeda;
+          isMatchSelesai = (msg.isMatchSelesai !== undefined) ? !!msg.isMatchSelesai : (timerSec <= 0 && !isMatchSedangJalan);
           if (typeof updateTimer === 'function') updateTimer();
           if (isMatchSedangJalan && !isMatchDijeda) {
             if (!timerInterval) {
@@ -3957,6 +3959,7 @@
           timerSec = Math.floor(msg.timerSec);
           isMatchSedangJalan = !!msg.isMatchSedangJalan;
           isMatchDijeda = !!msg.isMatchDijeda;
+          isMatchSelesai = (msg.isMatchSelesai !== undefined) ? !!msg.isMatchSelesai : (timerSec <= 0 && !isMatchSedangJalan);
           if (typeof updateTimer === 'function') {
             updateTimer();
           } else {
@@ -5878,6 +5881,7 @@
   isCountdownRunning = false;
   isMatchSedangJalan = false; 
   isMatchDijeda = false;        
+  isMatchSelesai = false;
   let isWaitingWinnerAfterQueue = false;
   let isExtraTimeBin = false;
   let extraTimerSec = 0;
@@ -6451,7 +6455,7 @@
         btnTrigger.classList.remove('running');
       }
       if (btnStop) btnStop.style.display = "none";
-      kirimStatusMatchKePython("SETUP");
+      kirimStatusMatchKePython(isMatchSelesai ? "FINISHED" : "SETUP");
     }
     renderIsiTabel(); 
   }
@@ -6475,6 +6479,7 @@
     } else if (isMatchDijeda) {
       isMatchSedangJalan = true;
       isMatchDijeda = false;
+      isMatchSelesai = false;
       setModeTampilan('MATCH');
       perbaruiStatusMatchUI();
       mulaiIntervalTimer();
@@ -6496,6 +6501,7 @@
       jalankanCountdown(() => {
         isMatchSedangJalan = true;
         isMatchDijeda = false;
+        isMatchSelesai = false;
         setModeTampilan('MATCH');
         perbaruiStatusMatchUI();
         mulaiIntervalTimer();
@@ -6513,6 +6519,7 @@
     }
     isMatchSedangJalan = false;
     isMatchDijeda = false;
+    isMatchSelesai = false;
     isWaitingWinnerAfterQueue = false;
     isExtraTimeBin = false;
     extraTimerSec = 0;
@@ -6554,8 +6561,10 @@
 
   function kirimStatusMatchKePython(status) {
     if (window.location.protocol === 'https:') return;
-    if (window.location.port !== '5000') return;
-    fetch('/set-mode', {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) return;
+    const targetUrl = (window.location.port === '5000') ? '/set-mode' : 'http://127.0.0.1:5000/set-mode';
+    fetch(targetUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode: status })
@@ -7620,10 +7629,14 @@
             clearInterval(timerInterval); timerInterval = null;
             isMatchSedangJalan = false;
             isMatchDijeda = false;
+            isMatchSelesai = true;
+            timerSec = 0;
             perbaruiStatusMatchUI();
             updateTimer();
             putarBuzzerWaktuHabis();
             tambahLogAktivitas('TIMER', 'WAKTU SELESAI!', 'system');
+            kirimStatusMatchKePython("FINISHED");
+            siarkanSync({ type: "SYNC_TIMER", timerSec: 0, isMatchSedangJalan: false, isMatchDijeda: false, isMatchSelesai: true, isAction: true });
 
             if (notifQueue.length > 0 || isNotifShowing) {
               isWaitingWinnerAfterQueue = true;
@@ -7653,10 +7666,15 @@
           isExtraTimeBin = false;
           isMatchSedangJalan = false;
           isMatchDijeda = false;
+          isMatchSelesai = true;
+          extraTimerSec = 0;
+          timerSec = 0;
           perbaruiStatusMatchUI();
           updateTimer();
           putarBuzzerWaktuHabis();
           tambahLogAktivitas('TIMER', 'WAKTU TAMBAHAN BIN SELESAI!', 'system');
+          kirimStatusMatchKePython("FINISHED");
+          siarkanSync({ type: "SYNC_TIMER", timerSec: 0, isMatchSedangJalan: false, isMatchDijeda: false, isMatchSelesai: true, isAction: true });
 
           if (notifQueue.length > 0 || isNotifShowing) {
             isWaitingWinnerAfterQueue = true;
@@ -9515,11 +9533,11 @@
     if (el) el.innerHTML = `<div style="color: #64748b; font-style: italic; padding: 12px; text-align: center;" id="emptyLogText">Log telah dibersihkan</div>`;
   }
 
+  let notifTimer = null;
   function enqueueNotif(displayName, rincianKategori, delta, poinAkhir, tierKey = 'legend', avatarUrl = '', namaIkan = '', siar = true) {
     // STABILITY: Cap antrean notifikasi agar tidak menumpuk tanpa batas
-    // Jika sudah > 50, buang notifikasi lama yang belum sempat ditampilkan
-    if (notifQueue.length >= 50) {
-      notifQueue.splice(0, notifQueue.length - 20); // simpan 20 terbaru saja
+    if (notifQueue.length >= 40) {
+      notifQueue.splice(0, notifQueue.length - 15); // simpan 15 terbaru saja saat antrean berlebih
     }
     notifQueue.push({
       displayName,
@@ -9560,20 +9578,17 @@
     const item = notifQueue.shift();
     updateIndikatorAntrean();
 
-    // Durasi Notifikasi Adaptif (Anti-Delay & Anti-Menumpuk):
-    // Semakin banyak antrean, semakin cepat notifikasi berganti
-    let displayDuration = 2000;
+    // Durasi Notifikasi Adaptif (Anti-Delay & Anti-Menumpuk saat spam tangkapan cepat):
+    let displayDuration = 1800;
     const qCount = notifQueue.length;
-    if (qCount >= 10) {
-      displayDuration = 400; // Super cepat: habiskan tumpukan
-    } else if (qCount >= 6) {
-      displayDuration = 550;
+    if (qCount >= 8) {
+      displayDuration = 400; // Spam parah: sangat cepat habiskan antrean
     } else if (qCount >= 4) {
-      displayDuration = 700;
+      displayDuration = 600; // Spam sedang: cepat
     } else if (qCount >= 2) {
-      displayDuration = 1000;
+      displayDuration = 850; // Ada antrean: percepat
     } else if (qCount === 1) {
-      displayDuration = 1400;
+      displayDuration = 1200;
     }
 
     putarSuaraNotif(item.tierKey);
@@ -9592,13 +9607,16 @@
       if (detailEl) detailEl.innerText = `${item.namaIkan} (${item.rincianKategori})`;
       const ptsEl = document.getElementById('notifPts');
       if (ptsEl) ptsEl.innerHTML = `+${item.delta} Poin<br><span style="font-size:10px; font-weight:800; color:#a7f3d0;" id="notifTotalLabel">Total: ${item.poinAkhir}</span>`;
+      banner.classList.remove('show', 'pulse-update');
+      void banner.offsetWidth;
       banner.classList.add('show', 'pulse-update');
     }
 
     // Tampilkan Dynamic Island Pill di atas dengan durasi tersinkronisasi
     tampilkanDynamicPill(item.displayName, item.rincianKategori, item.delta, item.tierKey, item.avatarUrl || '', item.namaIkan, item.siar !== false, displayDuration);
 
-    setTimeout(() => {
+    if (notifTimer) clearTimeout(notifTimer);
+    notifTimer = setTimeout(() => {
       prosesAntreanNotif();
     }, displayDuration);
   }
@@ -9709,6 +9727,8 @@
 
   function tambahPoinOtomatis(targetUser, poinDariPython, rincianKategori, namaIkan, tierKategori, targetDisplayName = '', targetUserId = 0) {
     if (!isMatchSedangJalan && !isExtraTimeBin) return;
+    if (timerSec <= 0 && !isExtraTimeBin) return;
+    if (isMatchDijeda || isMatchSelesai) return;
 
     const hasilMatriks = hitungPoinDariMatriks(tierKategori, rincianKategori, poinDariPython, namaIkan);
     const delta = hasilMatriks.poinTotal;
@@ -9833,35 +9853,17 @@
   const processedCatchIds = new Set();
   const _recentNotifSigMap = new Map();
 
-  function tampilkanNotifTangkapanInstan(displayName, rincian, poinDelta, tierKey = 'legend', avatarUrl = '', namaIkan = '', duration = 2000, siar = false) {
-    const namaKanon = bersihkanNamaKanonikal(displayName || 'Player');
-    const ikanKanon = bersihkanNamaKanonikal(namaIkan || rincian || 'Ikan');
-    const sigKey = `${namaKanon}_${ikanKanon}_${poinDelta}`;
-    const now = Date.now();
-    const lastSeen = _recentNotifSigMap.get(sigKey) || 0;
-    if (now - lastSeen < 1200) {
-      return;
-    }
-    _recentNotifSigMap.set(sigKey, now);
-    if (_recentNotifSigMap.size > 80) {
-      for (const [k, ts] of _recentNotifSigMap.entries()) {
-        if (now - ts > 5000) _recentNotifSigMap.delete(k);
-      }
-    }
+  function tampilkanNotifTangkapanInstan(displayName, rincian, poinDelta, tierKey = 'legend', avatarUrl = '', namaIkan = '', duration = 2000, siar = false, catchId = '') {
+    // Jangan proses jika match tidak jalan atau waktu habis
+    if (!isMatchSedangJalan && !isExtraTimeBin) return;
+    if (timerSec <= 0 && !isExtraTimeBin) return;
+    if (isMatchDijeda || isMatchSelesai) return;
 
-    const durasiTampil = Math.max(600, Math.min(Number(duration) || 2000, 2000));
+    if (catchId && processedCatchIds.has(catchId)) return;
+    if (catchId) processedCatchIds.add(catchId);
+
     const tierNorm = normalisasiTierIkan(tierKey);
-    if (!isNotifShowing && notifQueue.length === 0) {
-      isNotifShowing = true;
-      updateIndikatorAntrean();
-      putarSuaraNotif(tierNorm);
-      tampilkanDynamicPill(displayName, rincian, poinDelta, tierNorm, avatarUrl || '', namaIkan, siar, durasiTampil);
-      setTimeout(() => {
-        prosesAntreanNotif();
-      }, durasiTampil);
-    } else {
-      enqueueNotif(displayName, rincian, poinDelta, 0, tierNorm, avatarUrl || '', namaIkan, siar);
-    }
+    enqueueNotif(displayName, rincian, poinDelta, 0, tierNorm, avatarUrl || '', namaIkan, siar);
   }
 
   function cariProfilPemainLokal(targetUser, targetDisplayName, targetUserId) {
@@ -9897,36 +9899,21 @@
     if (!item) return;
     if (!item.user && !item.displayName) return;
 
+    // CEK STATUS: Jika pertandingan dijeda, belum mulai, atau sudah selesai (timer habis), TOLAK TANGKAPAN!
+    if (isMatchDijeda) return;
+    if (!isMatchSedangJalan && !isExtraTimeBin) return;
+    if (timerSec <= 0 && !isExtraTimeBin) return;
+    if (isMatchSelesai && !isExtraTimeBin) return;
+
     const eventId = item.id || `${item.user || item.displayName}_${item.ikan || item.fish || ''}_${item.poin}_${item.timestamp || ''}`;
     if (processedCatchIds.has(eventId)) return;
     processedCatchIds.add(eventId);
-    if (processedCatchIds.size > 300) {
+    if (processedCatchIds.size > 400) {
       const first = processedCatchIds.values().next().value;
       processedCatchIds.delete(first);
     }
 
     setStatusSystem(true);
-    if (isMatchDijeda) {
-      return;
-    }
-
-    const isOverlayOnly = document.documentElement.classList.contains('mode-overlay') ||
-                          document.documentElement.classList.contains('mode-tabel') ||
-                          document.documentElement.classList.contains('mode-top3') ||
-                          document.documentElement.classList.contains('mode-podium') ||
-                          document.documentElement.classList.contains('mode-notif') ||
-                          document.documentElement.classList.contains('mode-timer');
-
-    if (!isMatchSedangJalan && !isExtraTimeBin) {
-      isMatchSedangJalan = true;
-      isMatchDijeda = false;
-      if (!isOverlayOnly) {
-        setModeTampilan('MATCH');
-        perbaruiStatusMatchUI();
-        mulaiIntervalTimer();
-        siarkanSync({ type: 'SYNC_MODE', mode: 'MATCH' });
-      }
-    }
 
     const poinMasuk = item.poin !== undefined ? item.poin : 1;
     const rincianStr = item.rincian || 'Tangkapan Ikan';
@@ -9942,7 +9929,7 @@
       const avatarUrl = (profil && profil.avatar)
         ? profil.avatar
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(dispTampil)}&background=0284c7&color=fff&rounded=true&bold=true`;
-      tampilkanNotifTangkapanInstan(dispTampil, rincianFinal, delta, hasilMatriks.tierKey, avatarUrl, namaIkan, 2000, false);
+      tampilkanNotifTangkapanInstan(dispTampil, rincianFinal, delta, hasilMatriks.tierKey, avatarUrl, namaIkan, 2000, false, eventId);
       return;
     }
 
@@ -10098,6 +10085,11 @@
               }
               // Admin sudah memproses tangkapan langsung dari data.catches, jadi skip SYNC_CATCH di events agar tidak dobel
               if (isModeAdmin && (ev.type === 'SYNC_CATCH' || (!ev.type && ev.user && ev.poin !== undefined))) {
+                return;
+              }
+              // Mode Notif pada koneksi lokal memproses tangkapan langsung dari data.catches dengan ID unik,
+              // jadi lewati SYNC_NOTIF dan SYNC_CATCH di events agar tidak dobel dan tidak bertabrakan saat spam
+              if (isModeNotif && (ev.type === 'SYNC_NOTIF' || ev.type === 'SYNC_CATCH' || (!ev.type && ev.user && ev.poin !== undefined))) {
                 return;
               }
               if (ev.type === 'SYNC_CATCH' || (!ev.type && ev.user && ev.poin !== undefined)) {
@@ -10737,13 +10729,17 @@
     const customAudioData = customAudioTierData[tierKey] || customAudioTierData['default'];
     if (customAudioData) {
       try {
-        if (!audioCachePool[tierKey]) {
-          audioCachePool[tierKey] = new Audio(customAudioData);
+        const cl = document.documentElement.classList;
+        if (!cl.contains('mode-notif') && !cl.contains('mode-tabel') && !cl.contains('mode-overlay') &&
+            !cl.contains('mode-top3') && !cl.contains('mode-podium') && !cl.contains('mode-timer')) {
+          if (!audioCachePool[tierKey]) {
+            audioCachePool[tierKey] = new Audio(customAudioData);
+          }
+          const snd = audioCachePool[tierKey];
+          snd.currentTime = 0;
+          snd.volume = volumeNotifAudio;
+          snd.play().catch(() => {});
         }
-        const snd = audioCachePool[tierKey];
-        snd.currentTime = 0;
-        snd.volume = volumeNotifAudio;
-        snd.play().catch(() => {});
       } catch (_) {}
     }
 
