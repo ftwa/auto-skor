@@ -5827,7 +5827,7 @@
     sudahCatatMemberSesiIni = true;
     simpanDB();
 
-    const pesertaAktif = s.players.filter(p => p.isReady && (p.user || p.robloxUser || p.nick));
+    const pesertaAktif = s.players.filter(p => Boolean(p.user || p.robloxUser || (p.nick && p.nick !== '-')));
 
     pesertaAktif.forEach(p => {
       const key = dapatkanKeyMember(p);
@@ -6255,11 +6255,6 @@
       const curSesi = getSesi();
       if (curSesi) {
         curSesi.sudahCatatMember = false;
-        if (curSesi.players) {
-          curSesi.players.forEach(p => {
-            if (p.user || p.robloxUser || p.nick) p.isReady = true;
-          });
-        }
       }
       simpanDB();
       renderIsiTabel();
@@ -7360,7 +7355,7 @@
         } else {
           // Waktu utama habis! Cek apakah ada pemain BIN di sesi ini
           const s = getSesi();
-          const adaBin = s.players.some(p => p.isReady && p.isBin) || (s.host && s.host.isReady && s.host.isBin);
+          const adaBin = s.players.some(p => (p.nick || p.robloxUser || p.user) && p.isBin) || (s.host && s.host.isBin);
           
           if (adaBin) {
             isExtraTimeBin = true;
@@ -8437,8 +8432,6 @@
         p.isBin = false;
         p.isHadir = false;
         p.stats = buatStatsKosong();
-      } else {
-        p.isReady = true;
       }
       tambahLogAktivitas('EDIT', `Kursi ${idx + 1} diperbarui: ${p.nick || p.user || '(Kosong)'}`, 'system');
     }
@@ -8596,7 +8589,6 @@
     const s = getSesi();
     const p = s.players[index];
     if (!p) return;
-    p.isReady = true;
     const awal = p.poin || 0;
     p.poin = Math.max(0, awal + delta);
     simpanDB(); 
@@ -8617,7 +8609,8 @@
   function ubahPoinManual(index, el) {
     const s = getSesi();
     const p = s.players[index];
-    if (!p.isReady) {
+    const hasPlayer = Boolean(p && (p.user || p.robloxUser || p.nick));
+    if (!p || (!p.isReady && !hasPlayer)) {
       renderIsiTabel(); 
       return;
     }
@@ -8643,10 +8636,11 @@
   function toggleReadyStatus(index) {
     const s = getSesi();
     const p = s.players[index];
+    if (!p) return;
     p.isReady = !p.isReady;
-    tambahLogAktivitas(p.nick || p.user || `Kursi ${index+1}`, `Status: ${p.isReady ? 'READY ✔' : 'STANDBY -'}`, 'system');
+    tambahLogAktivitas(p.nick || p.user || `Kursi ${index+1}`, `Status Pay: ${p.isReady ? 'SUDAH PAY ✔' : 'BELUM PAY ○'}`, 'system');
     simpanDB();
-    urutkanOtomatis();
+    renderIsiTabel();
   }
 
   function toggleReadyHost() {
@@ -8770,7 +8764,7 @@
     for (let i = 0; i < players.length; i++) {
       const p = players[i];
       const sCount = (p.stats && p.stats.s) ? p.stats.s : 0;
-      if (p.isReady && (p.user || p.robloxUser || p.nick) && sCount > maxS) {
+      if ((p.nick || p.robloxUser || p.user) && sCount > maxS) {
         maxS = sCount;
         idRaja = p.id;
       }
@@ -8832,7 +8826,7 @@
     let delay = 100;
     if (s.players) {
       s.players.forEach((p, idx) => {
-        const u = p.robloxUser || p.user || p.nick;
+        const u = p.robloxUser || (p.nick && p.nick !== '-' ? p.nick : '');
         if (u && (!p.avatar || p.avatar.includes('ui-avatars.com') || !p.avatar3d)) {
           setTimeout(() => perbaruiAvatarRobloxAsync(idx, u), delay);
           delay += 250;
@@ -8840,7 +8834,7 @@
       });
     }
     if (s.host) {
-      const hu = s.host.robloxUser || s.host.user;
+      const hu = s.host.robloxUser || (s.host.nick && s.host.nick !== 'Host' && s.host.nick !== '-' ? s.host.nick : '');
       if (hu && (!s.host.avatar || s.host.avatar.includes('ui-avatars.com') || !s.host.avatar3d)) {
         setTimeout(() => perbaruiAvatarRobloxAsync(19, hu), delay);
       }
@@ -8856,7 +8850,7 @@
       }
       return pData.avatar;
     }
-    const u = (pData.robloxUser || pData.user || '').replace(/^@+/, '').trim();
+    const u = (pData.robloxUser || pData.nick || '').replace(/^@+/, '').trim();
     if (u && typeof avatarRobloxCache !== 'undefined') {
       const cached = avatarRobloxCache[u] || avatarRobloxCache[u.toLowerCase()];
       if (cached && cached !== 'FAILED' && cached.startsWith('http')) return cached;
@@ -8979,7 +8973,6 @@
       if (!tr) return;
 
       const hasPlayer = Boolean(p.user || p.robloxUser || p.nick);
-      const isDone = hasPlayer && p.isReady;
 
       // Bersihkan kelas visual peringkat & zona rawan
       tr.classList.remove('is-row-done', 'rank-1', 'rank-2', 'rank-3', 'danger-bottom-row');
@@ -8988,8 +8981,8 @@
         tr.classList.add('danger-bottom-row');
       }
 
-      // Tampilkan warna menarik untuk 3 besar (Top 3) jika pemain Ready dan punya nama
-      if (isDone && (p.poin > 0 || isModeMatchTampil)) {
+      // Tampilkan warna menarik untuk 3 besar (Top 3) jika kursi terisi pemain
+      if (hasPlayer && (p.poin > 0 || isModeMatchTampil)) {
         if (idx === 0) tr.classList.add('rank-1');
         else if (idx === 1) tr.classList.add('rank-2');
         else if (idx === 2) tr.classList.add('rank-3');
@@ -8999,7 +8992,7 @@
       if (cellReady) {
         cellReady.innerHTML = `
           <div class="stat-cell-wrap">
-            <button type="button" class="btn-stat-check ${p.isReady ? 'ready' : 'standby'}" onclick="toggleReadyStatus(${idx})" title="Status: ${p.isReady ? 'READY (Klik untuk Standby)' : 'STANDBY (Klik untuk Ready)'}">
+            <button type="button" class="btn-stat-check ${p.isReady ? 'ready' : 'standby'}" onclick="toggleReadyStatus(${idx})" title="Status Pay: ${p.isReady ? 'SUDAH PAY ✔ (Klik untuk ubah)' : 'BELUM PAY ○ (Klik untuk ceklis Pay)'}">
               ${p.isReady ? '✔' : '○'}
             </button>
           </div>
@@ -9145,8 +9138,8 @@
       if (el) posisiLama[p.id] = el.getBoundingClientRect().top;
     });
 
-    const aktifSiap = s.players.filter(p => p.isReady && (p.user || p.robloxUser || p.nick));
-    const belumSiapAtauKosong = s.players.filter(p => !p.isReady || (!p.user && !p.robloxUser && !p.nick));
+    const aktifSiap = s.players.filter(p => Boolean(p.user || p.robloxUser || (p.nick && p.nick !== '-')));
+    const belumSiapAtauKosong = s.players.filter(p => !p.user && !p.robloxUser && (!p.nick || p.nick === '-'));
 
     aktifSiap.sort((a, b) => {
       const pA = a.poin || 0;
@@ -9170,7 +9163,7 @@
     const animRankMap = {};
     s.players.forEach((p, newIdx) => {
       const oldIdx = oldIndexMap[p.id];
-      if (oldIdx !== undefined && p.isReady && (p.user || p.robloxUser || p.nick)) {
+      if (oldIdx !== undefined && (p.user || p.robloxUser || (p.nick && p.nick !== '-'))) {
         if (newIdx < oldIdx) animRankMap[p.id] = 'up';
         else if (newIdx > oldIdx) animRankMap[p.id] = 'down';
       }
@@ -9364,21 +9357,18 @@
     const daftarUser = [];
     if (s && s.players) {
       s.players.forEach(p => {
-        const ru = (p.robloxUser || '').trim();
         const rn = (p.nick || '').trim();
-        const tu = (p.user || '').trim();
-        if (ru) daftarUser.push(ru);
-        if (rn && rn !== ru) daftarUser.push(rn);
-        if (tu && tu !== ru && tu !== rn) daftarUser.push(tu);
+        const ru = (p.robloxUser || '').trim();
+        // Murni gunakan Display Name (dan fallback Username Roblox), JANGAN gunakan Nama Pemain (p.user)
+        if (rn && rn !== '-') daftarUser.push(rn);
+        if (ru && ru !== rn) daftarUser.push(ru);
       });
     }
     if (s && s.host) {
-      const hru = (s.host.robloxUser || '').trim();
       const hrn = (s.host.nick || '').trim();
-      const htu = (s.host.user || '').trim();
-      if (hru && hru.toLowerCase() !== 'kursi host') daftarUser.push(hru);
-      if (hrn && hrn !== hru && hrn !== '-') daftarUser.push(hrn);
-      if (htu && htu !== hru && htu !== hrn) daftarUser.push(htu);
+      const hru = (s.host.robloxUser || '').trim();
+      if (hrn && hrn !== '-' && hrn.toLowerCase() !== 'host') daftarUser.push(hrn);
+      if (hru && hru !== hrn && hru.toLowerCase() !== 'kursi host') daftarUser.push(hru);
     }
 
     const payloadObj = {
@@ -9434,23 +9424,23 @@
     if (delta <= 0) return;
 
     const s = getSesi();
-    const targetKanon = bersihkanNamaKanonikal(targetUser);
+    // Utamakan Display Name sebagai identitas pencocokan tangkapan
     const displayKanon = bersihkanNamaKanonikal(targetDisplayName || targetUser);
+    const targetKanon = bersihkanNamaKanonikal(targetUser);
 
     if (s.host) {
+      const hNickKanon = (s.host.nick && s.host.nick !== '-' && s.host.nick !== 'Host') ? bersihkanNamaKanonikal(s.host.nick) : '';
       const hRobloxKanon = bersihkanNamaKanonikal(s.host.robloxUser);
-      const hNickKanon = bersihkanNamaKanonikal(s.host.nick);
-      const hUserKanon = bersihkanNamaKanonikal(s.host.user);
 
-      const cocokHost = (targetKanon && (hRobloxKanon === targetKanon || hNickKanon === targetKanon || hUserKanon === targetKanon)) ||
-                        (displayKanon && (hRobloxKanon === displayKanon || hNickKanon === displayKanon || hUserKanon === displayKanon));
+      const cocokHost = (displayKanon && (hNickKanon === displayKanon || hRobloxKanon === displayKanon)) ||
+                        (targetKanon && (hNickKanon === targetKanon || hRobloxKanon === targetKanon));
 
       if (cocokHost) {
         s.host.isHadir = true;
         if (targetDisplayName && (!s.host.nick || s.host.nick === '-' || s.host.nick === 'Host')) {
           s.host.nick = targetDisplayName;
         }
-        const displayTampil = s.host.nick || targetDisplayName || s.host.robloxUser || s.host.user || 'Host';
+        const displayTampil = (s.host.nick && s.host.nick !== '-') ? s.host.nick : (targetDisplayName || s.host.robloxUser || 'Host');
         const poinAwal = s.host.poin;
         s.host.poin += delta;
         const poinAkhir = s.host.poin;
@@ -9469,13 +9459,13 @@
     let pemainDitemukan = false;
     for (let i = 0; i < s.players.length; i++) {
       const p = s.players[i];
+      // MURNI cocokkan dengan DISPLAY NAME (p.nick) dan fallback Username Roblox (p.robloxUser), JANGAN gunakan Nama Pemain (p.user)!
+      const pNickKanon = (p.nick && p.nick !== '-') ? bersihkanNamaKanonikal(p.nick) : '';
       const pRobloxKanon = bersihkanNamaKanonikal(p.robloxUser);
-      const pNickKanon = bersihkanNamaKanonikal(p.nick);
-      const pUserKanon = bersihkanNamaKanonikal(p.user);
 
-      const cocokKursi = (targetKanon && (pRobloxKanon === targetKanon || pNickKanon === targetKanon || pUserKanon === targetKanon)) ||
-                         (displayKanon && (pRobloxKanon === displayKanon || pNickKanon === displayKanon || pUserKanon === displayKanon)) ||
-                         (targetUserId && p.userId && String(p.userId) === String(targetUserId));
+      const cocokKursi = (displayKanon && (pNickKanon === displayKanon || pRobloxKanon === displayKanon)) ||
+                         (targetKanon && (pNickKanon === targetKanon || pRobloxKanon === targetKanon)) ||
+                         (targetUserId && p.userId && Number(p.userId) > 0 && String(p.userId) === String(targetUserId));
 
       if (cocokKursi) {
         pemainDitemukan = true;
@@ -9486,11 +9476,7 @@
         if (targetUser && !p.robloxUser) {
           p.robloxUser = targetUser;
         }
-        const displayTampil = p.nick || targetDisplayName || p.robloxUser || p.user || targetUser;
-
-        if (!p.isReady) {
-          p.isReady = true;
-        }
+        const displayTampil = (p.nick && p.nick !== '-') ? p.nick : (targetDisplayName || p.robloxUser || targetUser);
 
         const waktuUtamaHabisCek = (timerSec <= 0 && isExtraTimeBin);
         if (waktuUtamaHabisCek && !p.isBin) {
@@ -9516,17 +9502,17 @@
     }
 
     if (!pemainDitemukan && isBetaAutoRegisterAktif) {
-      const kursiKosongIndex = s.players.findIndex(p => !p.user && !p.robloxUser && !p.nick);
+      const kursiKosongIndex = s.players.findIndex(p => !p.user && !p.robloxUser && (!p.nick || p.nick === '-'));
 
       if (kursiKosongIndex !== -1) {
         const pBaru = s.players[kursiKosongIndex];
         const dispBaru = targetDisplayName || targetUser;
         pBaru.robloxUser = targetUser;
         pBaru.nick = dispBaru; 
-        pBaru.user = dispBaru;         
+        pBaru.user = '';         
         if (targetUserId) pBaru.userId = targetUserId;
         pBaru.avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(dispBaru)}&background=0284c7&color=fff&rounded=true&bold=true`;
-        pBaru.isReady = true;        
+        pBaru.isReady = false;       
         pBaru.isBin = false;
         pBaru.isHadir = true;
         pBaru.poin = delta;
@@ -9565,30 +9551,23 @@
       return true;
     }
 
-    const ru = (p.robloxUser || '').toLowerCase().replace(/^@+/, '').trim();
     const rn = (p.nick || '').toLowerCase().replace(/^@+/, '').trim();
-    const tu = (p.user || '').toLowerCase().replace(/^@+/, '').trim();
+    const ru = (p.robloxUser || '').toLowerCase().replace(/^@+/, '').trim();
 
-    const ruKanon = bersihkanNamaKanonikal(ru);
     const rnKanon = bersihkanNamaKanonikal(rn);
-    const tuKanon = bersihkanNamaKanonikal(tu);
+    const ruKanon = bersihkanNamaKanonikal(ru);
 
-    // 1. Prioritas Utama: Cocokkan Display Name di papan skor (rn) dengan Display Name / Username di server
+    // 1. Prioritas Utama: Cocokkan DISPLAY NAME di papan skor (p.nick) dengan Display Name / Username di server
     if (rn && rn !== '-' && rn !== 'host') {
       if (rn === srvDisp || rn === srvUname) return true;
       if (rnKanon && (rnKanon === srvDispKanon || rnKanon === srvUnameKanon)) return true;
     }
 
-    // 2. Cocokkan Username Roblox di papan skor (ru) dengan Username / Display Name di server
+    // 2. Fallback: Cocokkan Username Roblox di papan skor (p.robloxUser) dengan Username / Display Name di server
+    // CATATAN: Kolom NAMA PEMAIN (p.user) TIDAK digunakan agar tidak terjadi salah cocok!
     if (ru && ru !== '-') {
       if (ru === srvUname || ru === srvDisp) return true;
       if (ruKanon && (ruKanon === srvUnameKanon || ruKanon === srvDispKanon)) return true;
-    }
-
-    // 3. Cocokkan Nama Pemain di papan skor (tu) dengan Display Name / Username di server
-    if (tu && tu !== '(kosong)' && tu !== 'host turnamen') {
-      if (tu === srvDisp || tu === srvUname) return true;
-      if (tuKanon && (tuKanon === srvDispKanon || tuKanon === srvUnameKanon)) return true;
     }
 
     return false;
@@ -9642,16 +9621,15 @@
         const matchSrv = onlineArr.find(srv => apakahCocokPemainDenganServer(p, srv));
         if (matchSrv) {
           jumlahCocok++;
-          const baruHadir = !p.isHadir || !p.isReady;
+          const baruHadir = !p.isHadir;
           p.isHadir = true;
-          p.isReady = true;
           const idChanged = sinkronkanDataIdentitasServerKeKursi(p, idx, matchSrv);
           if (baruHadir || idChanged) {
             adaPerubahan = true;
             if (baruHadir) {
               const noKursi = `Kursi ${idx + 1}`;
               const labelDisp = p.nick || matchSrv.displayName || matchSrv.username;
-              tambahLogAktivitas('ABSEN', `✔ ${labelDisp} (@${matchSrv.username}) terdeteksi di server ➔ ${noKursi} HADIR & READY`, 'success');
+              tambahLogAktivitas('ABSEN', `✔ ${labelDisp} (@${matchSrv.username}) terdeteksi di server ➔ ${noKursi} HADIR`, 'success');
               triggerKedipHijau(`row-kursi-${idx}`);
               if (tampilkanNotif && typeof tampilkanToastModern === 'function') {
                 tampilkanToastModern(`🟢 [AUTO ABSEN] ${labelDisp} hadir di server (${noKursi})`);
@@ -9668,7 +9646,6 @@
         jumlahCocok++;
         const baruHadir = !s.host.isHadir;
         s.host.isHadir = true;
-        s.host.isReady = true;
         const idChanged = sinkronkanDataIdentitasServerKeKursi(s.host, 19, matchHost);
         if (baruHadir || idChanged) {
           adaPerubahan = true;
@@ -9782,9 +9759,8 @@
       const noKursi = targetIdx === 19 ? "Kursi 20 (Host)" : `Kursi ${targetIdx + 1}`;
 
       if (event === 'JOIN') {
-        const baruHadir = !targetPemain.isHadir || !targetPemain.isReady;
+        const baruHadir = !targetPemain.isHadir;
         targetPemain.isHadir = true;
-        targetPemain.isReady = true;
         const idChanged = sinkronkanDataIdentitasServerKeKursi(targetPemain, targetIdx, srvObj);
         const labelTampil = targetPemain.nick || rawDisp || rawUname;
 
@@ -9794,7 +9770,7 @@
           siarkanSync({ type: 'SYNC_DB', db: db });
         }
         if (baruHadir) {
-          tambahLogAktivitas('ABSEN', `✔ ${labelTampil} (@${rawUname}) hadir di server! ${noKursi} otomatis HADIR & READY`, 'success');
+          tambahLogAktivitas('ABSEN', `✔ ${labelTampil} (@${rawUname}) hadir di server! (${noKursi} HADIR)`, 'success');
           triggerKedipHijau(`row-kursi-${targetIdx}`);
           if (typeof putarSuaraNotif === 'function') {
             putarSuaraNotif('khusus');
