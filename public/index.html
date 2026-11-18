@@ -4730,23 +4730,23 @@
             </td>
             <td style="padding: 8px; text-align: center;">
               <div class="point-modifier-capsule">
-                <input type="checkbox" id="mat_legend_big_on" class="point-checkbox" onchange="simpanPoinWarna()">
+                <input type="checkbox" id="mat_legend_big_on" class="point-checkbox" checked onchange="simpanPoinWarna()">
                 <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">+</span>
-                <input type="number" id="mat_legend_big_val" class="point-mod-val" min="0" value="0" onchange="simpanPoinWarna()">
+                <input type="number" id="mat_legend_big_val" class="point-mod-val" min="0" value="1" onchange="simpanPoinWarna()">
               </div>
             </td>
             <td style="padding: 8px; text-align: center;">
               <div class="point-modifier-capsule">
-                <input type="checkbox" id="mat_legend_shiny_on" class="point-checkbox" onchange="simpanPoinWarna()">
+                <input type="checkbox" id="mat_legend_shiny_on" class="point-checkbox" checked onchange="simpanPoinWarna()">
                 <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">+</span>
-                <input type="number" id="mat_legend_shiny_val" class="point-mod-val" min="0" value="0" onchange="simpanPoinWarna()">
+                <input type="number" id="mat_legend_shiny_val" class="point-mod-val" min="0" value="1" onchange="simpanPoinWarna()">
               </div>
             </td>
             <td style="padding: 8px 12px; border-radius: 0 12px 12px 0; text-align: center;">
               <div class="point-modifier-capsule">
-                <input type="checkbox" id="mat_legend_mutasi_on" class="point-checkbox" onchange="simpanPoinWarna()">
+                <input type="checkbox" id="mat_legend_mutasi_on" class="point-checkbox" checked onchange="simpanPoinWarna()">
                 <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">+</span>
-                <input type="number" id="mat_legend_mutasi_val" class="point-mod-val" min="0" value="0" onchange="simpanPoinWarna()">
+                <input type="number" id="mat_legend_mutasi_val" class="point-mod-val" min="0" value="1" onchange="simpanPoinWarna()">
               </div>
             </td>
           </tr>
@@ -5769,7 +5769,7 @@
 
   const DEFAULT_MATRIKS_TIER = {
     forgotten: { on: true, base: 4, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 },
-    legend: { on: true, base: 1, bigOn: false, bigVal: 0, shinyOn: false, shinyVal: 0, mutasiOn: false, mutasiVal: 0 },
+    legend: { on: true, base: 1, bigOn: true, bigVal: 1, shinyOn: true, shinyVal: 1, mutasiOn: true, mutasiVal: 1 },
     mitos:  { on: true, base: 2, bigOn: true,  bigVal: 1, shinyOn: true,  shinyVal: 1, mutasiOn: true,  mutasiVal: 1 },
     secret: { on: true, base: 3, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 },
     khusus: { on: true, nama: '', base: 5, bigOn: true,  bigVal: 2, shinyOn: true,  shinyVal: 2, mutasiOn: true,  mutasiVal: 3 }
@@ -5814,6 +5814,15 @@
     db.warnaPoin.matrix.mitos  = Object.assign({}, DEFAULT_MATRIKS_TIER.mitos, db.warnaPoin.matrix.mitos || {});
     db.warnaPoin.matrix.secret = Object.assign({}, DEFAULT_MATRIKS_TIER.secret, db.warnaPoin.matrix.secret || {});
     db.warnaPoin.matrix.khusus = Object.assign({}, DEFAULT_MATRIKS_TIER.khusus, db.warnaPoin.matrix.khusus || {});
+    // Auto-upgrade legend jika masih menyimpan nilai 0 dari cache versi lama
+    if (db.warnaPoin.matrix.legend && db.warnaPoin.matrix.legend.shinyVal === 0 && db.warnaPoin.matrix.legend.bigVal === 0 && !db.warnaPoin.matrix.legend._customExplicit) {
+      db.warnaPoin.matrix.legend.bigOn = true;
+      db.warnaPoin.matrix.legend.bigVal = 1;
+      db.warnaPoin.matrix.legend.shinyOn = true;
+      db.warnaPoin.matrix.legend.shinyVal = 1;
+      db.warnaPoin.matrix.legend.mutasiOn = true;
+      db.warnaPoin.matrix.legend.mutasiVal = 1;
+    }
   }
   if (!db.durasiMenitDefault) db.durasiMenitDefault = 15;
 
@@ -8785,12 +8794,12 @@
     setVal('inputWaktuBinMenit', db.warnaPoin.waktuBinMenit !== undefined ? db.warnaPoin.waktuBinMenit : 15);
     setChk('mat_legend_on', m.legend.on !== false);
     setVal('mat_legend_base', m.legend.base ?? 1);
-    setChk('mat_legend_big_on', m.legend.bigOn);
-    setVal('mat_legend_big_val', m.legend.bigVal ?? 0);
-    setChk('mat_legend_shiny_on', m.legend.shinyOn);
-    setVal('mat_legend_shiny_val', m.legend.shinyVal ?? 0);
-    setChk('mat_legend_mutasi_on', m.legend.mutasiOn);
-    setVal('mat_legend_mutasi_val', m.legend.mutasiVal ?? 0);
+    setChk('mat_legend_big_on', m.legend.bigOn ?? true);
+    setVal('mat_legend_big_val', m.legend.bigVal ?? 1);
+    setChk('mat_legend_shiny_on', m.legend.shinyOn ?? true);
+    setVal('mat_legend_shiny_val', m.legend.shinyVal ?? 1);
+    setChk('mat_legend_mutasi_on', m.legend.mutasiOn ?? true);
+    setVal('mat_legend_mutasi_val', m.legend.mutasiVal ?? 1);
 
     setChk('mat_mitos_on', m.mitos.on !== false);
     setVal('mat_mitos_base', m.mitos.base ?? 2);
