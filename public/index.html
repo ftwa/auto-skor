@@ -1051,21 +1051,21 @@
     table { width: 100%; border-collapse: collapse; text-align: left; table-layout: fixed; }
 
     th {
-      padding: 10px 8px; 
+      padding: 8px 6px; 
       background: var(--table-header-bg);
-      font-size: 11.5px; font-weight: 900; color: var(--table-header-text); 
+      font-size: 11px; font-weight: 900; color: var(--table-header-text); 
       border-bottom: 2.5px solid #0f172a;
       border-right: 1px solid rgba(15, 23, 42, 0.12);
-      text-align: center; letter-spacing: 0.8px; user-select: none;
+      text-align: center; letter-spacing: 0.6px; user-select: none;
       text-transform: uppercase;
     }
     th:last-child { border-right: none; }
 
     td {
-      padding: 7px 8px; font-size: 13.5px; 
+      padding: 5px 6px; font-size: 12.5px; 
       border-bottom: 1px solid #f1f5f9; 
       border-right: 1px solid #f1f5f9; 
-      height: 48px; text-align: center; 
+      height: 44px; text-align: center; 
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       color: var(--text-dark);
       background: #ffffff;
@@ -1073,6 +1073,14 @@
     }
     td:last-child { border-right: none; }
     tbody tr:nth-child(even) td { background: var(--table-alt-bg); }
+    th.col-point, td.col-point {
+      width: 90px;
+      min-width: 82px;
+      max-width: 110px;
+      padding: 4px 4px !important;
+      text-align: center !important;
+      overflow: visible !important;
+    }
 
     /* TOP 3 RANKING ROWS */
     /* JUARA 1 - GOLD HIGHLIGHT */
@@ -1164,24 +1172,66 @@
 
     /* NAMA CELL */
     .nama-cell {
-      display: flex; align-items: center; gap: 8px; text-align: left;
+      display: flex; align-items: center; gap: 6px; text-align: left;
     }
-    .avatar-mini {
-      width: 30px; height: 30px; border-radius: 50%;
+    .avatar-mini, .avatar-placeholder {
+      width: 26px; height: 26px; border-radius: 50%;
       border: 1.5px solid #bae6fd; overflow: hidden; flex-shrink: 0;
-      background: #e0f2fe; display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 800; color: #0284c7;
+      background: #e0f2fe; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: #0284c7;
     }
     .avatar-mini img { width: 100%; height: 100%; object-fit: cover; }
-    .name-tiktok { font-size: 13.5px; font-weight: 800; color: #0f172a; }
-    .name-roblox-display { font-size: 11.5px; font-weight: 600; color: #64748b; }
+    .name-tiktok {
+      font-size: 12.5px; font-weight: 800; color: #0f172a;
+      flex: 1; min-width: 0; text-align: left;
+    }
+    .name-roblox-display {
+      font-size: 12px; font-weight: 700; color: #334155;
+      flex: 1; min-width: 0; text-align: left;
+    }
 
-    /* SCORE PILL */
+    /* SCORE BOX & PILL */
+    .score-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+      max-width: 100%;
+    }
+    .btn-step {
+      width: 20px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0;
+      transition: all 0.15s ease;
+    }
+    .btn-step:hover:not(:disabled) {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+    .btn-step:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
     .score-val {
-      font-size: 14px; font-weight: 900;
+      font-size: 13.5px; font-weight: 900;
       background: #f1f5f9; color: #0284c7;
       border: 1.5px solid #cbd5e1; border-radius: 999px;
-      padding: 3px 10px; display: inline-block; min-width: 44px;
+      padding: 2px 8px; display: inline-flex; align-items: center; justify-content: center;
+      min-width: 38px;
       text-align: center;
     }
 
@@ -2730,17 +2780,17 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
-      padding: 0 8px;
+      gap: 4px;
+      padding: 0 4px;
       width: 100%;
     }
     .badge-bin-inline {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 900;
-      padding: 2.5px 7px;
-      border-radius: 6px;
+      padding: 2px 5px;
+      border-radius: 5px;
       cursor: pointer;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       transition: all 0.2s ease;
       flex-shrink: 0;
       user-select: none;
@@ -2917,42 +2967,42 @@
     }
 
 
-    /* EQUAL SYMMETRY FOR NO AND STAT COLUMNS (EXACTLY 42PX) */
+    /* EQUAL SYMMETRY FOR NO AND STAT COLUMNS (COMPACT 38PX) */
     .table-container th:first-child,
     .table-container td.cell-no {
-      width: 42px !important;
-      min-width: 42px !important;
-      max-width: 42px !important;
+      width: 38px !important;
+      min-width: 38px !important;
+      max-width: 38px !important;
       box-sizing: border-box !important;
       text-align: center !important;
       vertical-align: middle !important;
-      padding: 6px 0 !important;
+      padding: 4px 0 !important;
     }
     .table-container th.col-ready,
     .table-container td.col-ready {
-      width: 42px !important;
-      min-width: 42px !important;
-      max-width: 42px !important;
+      width: 38px !important;
+      min-width: 38px !important;
+      max-width: 38px !important;
       box-sizing: border-box !important;
       text-align: center !important;
       vertical-align: middle !important;
-      padding: 6px 0 !important;
+      padding: 4px 0 !important;
     }
     .stat-cell-wrap {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      width: 42px !important;
+      width: 38px !important;
       margin: 0 auto !important;
     }
     .btn-stat-check {
-      width: 26px !important;
-      height: 26px !important;
+      width: 24px !important;
+      height: 24px !important;
       border-radius: 50% !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      font-size: 13px !important;
+      font-size: 12px !important;
       font-weight: 900 !important;
       cursor: pointer !important;
       margin: 0 auto !important;
@@ -2982,6 +3032,10 @@
     html.mode-overlay .log-panel,
     html.mode-overlay .btn-stadium-ctrl,
     html.mode-overlay .btn-pt-ctrl,
+    html.mode-overlay .btn-step,
+    html.mode-overlay .btn-minus,
+    html.mode-overlay .btn-plus,
+    html.mode-overlay .badge-absen-inline,
     html.mode-overlay .color-picker-mini,
     html.mode-overlay .quick-point-popover,
     html.mode-overlay .col-resizer,
@@ -2992,8 +3046,10 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      padding: 6px 12px !important;
+      padding: 6px 10px !important;
       margin: 0 auto !important;
+      min-width: 0 !important;
+      width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
     }
@@ -3015,33 +3071,45 @@
     html.mode-overlay body #podiumHeroStage {
       display: grid !important;
     }
-    html.mode-overlay body col.col-point,
+    html.mode-overlay body col.col-point {
+      display: table-column !important;
+      width: 72px !important;
+    }
     html.mode-overlay body th.col-point,
     html.mode-overlay body td.col-point {
       display: table-cell !important;
+      width: 72px !important;
+      min-width: 72px !important;
+      max-width: 72px !important;
+      padding: 3px 4px !important;
+      text-align: center !important;
     }
     html.mode-overlay body col.col-ready,
     html.mode-overlay body th.col-ready,
     html.mode-overlay body td.col-ready {
       display: none !important;
     }
-    html.mode-overlay .btn-pt-ctrl {
+    html.mode-overlay .btn-pt-ctrl,
+    html.mode-overlay .btn-step {
       display: none !important;
     }
-    html.mode-overlay .pt-ctrl-group {
+    html.mode-overlay .pt-ctrl-group,
+    html.mode-overlay .score-box {
       justify-content: center !important;
     }
     html.mode-overlay .score-val {
-      min-width: 44px !important;
+      min-width: 46px !important;
       text-align: center !important;
       font-size: 14px !important;
+      font-weight: 900 !important;
+      padding: 2px 8px !important;
       pointer-events: none !important;
     }
 
     /* ========================================================
        1.5. Mode Tabel Saja (?view=tabel atau ?view=table)
        Khusus TikTok LIVE Studio & OBS Browser Source:
-       HANYA menampilkan tabel dan background card-nya, tanpa banner header, stadium timer, podium 3 besar, atau tombol admin
+       Full-Bleed 100% Canvas (Tidak mengecil, Nama & Display Name proporsional, Kolom Poin tegas & utuh)
        ======================================================== */
     html.mode-tabel, html.mode-tabel body {
       background: transparent !important;
@@ -3054,8 +3122,8 @@
       scrollbar-width: none !important;
       display: flex !important;
       flex-direction: column !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
+      align-items: stretch !important;
+      justify-content: stretch !important;
     }
     html.mode-tabel::-webkit-scrollbar, html.mode-tabel body::-webkit-scrollbar {
       display: none !important;
@@ -3070,6 +3138,10 @@
     html.mode-tabel .modal-overlay,
     html.mode-tabel .btn-stadium-ctrl,
     html.mode-tabel .btn-pt-ctrl,
+    html.mode-tabel .btn-step,
+    html.mode-tabel .btn-minus,
+    html.mode-tabel .btn-plus,
+    html.mode-tabel .badge-absen-inline,
     html.mode-tabel .color-picker-mini,
     html.mode-tabel .quick-point-popover,
     html.mode-tabel .col-resizer,
@@ -3083,45 +3155,129 @@
     html.mode-tabel .hud-btn-close {
       display: none !important;
     }
-    /* Pertahankan background card dan styling tabel */
+    /* Full-Bleed Container memenuhi 100% kanvas TikTok Studio tanpa mengecil */
     html.mode-tabel .container {
       background: var(--card-bg) !important;
       backdrop-filter: blur(24px) !important;
       -webkit-backdrop-filter: blur(24px) !important;
       border: 2px solid var(--card-border) !important;
-      border-radius: 20px !important;
-      box-shadow: 0 16px 45px rgba(0, 80, 160, 0.22) !important;
-      padding: 10px 14px !important;
-      margin: 4px auto !important;
-      max-width: 100% !important;
-      width: 100% !important;
+      border-radius: 16px !important;
+      box-shadow: 0 12px 32px rgba(0, 80, 160, 0.22) !important;
+      padding: 6px 8px !important;
+      margin: 0 !important;
+      min-width: 0 !important;
+      max-width: 100vw !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
       box-sizing: border-box !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: stretch !important;
     }
     html.mode-tabel .grid-tables {
       display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
       margin-top: 0 !important;
+      flex: 1 !important;
+      width: 100% !important;
+      height: 100% !important;
+      align-items: stretch !important;
     }
-    /* Sembunyikan kolom READY & tampilkan kolom POIN di mode tabel */
+    html.mode-tabel .table-container {
+      height: 100% !important;
+      border-radius: 12px !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    html.mode-tabel .table-container table {
+      width: 100% !important;
+      height: 100% !important;
+      table-layout: fixed !important;
+    }
+    html.mode-tabel .table-container th {
+      padding: 5px 4px !important;
+      font-size: 11.5px !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.4px !important;
+      height: 30px !important;
+    }
+    html.mode-tabel .table-container td {
+      padding: 2px 5px !important;
+      font-size: 12.5px !important;
+      height: calc((100vh - 48px) / 10) !important;
+      min-height: 26px !important;
+    }
+    html.mode-tabel .table-container th:first-child,
+    html.mode-tabel .table-container td.cell-no,
+    html.mode-tabel col.col-w-no {
+      width: 34px !important;
+      min-width: 34px !important;
+      max-width: 34px !important;
+      padding: 2px 0 !important;
+    }
+    html.mode-tabel .badge-no {
+      width: 24px !important;
+      height: 24px !important;
+      font-size: 12px !important;
+      font-weight: 900 !important;
+    }
+    html.mode-tabel .avatar-mini,
+    html.mode-tabel .avatar-placeholder {
+      width: 24px !important;
+      height: 24px !important;
+      font-size: 10.5px !important;
+    }
+    html.mode-tabel .name-tiktok {
+      font-size: 12.5px !important;
+      font-weight: 800 !important;
+    }
+    html.mode-tabel .name-roblox-display {
+      font-size: 12.5px !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+    }
+    html.mode-tabel .badge-bin-inline {
+      font-size: 8.5px !important;
+      padding: 1.5px 4px !important;
+    }
+    /* Sembunyikan kolom READY & pastikan kolom POIN utuh 100% tidak terpotong */
     html.mode-tabel body col.col-ready,
     html.mode-tabel body th.col-ready,
     html.mode-tabel body td.col-ready {
       display: none !important;
     }
     html.mode-tabel body col.col-point,
+    html.mode-tabel col.col-w-poin {
+      display: table-column !important;
+      width: 74px !important;
+    }
     html.mode-tabel body th.col-point,
     html.mode-tabel body td.col-point {
       display: table-cell !important;
+      width: 74px !important;
+      min-width: 74px !important;
+      max-width: 74px !important;
+      padding: 2px 3px !important;
+      text-align: center !important;
+      overflow: visible !important;
     }
-    html.mode-tabel .btn-pt-ctrl {
+    html.mode-tabel .btn-pt-ctrl,
+    html.mode-tabel .btn-step {
       display: none !important;
     }
-    html.mode-tabel .pt-ctrl-group {
+    html.mode-tabel .pt-ctrl-group,
+    html.mode-tabel .score-box {
       justify-content: center !important;
+      width: 100% !important;
     }
     html.mode-tabel .score-val {
-      min-width: 44px !important;
+      min-width: 48px !important;
+      padding: 2.5px 8px !important;
       text-align: center !important;
-      font-size: 14px !important;
+      font-size: 14.5px !important;
+      font-weight: 900 !important;
       pointer-events: none !important;
     }
     html.mode-tabel .cell-click-popup,
@@ -3911,14 +4067,24 @@
       if (!isModeTabel && !isModeOverlay) return;
       const container = document.querySelector('.container');
       if (!container) return;
+
+      // Mode Tabel menggunakan Full-Bleed 100vw x 100vh agar TIDAK mengecil di TikTok LIVE Studio
+      if (isModeTabel) {
+        container.style.transform = 'none';
+        container.style.width = '100vw';
+        container.style.maxWidth = '100vw';
+        container.style.height = '100vh';
+        return;
+      }
+
       const winW = window.innerWidth;
       const winH = window.innerHeight;
-      const contentW = 1180;
-      const contentH = container.scrollHeight || (isModeTabel ? 520 : 760);
+      const contentW = 980;
+      const contentH = container.scrollHeight || 720;
       const scaleX = winW / contentW;
       const scaleY = winH / contentH;
       const scale = Math.min(scaleX, scaleY, 1.0);
-      if (scale < 0.98) {
+      if (scale < 0.96) {
         container.style.transform = `scale(${scale})`;
         container.style.transformOrigin = 'top center';
         container.style.width = `${contentW}px`;
@@ -4207,11 +4373,11 @@
     <div class="table-container">
       <table id="tableLeft">
         <colgroup>
-          <col class="col-w-no" style="width: 42px;">
-          <col class="col-ready col-w-stat" style="width: 42px;">
-          <col class="col-w-nama" style="width: 230px;">
-          <col class="col-w-nick" style="width: 190px;">
-          <col class="col-point col-w-poin" style="width: 86px;">
+          <col class="col-w-no" style="width: 38px;">
+          <col class="col-ready col-w-stat" style="width: 38px;">
+          <col class="col-w-nama">
+          <col class="col-w-nick">
+          <col class="col-point col-w-poin" style="width: 90px;">
         </colgroup>
         <thead>
           <tr>
@@ -4219,7 +4385,7 @@
             <th class="col-ready">STAT<div class="col-resizer" data-col="stat" title="Tarik untuk ubah lebar kolom STAT"></div></th>
             <th>NAMA PEMAIN<div class="col-resizer" data-col="nama" title="Tarik untuk ubah lebar kolom NAMA"></div></th>
             <th>DISPLAY NAME<div class="col-resizer" data-col="nick" title="Tarik untuk ubah lebar kolom DISPLAY NAME"></div></th>
-            <th class="col-point">POIN<div class="col-resizer" data-col="poin" title="Tarik untuk ubah lebar kolom NO"></div></th>
+            <th class="col-point">POIN<div class="col-resizer" data-col="poin" title="Tarik untuk ubah lebar kolom POIN"></div></th>
           </tr>
         </thead>
         <tbody id="bodyLeft"></tbody>
@@ -4229,11 +4395,11 @@
     <div class="table-container">
       <table id="tableRight">
         <colgroup>
-          <col class="col-w-no" style="width: 42px;">
-          <col class="col-ready col-w-stat" style="width: 42px;">
-          <col class="col-w-nama" style="width: 230px;">
-          <col class="col-w-nick" style="width: 190px;">
-          <col class="col-point col-w-poin" style="width: 86px;">
+          <col class="col-w-no" style="width: 38px;">
+          <col class="col-ready col-w-stat" style="width: 38px;">
+          <col class="col-w-nama">
+          <col class="col-w-nick">
+          <col class="col-point col-w-poin" style="width: 90px;">
         </colgroup>
         <thead>
           <tr>
@@ -4241,7 +4407,7 @@
             <th class="col-ready">STAT<div class="col-resizer" data-col="stat" title="Tarik untuk ubah lebar kolom STAT"></div></th>
             <th>NAMA PEMAIN<div class="col-resizer" data-col="nama" title="Tarik untuk ubah lebar kolom NAMA"></div></th>
             <th>DISPLAY NAME<div class="col-resizer" data-col="nick" title="Tarik untuk ubah lebar kolom DISPLAY NAME"></div></th>
-            <th class="col-point">POIN<div class="col-resizer" data-col="poin" title="Tarik untuk ubah lebar kolom NO"></div></th>
+            <th class="col-point">POIN<div class="col-resizer" data-col="poin" title="Tarik untuk ubah lebar kolom POIN"></div></th>
           </tr>
         </thead>
         <tbody id="bodyRight"></tbody>
@@ -5351,9 +5517,9 @@
           <div class="stream-row-title">
             <span>📊 Overlay Tabel Skor (20 Kursi)</span>
           </div>
-          <span class="stream-badge-res">1060 × 520 px</span>
+          <span class="stream-badge-res">800 × 600 px (Auto Full-Fit)</span>
         </div>
-        <div class="stream-desc-txt">Khusus tabel 20 kursi dan background card-nya (tanpa banner header, timer, atau tombol admin). Sangat pas ditaruh terus-menerus di layar siaran!</div>
+        <div class="stream-desc-txt">Khusus tabel 20 kursi Full-Canvas (100% memenuhi kotak TikTok Studio tanpa mengecil, kolom Nama & Display Name proporsional, dan kolom POIN tampil tegas & utuh).</div>
         <div class="stream-input-group">
           <input type="text" readonly id="linkOverlayTabel" class="stream-url-field" onclick="this.select()">
           <button class="btn-copy-stream" onclick="salinLinkStream('linkOverlayTabel', this)">📋 Salin Link</button>
@@ -5445,7 +5611,7 @@
 
 <script>
   const DB_KEY = 'galatama_modern_light_v1';
-  const COL_SIZE_KEY = 'galatama_table_col_sizes_v1';
+  const COL_SIZE_KEY = 'galatama_table_col_sizes_v2';
   const AUDIO_TIER_KEYS = {
     forgotten: 'galatama_custom_sound_forgotten',
     legend: 'galatama_custom_sound_legend',
@@ -5463,14 +5629,15 @@
   const MEMBER_HALL_KEY = 'galatama_member_hall_v1';
   const EXTRA_PRO_KEY = 'galatama_extra_pro_settings_v3';
 
-  /* PENGATURAN LEBAR KOLOM & CONTAINER (RESIZABLE) */
+  /* PENGATURAN LEBAR KOLOM & CONTAINER (RESIZABLE & PROPORSIONAL ANTI-TERPOTONG) */
   const DEFAULT_COL_SIZES = {
-    no: 42,
-    stat: 42,
-    nama: 236,
-    nick: 190,
-    poin: 86,
-    containerMax: 1320
+    no: 38,
+    stat: 38,
+    nama: 145,
+    nick: 155,
+    poin: 90,
+    containerMax: 1360,
+    customResized: false
   };
 
   let parsedColSizes = {};
@@ -5478,15 +5645,40 @@
     parsedColSizes = JSON.parse(localStorage.getItem(COL_SIZE_KEY) || '{}') || {};
   } catch (_) { parsedColSizes = {}; }
   let colSizes = Object.assign({}, DEFAULT_COL_SIZES, parsedColSizes);
-  colSizes.stat = colSizes.no || 42; // Samakan ukuran kolom STAT persis dengan kolom NO
+  colSizes.stat = colSizes.no || 38; // Samakan ukuran kolom STAT persis dengan kolom NO
 
   function terapkanUkuranKolomTabel() {
-    const wNo = colSizes.no || 42;
+    const isModeTabel = document.documentElement.classList.contains('mode-tabel');
+    const isModeOverlay = document.documentElement.classList.contains('mode-overlay');
+
+    if (isModeTabel || isModeOverlay) {
+      // Pada mode TikTok Studio / Overlay: kunci NO (34px) & POIN (68px), bagi rata ruang sisa secara proporsional untuk NAMA & DISPLAY NAME agar POIN tidak pernah terpotong!
+      document.querySelectorAll('.col-w-no').forEach(el => el.style.width = '34px');
+      document.querySelectorAll('.col-w-stat').forEach(el => el.style.width = '34px');
+      document.querySelectorAll('.col-w-poin').forEach(el => el.style.width = isModeTabel ? '68px' : '72px');
+      document.querySelectorAll('.col-w-nama').forEach(el => el.style.width = '');
+      document.querySelectorAll('.col-w-nick').forEach(el => el.style.width = '');
+      const mainCont = document.getElementById('mainContainer');
+      if (mainCont) {
+        mainCont.style.maxWidth = '100%';
+      }
+      return;
+    }
+
+    const wNo = colSizes.no || 38;
+    const wPoin = Math.max(82, colSizes.poin || 90);
     document.querySelectorAll('.col-w-no').forEach(el => el.style.width = `${wNo}px`);
-    document.querySelectorAll('.col-w-stat').forEach(el => el.style.width = `${wNo}px`); // Samakan persis dengan NO
-    document.querySelectorAll('.col-w-nama').forEach(el => el.style.width = `${colSizes.nama}px`);
-    document.querySelectorAll('.col-w-nick').forEach(el => el.style.width = `${colSizes.nick}px`);
-    document.querySelectorAll('.col-w-poin').forEach(el => el.style.width = `${colSizes.poin}px`);
+    document.querySelectorAll('.col-w-stat').forEach(el => el.style.width = `${wNo}px`);
+    document.querySelectorAll('.col-w-poin').forEach(el => el.style.width = `${wPoin}px`);
+
+    if (colSizes.customResized) {
+      document.querySelectorAll('.col-w-nama').forEach(el => el.style.width = `${colSizes.nama}px`);
+      document.querySelectorAll('.col-w-nick').forEach(el => el.style.width = `${colSizes.nick}px`);
+    } else {
+      // Biarkan NAMA PEMAIN dan DISPLAY NAME membagi ruang tengah secara otomatis (auto) sehingga POIN selalu tampil utuh 100%
+      document.querySelectorAll('.col-w-nama').forEach(el => el.style.width = '');
+      document.querySelectorAll('.col-w-nick').forEach(el => el.style.width = '');
+    }
 
     const mainCont = document.getElementById('mainContainer');
     if (mainCont && colSizes.containerMax) {
@@ -5517,15 +5709,19 @@
         if (!colKey) return;
 
         const startX = e.clientX;
-        const startWidth = colSizes[colKey] || DEFAULT_COL_SIZES[colKey] || 60;
-        const minW = (colKey === 'no' || colKey === 'stat') ? 32 : 70;
+        const thEl = this.parentElement;
+        const startWidth = (thEl ? thEl.getBoundingClientRect().width : 0) || colSizes[colKey] || DEFAULT_COL_SIZES[colKey] || 60;
+        const minW = (colKey === 'no' || colKey === 'stat') ? 32 : (colKey === 'poin' ? 76 : 80);
 
         this.classList.add('resizing');
         document.body.classList.add('is-resizing-col');
 
         const onMouseMove = (moveEvt) => {
           const deltaX = moveEvt.clientX - startX;
-          colSizes[colKey] = Math.max(minW, Math.min(600, startWidth + deltaX));
+          colSizes[colKey] = Math.max(minW, Math.min(420, Math.round(startWidth + deltaX)));
+          if (colKey === 'nama' || colKey === 'nick') {
+            colSizes.customResized = true;
+          }
           terapkanUkuranKolomTabel();
         };
 
