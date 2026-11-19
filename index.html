@@ -8,6 +8,7 @@
     (function() {
       const urlParams = new URLSearchParams(window.location.search);
       const raw = (urlParams.get('view') || urlParams.get('overlay') || 'admin').toLowerCase();
+      const isIframe = (window.self !== window.top);
       if (['tabel', 'table'].includes(raw)) {
         document.documentElement.classList.add('mode-tabel');
       } else if (['overlay', 'stream', 'live', 'tiktok', 'obs', 'match'].includes(raw)) {
@@ -20,6 +21,8 @@
         document.documentElement.classList.add('mode-notif');
       } else if (['timer', 'countdown', 'waktu', 'clock'].includes(raw)) {
         document.documentElement.classList.add('mode-timer');
+      } else if (['preview'].includes(raw) || urlParams.has('preview') || isIframe) {
+        document.documentElement.classList.add('mode-preview');
       } else {
         document.documentElement.classList.add('mode-admin');
       }
@@ -10065,6 +10068,8 @@
     return null;
   }
 
+  const _recentCatchFingerprints = new Map(); // key -> timestamp (Anti-dobel semantik)
+
   function tanganiCatchMasuk(item) {
     if (!item) return;
     if (!item.user && !item.displayName) return;
@@ -10075,10 +10080,30 @@
     if (timerSec <= 0 && !isExtraTimeBin) return;
     if (isMatchSelesai && !isExtraTimeBin) return;
 
-    const eventId = item.id || `${item.user || item.displayName}_${item.ikan || item.fish || ''}_${item.poin}_${item.timestamp || ''}`;
+    const eventId = item.id || `${item.user || item.displayName}_${item.ikan || item.fish || ''}_${item.poin || ''}_${item.timestamp || ''}`;
     if (processedCatchIds.has(eventId)) return;
+
+    // DEDUPLIKASI SEMANTIK ANTI-DOBEL POIN (Bahkan jika ID acak paket berbeda dari sumber ganda):
+    const now = Date.now();
+    const pName = String(item.displayName || item.user || '').toLowerCase().trim();
+    const fName = String(item.ikan || item.fish || '').toLowerCase().trim();
+    const semKey = `${pName}_${fName}`;
+    if (_recentCatchFingerprints.has(semKey)) {
+      const prevTs = _recentCatchFingerprints.get(semKey);
+      if (now - prevTs < 3200) {
+        console.warn('⛔ [ANTI-DOBEL POIN] Tangkapan identik diabaikan:', semKey, `selisih: ${now - prevTs}ms`);
+        processedCatchIds.add(eventId);
+        return;
+      }
+    }
+    _recentCatchFingerprints.set(semKey, now);
+    if (_recentCatchFingerprints.size > 100) {
+      const oldestKey = _recentCatchFingerprints.keys().next().value;
+      _recentCatchFingerprints.delete(oldestKey);
+    }
+
     processedCatchIds.add(eventId);
-    if (processedCatchIds.size > 400) {
+    if (processedCatchIds.size > 500) {
       const first = processedCatchIds.values().next().value;
       processedCatchIds.delete(first);
     }
@@ -10090,6 +10115,7 @@
     const kategoriStr = item.kategori || item.tier || 'legend';
     const namaIkan = item.ikan || item.fish || 'Ikan Tangkapan';
 
+    // JIKA DALAM MODE NOTIF (OVERLAY TOAST): Tampilkan animasi pop-up toast lalu selesai
     if (document.documentElement.classList.contains('mode-notif')) {
       const hasilMatriks = hitungPoinDariMatriks(kategoriStr, rincianStr, poinMasuk, namaIkan);
       const delta = hasilMatriks.poinTotal > 0 ? hasilMatriks.poinTotal : (Number(poinMasuk) || 1);
@@ -10100,6 +10126,14 @@
         ? profil.avatar
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(dispTampil)}&background=0284c7&color=fff&rounded=true&bold=true`;
       tampilkanNotifTangkapanInstan(dispTampil, rincianFinal, delta, hasilMatriks.tierKey, avatarUrl, namaIkan, 2000, false, eventId);
+      return;
+    }
+
+    // PROTEKSI TOTAL MULTI-TAB & IFRAME PRATINJAU (ANTI-DOBEL POIN MUTLAK):
+    // HANYA tab Master Admin aktif (bukan overlay tabel/top3/podium/timer, dan bukan iframe) yang berhak menambah skor!
+    // Seluruh overlay menerima pembaruan skor dari sinkronisasi SYNC_DB / SYNC_SCORE sehingga skor 100% konsisten tanpa pernah terhitung ganda.
+    const isMasterAdmin = document.documentElement.classList.contains('mode-admin') && (window.self === window.top);
+    if (!isMasterAdmin) {
       return;
     }
 
