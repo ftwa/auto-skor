@@ -819,7 +819,7 @@
         </div>
 
         <div class="preview-frame-wrap">
-          <iframe id="livePreviewIframe" class="preview-iframe" src="papan_skor.html" title="Pratinjau Papan Skor"></iframe>
+          <iframe id="livePreviewIframe" class="preview-iframe" src="papan_skor.html?preview=1" title="Pratinjau Papan Skor"></iframe>
         </div>
 
         <div class="preview-footer">
@@ -1040,7 +1040,8 @@
 
       const item = OVERLAY_ITEMS.find(x => x.key === key) || OVERLAY_ITEMS[0];
       const iframe = document.getElementById('livePreviewIframe');
-      const localUrl = 'papan_skor.html' + item.query;
+      const sep = item.query ? (item.query.includes('?') ? '&' : '?') : '?';
+      const localUrl = 'papan_skor.html' + (item.query || '') + sep + 'preview=1';
       if (iframe) iframe.src = localUrl;
 
       const nameEl = document.getElementById('previewModeName');
